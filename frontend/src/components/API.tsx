@@ -1,20 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Card, Typography, Button, Space, message, Tabs, Input, 
-  Anchor, Layout, Menu, Badge, Tag, Collapse, Alert, 
-  Divider, Table, Tooltip, Row, Col, Statistic 
+  Layout, Menu, Badge, Tag, Alert, 
+  Divider, Table, Row, Col, Statistic 
 } from 'antd';
 import { 
   ApiOutlined, PlayCircleOutlined, CopyOutlined, CheckOutlined,
   LinkOutlined, BookOutlined, CodeOutlined, ThunderboltOutlined,
   EyeOutlined, HistoryOutlined, BarChartOutlined, DownloadOutlined,
-  HeartOutlined, ArrowUpOutlined, FileTextOutlined, GlobalOutlined
+  HeartOutlined, FileTextOutlined, GlobalOutlined
 } from '@ant-design/icons';
 
-const { Title, Paragraph, Text, Link } = Typography;
-const { TextArea } = Input;
+const { Title, Paragraph, Text } = Typography;
 const { Sider, Content } = Layout;
-const { Panel } = Collapse;
 
 // 语法高亮代码块
 const CodeBlock: React.FC<{ code: string; language?: string }> = ({ code, language = 'bash' }) => (
@@ -661,7 +659,7 @@ const API: React.FC = () => {
                 <Col span={8}>
                   <Card bordered={false} style={{ background: '#e6f7ff', borderLeft: '4px solid #1890ff' }}>
                     <Statistic 
-                      title={<Text type="primary"><GlobalOutlined /> 跨域支持</Text>}
+                      title={<Text style={{ color: '#1890ff' }}><GlobalOutlined /> 跨域支持</Text>}
                       value="CORS" 
                       suffix="已启用"
                     />
@@ -848,8 +846,8 @@ const API: React.FC = () => {
                         dataSource={endpoint.requestParams}
                         columns={[
                           { title: '参数名', dataIndex: 'name', key: 'name', render: (text: string) => <Text code>{text}</Text> },
-                          { title: '类型', dataIndex: 'type', key: 'type', render: (text: string) => <Tag size="small">{text}</Tag> },
-                          { title: '必填', dataIndex: 'required', key: 'required', render: (required: boolean) => required ? <Tag color="red" size="small">是</Tag> : <Tag color="default" size="small">否</Tag> },
+                          { title: '类型', dataIndex: 'type', key: 'type', render: (text: string) => <Tag>{text}</Tag> },
+                          { title: '必填', dataIndex: 'required', key: 'required', render: (required: boolean) => required ? <Tag color="red">是</Tag> : <Tag color="default">否</Tag> },
                           { title: '默认值', dataIndex: 'default', key: 'default', render: (text: string) => text || '-' },
                           { title: '描述', dataIndex: 'description', key: 'description' },
                           { 
@@ -880,7 +878,7 @@ const API: React.FC = () => {
                         dataSource={endpoint.responseFields}
                         columns={[
                           { title: '字段', dataIndex: 'field', key: 'field', render: (text: string) => <Text code>{text}</Text> },
-                          { title: '类型', dataIndex: 'type', key: 'type', render: (text: string) => <Tag size="small">{text}</Tag> },
+                          { title: '类型', dataIndex: 'type', key: 'type', render: (text: string) => <Tag>{text}</Tag> },
                           { title: '描述', dataIndex: 'description', key: 'description' },
                         ]}
                       />

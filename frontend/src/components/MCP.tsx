@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip, Input, message, Collapse } from 'antd';
+import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip, Input, message } from 'antd';
 import { CloudOutlined, CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, DatabaseOutlined, CopyOutlined, PlayCircleOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
-const { Panel } = Collapse;
 
 // MCP Tool Tester Component
 const MCPToolTester: React.FC = () => {
@@ -307,7 +306,7 @@ const MCP: React.FC = () => {
               description={
                 <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
                   <Text>在您的 MCP 客户端（如 Claude Desktop、Cursor 等）中添加以下配置：</Text>
-                  <Card size="small" title="Claude Desktop 配置 (~/.config/claude/claude_desktop_config.json)">
+                  <Card title="Claude Desktop 配置 (~/.config/claude/claude_desktop_config.json)">
                     <div style={{ position: 'relative' }}>
                       <pre style={{ 
                         background: '#1e1e1e', 
@@ -337,14 +336,13 @@ const MCP: React.FC = () => {
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
-                          size="small"
                           style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
                           onClick={() => navigator.clipboard.writeText(claudeConfig)}
                         />
                       </Tooltip>
                     </div>
                   </Card>
-                  <Card size="small" title="通用 MCP 配置">
+                  <Card title="通用 MCP 配置">
                     <div style={{ position: 'relative' }}>
                       <pre style={{ 
                         background: '#1e1e1e', 
@@ -374,7 +372,6 @@ const MCP: React.FC = () => {
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
-                          size="small"
                           style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
                           onClick={() => navigator.clipboard.writeText(mcpConfig)}
                         />
@@ -400,7 +397,6 @@ const MCP: React.FC = () => {
             {tools.map((tool) => (
               <Card
                 key={tool.name}
-                size="small"
                 title={
                   <Space>
                     <Tag color="blue">{tool.name}</Tag>
@@ -470,7 +466,7 @@ const MCP: React.FC = () => {
           <MCPToolTester />
         </Card>
 
-        <Card title={<><CheckCircleOutlined /> 支持的客户端</>}>>
+        <Card title={<><CheckCircleOutlined /> 支持的客户端</>}>
           <Space wrap>
             <Tag color="purple">Claude Desktop</Tag>
             <Tag color="blue">Cursor</Tag>

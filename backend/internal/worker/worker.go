@@ -126,8 +126,13 @@ func (w *Worker) broadcastBatchUpdate() {
 
 	// Only get Hot 100 problems, not all problems
 	statuses := cache.GetCache().GetHot100(w.problems)
+
+	// If cache is empty, load from database
 	if len(statuses) == 0 {
-		return
+		statuses = w.loadLatestFromDB()
+		if len(statuses) == 0 {
+			return
+		}
 	}
 
 	problems := make([]map[string]interface{}, 0, len(statuses))
@@ -149,6 +154,58 @@ func (w *Worker) broadcastBatchUpdate() {
 	}
 
 	w.hub.BroadcastBatchUpdate(problems)
+}
+
+// loadLatestFromDB loads the latest online count data from database for all problems
+func (w *Worker) loadLatestFromDB() []*cache.ProblemStatus {
+	db := database.GetDB()
+	if db == nil {
+		return nil
+	}
+
+	var results []*cache.ProblemStatus
+
+	for _, slug := range w.problems {
+		var problem models.Problem
+		if err := db.Where("slug = ?", slug).First(&problem).Error; err != nil {
+			continue
+		}
+
+		// Get latest online count for this problem
+		var latestCount models.OnlineCount
+		err := db.Where("frontend_id = ?", problem.FrontendID).
+			Order("timestamp DESC").
+			First(&latestCount).Error
+
+		count := 0
+		if err == nil {
+			count = latestCount.Count
+		}
+
+		// Parse Tags JSON string to []string
+		var topicTags []string
+		if problem.Tags != "" {
+			json.Unmarshal([]byte(problem.Tags), &topicTags)
+		}
+
+		results = append(results, &cache.ProblemStatus{
+			FrontendID:  problem.FrontendID,
+			Slug:        problem.Slug,
+			Title:       problem.Title,
+			TitleCn:     problem.TitleCn,
+			Difficulty:  problem.Difficulty,
+			PaidOnly:    problem.PaidOnly,
+			TopicTags:   topicTags,
+			OnlineCount: count,
+			LastUpdated: latestCount.Timestamp,
+		})
+	}
+
+	if len(results) > 0 {
+		log.Printf("Loaded %d problems from database for broadcast", len(results))
+	}
+
+	return results
 }
 
 // Stop terminates all WebSocket connections

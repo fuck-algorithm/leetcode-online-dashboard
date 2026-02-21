@@ -1,11 +1,155 @@
-import React from 'react';
-import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip } from 'antd';
-import { CloudOutlined, CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, DatabaseOutlined, CopyOutlined } from '@ant-design/icons';
+import React, { useState } from 'react';
+import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip, Input, message, Collapse } from 'antd';
+import { CloudOutlined, CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, DatabaseOutlined, CopyOutlined, PlayCircleOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
+const { Panel } = Collapse;
 
-// JSON 高亮组件
+// MCP Tool Tester Component
+const MCPToolTester: React.FC = () => {
+  const [selectedTool, setSelectedTool] = useState<string>('get_hot100_online_count');
+  const [problemId, setProblemId] = useState<string>('1');
+  const [limit, setLimit] = useState<number>(10);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [result, setResult] = useState<any>(null);
+  const [error, setError] = useState<string>('');
+
+  const tools = [
+    { key: 'get_hot100_online_count', name: '获取Hot100在线人数', desc: '获取所有Hot 100题目的实时在线人数' },
+    { key: 'get_problem_online_count', name: '获取单题在线人数', desc: '根据题目ID获取单个题目的在线人数' },
+    { key: 'get_problem_history', name: '获取题目历史数据', desc: '获取题目的历史在线人数记录' },
+  ];
+
+  const handleTest = async () => {
+    setLoading(true);
+    setError('');
+    setResult(null);
+
+    try {
+      const params: any = {};
+      if (selectedTool === 'get_problem_online_count' || selectedTool === 'get_problem_history') {
+        params.problem_id = problemId;
+      }
+      if (selectedTool === 'get_problem_history') {
+        params.limit = limit;
+      }
+
+      const response = await fetch('/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: selectedTool,
+          parameters: params
+        })
+      });
+
+      const data = await response.json();
+      setResult(data);
+      
+      if (data.code === 200) {
+        message.success('测试成功！');
+      } else {
+        setError(data.msg || '请求失败');
+        message.error(data.msg || '请求失败');
+      }
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : '网络请求失败';
+      setError(errorMsg);
+      message.error(errorMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Space direction="vertical" style={{ width: '100%' }} size="middle">
+      <Alert
+        message="实时测试 MCP 工具"
+        description="选择工具并输入参数，直接测试 MCP 服务器是否正常工作"
+        type="info"
+        showIcon
+      />
+      
+      <div>
+        <Text strong>选择工具：</Text>
+        <div style={{ marginTop: 8 }}>
+          {tools.map(tool => (
+            <Tag
+              key={tool.key}
+              color={selectedTool === tool.key ? 'blue' : 'default'}
+              style={{ cursor: 'pointer', marginBottom: 8, padding: '4px 12px' }}
+              onClick={() => setSelectedTool(tool.key)}
+            >
+              {tool.name}
+            </Tag>
+          ))}
+        </div>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          {tools.find(t => t.key === selectedTool)?.desc}
+        </Text>
+      </div>
+
+      {(selectedTool === 'get_problem_online_count' || selectedTool === 'get_problem_history') && (
+        <div>
+          <Text strong>题目ID：</Text>
+          <Input
+            placeholder="输入题目ID (如: 1 或 two-sum)"
+            value={problemId}
+            onChange={(e) => setProblemId(e.target.value)}
+            style={{ width: '100%', marginTop: 8 }}
+          />
+          <Text type="secondary" style={{ fontSize: 12 }}>支持数字ID或英文slug</Text>
+        </div>
+      )}
+
+      {selectedTool === 'get_problem_history' && (
+        <div>
+          <Text strong>返回记录数：</Text>
+          <Input
+            type="number"
+            placeholder="默认10条"
+            value={limit}
+            onChange={(e) => setLimit(parseInt(e.target.value) || 10)}
+            style={{ width: '100%', marginTop: 8 }}
+          />
+        </div>
+      )}
+
+      <Button
+        type="primary"
+        icon={<PlayCircleOutlined />}
+        onClick={handleTest}
+        loading={loading}
+        block
+      >
+        执行测试
+      </Button>
+
+      {error && (
+        <Alert
+          message="错误"
+          description={error}
+          type="error"
+          showIcon
+        />
+      )}
+
+      {result && (
+        <div>
+          <Divider style={{ margin: '16px 0' }} />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text strong>响应结果：</Text>
+            <Tag color={result.code === 200 ? 'success' : 'error'}>
+              Code: {result.code}
+            </Tag>
+          </div>
+          <JsonBlock data={result.data || result} />
+        </div>
+      )}
+    </Space>
+  );
+};
 const JsonBlock: React.FC<{ data: any }> = ({ data }) => {
   const jsonStr = JSON.stringify(data, null, 2);
   return (
@@ -322,7 +466,11 @@ const MCP: React.FC = () => {
           />
         </Card>
 
-        <Card title={<><CheckCircleOutlined /> 支持的客户端</>}>
+        <Card title={<><PlayCircleOutlined /> 在线测试工具</>}>
+          <MCPToolTester />
+        </Card>
+
+        <Card title={<><CheckCircleOutlined /> 支持的客户端</>}>>
           <Space wrap>
             <Tag color="purple">Claude Desktop</Tag>
             <Tag color="blue">Cursor</Tag>

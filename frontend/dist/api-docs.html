@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Documentation - LeetCode Dashboard</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+    .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+    h1 { color: #00d9ff; margin-bottom: 10px; }
+    h2 { color: #00d9ff; margin: 30px 0 15px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+    .endpoint { background: #16213e; border-radius: 8px; padding: 20px; margin: 15px 0; }
+    .method { display: inline-block; padding: 4px 12px; border-radius: 4px; font-weight: bold; margin-right: 10px; }
+    .get { background: #00d9ff; color: #000; }
+    .path { font-family: monospace; font-size: 1.1em; color: #fff; }
+    .description { color: #aaa; margin-top: 10px; }
+    .params { margin-top: 15px; }
+    .param { background: #0f3460; padding: 8px 12px; margin: 5px 0; border-radius: 4px; font-size: 0.9em; }
+    .param-name { color: #00d9ff; font-weight: bold; }
+    .param-type { color: #f39c12; }
+    .base-url { background: #0f3460; padding: 15px; border-radius: 8px; margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📚 LeetCode Dashboard API</h1>
+    <div class="base-url">
+      <strong>Base URL:</strong> <code>http://localhost:52106</code> (直接访问) 或 <code>/api</code> (通过前端代理)
+    </div>
+
+    <h2>Health Check</h2>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/health</span>
+      <div class="description">检查 API 服务健康状态</div>
+    </div>
+
+    <h2>Hot 100 Problems</h2>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100</span>
+      <div class="description">获取 Hot 100 所有问题的在线人数数据</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/problems</span>
+      <div class="description">获取 Hot 100 问题详情列表</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/online-counts/:id</span>
+      <div class="description">获取指定问题的历史在线人数</div>
+      <div class="params">
+        <div class="param"><span class="param-name">id</span> <span class="param-type">(path)</span> - 问题 ID</div>
+      </div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/online-counts/latest</span>
+      <div class="description">获取所有问题最新的在线人数</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/statistics</span>
+      <div class="description">获取统计数据</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/peaks</span>
+      <div class="description">获取高峰时段数据</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/hot100/export</span>
+      <div class="description">导出数据</div>
+    </div>
+
+    <h2>Legacy Endpoints (兼容)</h2>
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/problems</span>
+      <div class="description">获取问题列表 (同 /api/hot100/problems)</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/online-counts/:id</span>
+      <div class="description">获取历史在线人数 (同 /api/hot100/online-counts/:id)</div>
+    </div>
+
+    <div class="endpoint">
+      <span class="method get">GET</span>
+      <span class="path">/api/online-counts/latest</span>
+      <div class="description">获取最新在线人数 (同 /api/hot100/online-counts/latest)</div>
+    </div>
+
+    <h2>WebSocket</h2>
+    <div class="endpoint">
+      <span class="path">ws://localhost:52106/ws</span>
+      <div class="description">WebSocket 实时推送端点，用于接收实时在线人数更新</div>
+    </div>
+  </div>
+</body>
+</html>

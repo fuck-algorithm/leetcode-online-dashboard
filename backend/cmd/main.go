@@ -80,6 +80,10 @@ func main() {
 		api.GET("/export/stats", handlers.GetExportStats)
 	}
 
+	// MCP server endpoints
+	r.GET("/mcp", handlers.MCPManifest)
+	r.POST("/mcp", handlers.MCPHandler)
+
 	// WebSocket endpoint for real-time updates (frontend clients)
 	r.GET("/ws", func(c *gin.Context) {
 		internalWS.ServeWs(hub, c.Writer, c.Request)

@@ -21,6 +21,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/mark3labs/mcp-go/server"
 )
 
 func main() {
@@ -88,10 +89,10 @@ func main() {
 		// Hot 100 API group - all data is within Hot 100 context
 		hot100 := api.Group("/hot100")
 		{
-			hot100.GET("", handlers.GetHot100FromCache)              // List all Hot 100
-			hot100.GET("/problems", handlers.GetProblemsFromCache)   // Get problem details
+			hot100.GET("", handlers.GetHot100)              // List all Hot 100
+			hot100.GET("/problems", handlers.GetProblems)   // Get problem details
 			hot100.GET("/online-counts/:id", handlers.GetOnlineCounts)           // History for specific problem
-			hot100.GET("/online-counts/latest", handlers.GetLatestOnlineCountsFromCache) // Latest counts
+			hot100.GET("/online-counts/latest", handlers.GetLatestOnlineCounts) // Latest counts
 			hot100.GET("/statistics", handlers.GetStatistics)      // Statistics
 			hot100.GET("/peaks", handlers.GetPeakOnlineTimes)        // Peak times
 			hot100.GET("/export", handlers.ExportData)               // Export data
@@ -99,9 +100,9 @@ func main() {
 		}
 		
 		// Keep old endpoints for backward compatibility (deprecated)
-		api.GET("/problems", handlers.GetProblemsFromCache)
+		api.GET("/problems", handlers.GetProblems)
 		api.GET("/online-counts/:id", handlers.GetOnlineCounts)
-		api.GET("/online-counts/latest", handlers.GetLatestOnlineCountsFromCache)
+		api.GET("/online-counts/latest", handlers.GetLatestOnlineCounts)
 		api.GET("/statistics", handlers.GetStatistics)
 		api.GET("/peaks", handlers.GetPeakOnlineTimes)
 		api.GET("/export", handlers.ExportData)
@@ -126,9 +127,26 @@ func main() {
 		}
 	}
 
-	// MCP server endpoints
+	// MCP SSE server endpoints
+	mcpServer := handlers.NewMCPServer()
+	sseServer := server.NewSSEServer(mcpServer,
+		server.WithStaticBasePath("/mcp"),
+		server.WithKeepAliveInterval(30*time.Second),
+	)
+	
+	// SSE endpoint for MCP client connections
+	r.GET("/mcp/sse", func(c *gin.Context) {
+		sseServer.ServeHTTP(c.Writer, c.Request)
+	})
+	
+	// Message endpoint for MCP client-to-server communication
+	r.POST("/mcp/message", func(c *gin.Context) {
+		sseServer.ServeHTTP(c.Writer, c.Request)
+	})
+	
+	// Legacy REST-based MCP endpoints (deprecated, kept for backward compatibility)
 	r.GET("/mcp", handlers.MCPManifest)
-	r.POST("/mcp", handlers.MCPHandler)
+	r.POST("/mcp/tool", handlers.MCPHandler)
 
 	// WebSocket endpoint for real-time updates (frontend clients)
 	r.GET("/ws", func(c *gin.Context) {

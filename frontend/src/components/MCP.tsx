@@ -34,7 +34,8 @@ const MCPToolTester: React.FC = () => {
         params.limit = limit;
       }
 
-      const response = await fetch('/mcp', {
+      // Use legacy REST endpoint for testing (SSE transport requires MCP client)
+      const response = await fetch('/mcp/tool', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -200,24 +201,26 @@ const JsonBlock: React.FC<{ data: any }> = ({ data }) => {
 };
 
 const MCP: React.FC = () => {
-  const serverUrl = window.location.origin;
+  // 注意：后端服务默认运行在 52106 端口
+  // 如果前端页面通过其他端口访问，需要手动修改配置中的端口号
+  const defaultBackendPort = '52106';
+  const serverUrl = `http://localhost:${defaultBackendPort}`;
 
-  const mcpConfig = JSON.stringify({
+  // SSE transport configuration (Cherry Studio, Claude Desktop, Cursor)
+  const sseConfig = JSON.stringify({
     "mcpServers": {
       "leetcode-dashboard": {
-        "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-http",
-          serverUrl + "/mcp"
-        ]
+        "type": "sse",
+        "url": serverUrl + "/mcp"
       }
     }
   }, null, 2);
 
-  const claudeConfig = JSON.stringify({
+  // Streamable HTTP transport configuration (modern standard)
+  const streamableHttpConfig = JSON.stringify({
     "mcpServers": {
       "leetcode-dashboard": {
+        "type": "streamable-http",
         "url": serverUrl + "/mcp"
       }
     }
@@ -306,7 +309,23 @@ const MCP: React.FC = () => {
               description={
                 <Space direction="vertical" style={{ width: '100%', marginTop: 8 }}>
                   <Text>在您的 MCP 客户端（如 Claude Desktop、Cursor 等）中添加以下配置：</Text>
-                  <Card title="Claude Desktop 配置 (~/.config/claude/claude_desktop_config.json)">
+                  
+                  <Alert
+                    message="重要提示"
+                    description={
+                      <span>
+                        本服务使用 <strong>SSE Transport</strong> 协议。<br/>
+                        MCP 端点：<code>{serverUrl}/mcp</code><br/>
+                        SSE 连接：<code>{serverUrl}/mcp/sse</code><br/>
+                        消息端点：<code>{serverUrl}/mcp/message</code>
+                      </span>
+                    }
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 16 }}
+                  />
+                  
+                  <Card title="Cherry Studio / Claude Desktop / Cursor (SSE Transport)">
                     <div style={{ position: 'relative' }}>
                       <pre style={{ 
                         background: '#1e1e1e', 
@@ -330,19 +349,20 @@ const MCP: React.FC = () => {
                           padding: '2px 8px',
                           borderRadius: 4
                         }}>json</div>
-                        <code style={{ color: '#d4d4d4' }}>{claudeConfig}</code>
+                        <code style={{ color: '#d4d4d4' }}>{sseConfig}</code>
                       </pre>
                       <Tooltip title="复制配置">
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
                           style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
-                          onClick={() => navigator.clipboard.writeText(claudeConfig)}
+                          onClick={() => navigator.clipboard.writeText(sseConfig)}
                         />
                       </Tooltip>
                     </div>
                   </Card>
-                  <Card title="通用 MCP 配置">
+                  
+                  <Card title="Streamable HTTP Transport (新标准)">
                     <div style={{ position: 'relative' }}>
                       <pre style={{ 
                         background: '#1e1e1e', 
@@ -366,14 +386,14 @@ const MCP: React.FC = () => {
                           padding: '2px 8px',
                           borderRadius: 4
                         }}>json</div>
-                        <code style={{ color: '#d4d4d4' }}>{mcpConfig}</code>
+                        <code style={{ color: '#d4d4d4' }}>{streamableHttpConfig}</code>
                       </pre>
                       <Tooltip title="复制配置">
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
                           style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
-                          onClick={() => navigator.clipboard.writeText(mcpConfig)}
+                          onClick={() => navigator.clipboard.writeText(streamableHttpConfig)}
                         />
                       </Tooltip>
                     </div>

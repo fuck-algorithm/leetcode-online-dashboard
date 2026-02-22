@@ -27,6 +27,7 @@ func Init(dsn string, problemData []config.ProblemInfo) error {
 		&models.Problem{},
 		&models.OnlineCount{},
 		&models.Hot100{},
+		&models.TotalOnlineAggregate{},
 	)
 	if err != nil {
 		return err

@@ -46,3 +46,19 @@ type ProblemWithOnlineCount struct {
 	OnlineCount int       `json:"online_count"`
 	LastUpdated time.Time `json:"last_updated"`
 }
+
+// TotalOnlineAggregate stores pre-aggregated total online count per minute
+// This table is populated by the worker to avoid real-time aggregation queries
+type TotalOnlineAggregate struct {
+	ID        uint      `json:"id" gorm:"primaryKey"`
+	Timestamp time.Time `json:"timestamp" gorm:"uniqueIndex:idx_timestamp;index:idx_ts_hour;index:idx_ts_day"`
+	Total     int       `json:"total"`
+	// Pre-computed granularities for faster queries
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_ts_hour"`  // Truncated to hour
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_ts_day"`    // Truncated to day
+}
+
+// TableName specifies the table name for TotalOnlineAggregate
+func (TotalOnlineAggregate) TableName() string {
+	return "total_online_aggregates"
+}

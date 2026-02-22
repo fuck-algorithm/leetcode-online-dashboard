@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Problem, OnlineCount } from '../types';
 
-const API_BASE_URL = 'http://localhost:52106/api';
+const API_BASE_URL = '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -9,6 +9,11 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
 });
+
+// API代理到后端
+// location /api {
+//   proxy_pass http://localhost:52106;
+//   proxy_http_version 1.1;
 
 export const fetchProblems = async (): Promise<Problem[]> => {
   const response = await api.get('/problems');
@@ -20,8 +25,14 @@ export const fetchHot100 = async (): Promise<Problem[]> => {
   return response.data.data || response.data;
 };
 
-export const fetchOnlineCounts = async (problemId: string, limit: number = 100): Promise<OnlineCount[]> => {
-  const response = await api.get(`/hot100/online-counts/${problemId}?limit=${limit}`);
+export const fetchOnlineCounts = async (problemId: string, limit: number = 100, startTime?: string, endTime?: string): Promise<OnlineCount[]> => {
+  const params = new URLSearchParams();
+  params.append('limit', String(limit));
+  // 使用精确时间格式（包含小时分钟秒）
+  if (startTime) params.append('startTime', startTime);
+  if (endTime) params.append('endTime', endTime);
+  
+  const response = await api.get(`/hot100/online-counts/${problemId}?${params.toString()}`);
   return response.data.data || response.data;
 };
 

@@ -1,0 +1,173 @@
+version: '3.8'
+
+# ============================================
+# LeetCode Dashboard - Production Compose
+# ============================================
+# 新架构特性：
+# - 镜像版本可控（通过环境变量）
+# - 健康检查和自动重启
+# - 资源限制配置
+# - 日志轮转
+# ============================================
+
+x-common-variables: &common-variables
+  TZ: Asia/Shanghai
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+  
+x-backend-env: &backend-env
+  <<: *common-variables
+  PORT: 8080
+  DB_PATH: /data/leetcode.db
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_DB: 0
+  BATCH_SIZE: ${BATCH_SIZE:-10}
+  INTERVAL_SEC: ${INTERVAL_SEC:-30}
+  GIN_MODE: release
+
+services:
+  # ============================================
+  # Redis - 缓存服务
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: leetcode-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis-data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # ============================================
+  # Backend API - 后端API服务
+  # ============================================
+  backend:
+    image: ${BACKEND_IMAGE:-leetcode-dashboard-backend:latest}
+    container_name: leetcode-backend
+    restart: unless-stopped
+    ports:
+      - "${BACKEND_PORT:-52106}:8080"
+    environment:
+      <<: *backend-env
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================
+  # Crawler - 数据爬取服务
+  # ============================================
+  crawler:
+    image: ${CRAWLER_IMAGE:-leetcode-dashboard-crawler:latest}
+    container_name: leetcode-crawler
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "pgrep", "leetcode-crawler"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+  # ============================================
+  # Frontend - 前端Nginx服务
+  # ============================================
+  frontend:
+    image: ${FRONTEND_IMAGE:-leetcode-dashboard-frontend:latest}
+    container_name: leetcode-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-52107}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+
+volumes:
+  redis-data:
+    driver: local
+
+networks:
+  dashboard-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

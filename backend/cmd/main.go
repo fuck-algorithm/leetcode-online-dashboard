@@ -7,7 +7,9 @@ import (
 	"leetcode-dashboard/internal/config"
 	"leetcode-dashboard/internal/database"
 	"leetcode-dashboard/internal/handlers"
+	"leetcode-dashboard/internal/middleware"
 	"leetcode-dashboard/internal/models"
+	"leetcode-dashboard/internal/redis"
 	internalWS "leetcode-dashboard/internal/websocket"
 	"leetcode-dashboard/internal/worker"
 	"log"
@@ -30,8 +32,28 @@ func main() {
 		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	// Preload problem data into cache (including difficulty)
-	preloadCache(cfg.ProblemData)
+	// Initialize Redis for cross-process data exchange
+	redisCfg := &redis.Config{
+		Host:     getEnv("REDIS_HOST", "localhost"),
+		Port:     getEnv("REDIS_PORT", "6379"),
+		Password: getEnv("REDIS_PASSWORD", ""),
+		DB:       0,
+	}
+	if err := redis.Init(redisCfg); err != nil {
+		log.Printf("Warning: Failed to initialize Redis: %v", err)
+		log.Println("Continuing without Redis, using memory cache only")
+	} else {
+		// Enable Redis cache adapter for cross-process data exchange
+		cache.GetRedisCache().EnableRedis()
+		cache.GetRedisCache().SubscribeUpdates()
+		log.Println("Redis enabled for cross-process data exchange")
+	}
+	defer redis.Close()
+
+	// Start data retention policy worker
+	retentionPolicy := database.NewDataRetentionPolicy(database.GetDB(), 0)
+	retentionPolicy.Start()
+	defer retentionPolicy.Stop()
 
 	// Create WebSocket hub for frontend clients
 	hub := internalWS.NewHub()
@@ -51,6 +73,12 @@ func main() {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
+	
+	// Apply API response caching (5 minute TTL)
+	r.Use(middleware.CacheMiddleware(5 * time.Minute))
+	
+	// Apply rate limiting middleware (100 requests per minute)
+	r.Use(middleware.RateLimitMiddleware(100, time.Minute))
 
 	// API routes
 	api := r.Group("/api")
@@ -78,6 +106,24 @@ func main() {
 		api.GET("/peaks", handlers.GetPeakOnlineTimes)
 		api.GET("/export", handlers.ExportData)
 		api.GET("/export/stats", handlers.GetExportStats)
+		api.GET("/history", handlers.GetOnlineCountsByQuery) // History page endpoint
+		api.GET("/total-online-history", handlers.GetTotalOnlineCountHistory) // Total online count history for charts
+		api.GET("/total-online-aggregate", handlers.GetTotalOnlineCountAggregate) // Aggregate data with custom time range and granularity
+		
+		// Add data retention stats endpoint
+		adminHandler := handlers.NewAdminHandler()
+		admin := api.Group("/admin")
+		{
+			admin.GET("/status", adminHandler.GetSystemStatus)
+			admin.GET("/config", adminHandler.GetConfig)
+			admin.PUT("/config", adminHandler.UpdateConfig)
+			admin.POST("/cleanup", adminHandler.TriggerCleanup)
+			admin.GET("/health", adminHandler.HealthCheckDetailed)
+			admin.GET("/storage", func(c *gin.Context) {
+				stats := retentionPolicy.GetStorageStats()
+				c.JSON(http.StatusOK, stats)
+			})
+		}
 	}
 
 	// MCP server endpoints
@@ -161,4 +207,11 @@ func preloadCache(problemData []config.ProblemInfo) {
 	}
 
 	log.Printf("Preloaded %d Hot 100 problems into cache", len(problems))
+}
+
+func getEnv(key, defaultValue string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return defaultValue
 }

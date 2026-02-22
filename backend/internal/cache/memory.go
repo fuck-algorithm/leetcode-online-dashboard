@@ -81,7 +81,7 @@ func (c *MemoryCache) GetAll() []*ProblemStatus {
 	return result
 }
 
-// GetHot100 获取Hot100题目状态（按配置顺序）
+// GetHot100 获取Hot100题目状态（按配置顺序），确保返回所有100道题
 func (c *MemoryCache) GetHot100(problemSlugs []string) []*ProblemStatus {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
@@ -90,6 +90,13 @@ func (c *MemoryCache) GetHot100(problemSlugs []string) []*ProblemStatus {
 	for _, slug := range problemSlugs {
 		if status, ok := c.data[slug]; ok {
 			result = append(result, status)
+		} else {
+			// 即使没有在线人数数据，也返回题目（online_count为0）
+			result = append(result, &ProblemStatus{
+				Slug:        slug,
+				OnlineCount: 0,
+				LastUpdated: time.Now(),
+			})
 		}
 	}
 	return result

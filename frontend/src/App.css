@@ -25,8 +25,15 @@
   min-height: 100vh;
 }
 
-.ant-layout-content {
-  padding: 24px;
+/* 强制移除padding - 使用!important覆盖Ant Design的CSS-in-JS */
+.ant-layout-content,
+[class*="ant-layout-content"] {
+  padding: 0 !important;
+}
+
+/* 针对特定类名模式 */
+[class*="css-"][class*="ant-layout-content"] {
+  padding: 0 !important;
 }
 
 .lc-header {
@@ -83,8 +90,8 @@
 .lc-card {
   background: var(--lc-bg-card) !important;
   border: 1px solid var(--lc-border);
-  border-radius: 12px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  border-radius: 6px;
+  box-shadow: none;
   margin-bottom: 24px;
 }
 
@@ -118,95 +125,83 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4px 12px;
-  border-radius: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  min-width: 60px;
-  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
+  min-width: 50px;
+  transition: none;
 }
 
 .lc-difficulty:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transform: none;
+  box-shadow: none;
 }
 
 .lc-difficulty-easy {
-  background: linear-gradient(135deg, rgba(63, 185, 80, 0.2) 0%, rgba(63, 185, 80, 0.1) 100%);
+  background: rgba(63, 185, 80, 0.15);
   color: #2a8a3a;
-  border: 1px solid rgba(63, 185, 80, 0.4);
-  box-shadow: 0 1px 2px rgba(63, 185, 80, 0.1);
+  border: 1px solid rgba(63, 185, 80, 0.3);
 }
 
 .lc-difficulty-medium {
-  background: linear-gradient(135deg, rgba(210, 153, 34, 0.2) 0%, rgba(210, 153, 34, 0.1) 100%);
+  background: rgba(210, 153, 34, 0.15);
   color: #b8860b;
-  border: 1px solid rgba(210, 153, 34, 0.4);
-  box-shadow: 0 1px 2px rgba(210, 153, 34, 0.1);
+  border: 1px solid rgba(210, 153, 34, 0.3);
 }
 
 .lc-difficulty-hard {
-  background: linear-gradient(135deg, rgba(248, 81, 73, 0.2) 0%, rgba(248, 81, 73, 0.1) 100%);
+  background: rgba(248, 81, 73, 0.15);
   color: #d73a3a;
-  border: 1px solid rgba(248, 81, 73, 0.4);
-  box-shadow: 0 1px 2px rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.3);
 }
 
 .lc-difficulty-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  margin-right: 6px;
+  margin-right: 4px;
   display: inline-block;
 }
 
 .lc-difficulty-easy .lc-difficulty-dot {
   background: #3fb950;
-  box-shadow: 0 0 4px rgba(63, 185, 80, 0.5);
 }
 
 .lc-difficulty-medium .lc-difficulty-dot {
   background: #d29922;
-  box-shadow: 0 0 4px rgba(210, 153, 34, 0.5);
 }
 
 .lc-difficulty-hard .lc-difficulty-dot {
   background: #f85149;
-  box-shadow: 0 0 4px rgba(248, 81, 73, 0.5);
 }
 
 .lc-online-badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  background: rgba(44, 187, 93, 0.15);
-  color: var(--lc-online);
-  border-radius: 20px;
-  font-size: 14px;
-  font-weight: 600;
-  border: 1px solid rgba(44, 187, 93, 0.3);
+  padding: 4px 10px;
+  background: #f6ffed;
+  color: #389e0d;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #b7eb8f;
 }
 
 .lc-online-badge::before {
   content: '';
-  width: 8px;
-  height: 8px;
-  background: var(--lc-online);
+  width: 6px;
+  height: 6px;
+  background: #389e0d;
   border-radius: 50%;
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
 }
 
 .lc-problem-item {
   padding: 12px 16px;
-  border-radius: 8px;
+  border-radius: 4px;
   transition: background 0.2s ease;
 }
 
@@ -332,6 +327,24 @@
   background: var(--lc-bg-hover) !important;
   border: 1px solid var(--lc-border) !important;
   color: var(--lc-text-primary) !important;
+}
+
+/* Rankings search input - override global styles to fix double border */
+.rankings-search.ant-input-search .ant-input-affix-wrapper,
+.rankings-search.ant-input-search .ant-input-search-button,
+.rankings-search .ant-input,
+.rankings-search .ant-input-affix-wrapper {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper {
+  border: 1px solid #d9d9d9 !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button {
+  border: 1px solid #1890ff !important;
+  border-left: none !important;
 }
 
 /* Search input in rankings - white background with maximum specificity */

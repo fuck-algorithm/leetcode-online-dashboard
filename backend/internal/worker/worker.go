@@ -79,6 +79,7 @@ func (w *Worker) persistFromCache() {
 
 	now := time.Now()
 	batch := make([]*models.OnlineCount, 0, len(statuses))
+	totalOnline := 0
 
 	for _, s := range statuses {
 		batch = append(batch, &models.OnlineCount{
@@ -86,6 +87,7 @@ func (w *Worker) persistFromCache() {
 			Count:      s.OnlineCount,
 			Timestamp:  now,
 		})
+		totalOnline += s.OnlineCount
 	}
 
 	// Use transaction for batch insert
@@ -100,6 +102,50 @@ func (w *Worker) persistFromCache() {
 		tx.Rollback()
 	} else {
 		log.Printf("Persisted %d online count records (minute snapshot)", len(batch))
+	}
+
+	// Persist total online count aggregate
+	w.persistTotalOnlineAggregate(totalOnline, now)
+}
+
+// persistTotalOnlineAggregate stores the total online count to the aggregate table
+func (w *Worker) persistTotalOnlineAggregate(total int, timestamp time.Time) {
+	db := database.GetDB()
+	if db == nil {
+		return
+	}
+
+	// Truncate to minute for consistency
+	minuteBucket := timestamp.Truncate(time.Minute)
+	hourBucket := timestamp.Truncate(time.Hour)
+	dayBucket := time.Date(timestamp.Year(), timestamp.Month(), timestamp.Day(), 0, 0, 0, 0, timestamp.Location())
+
+	aggregate := &models.TotalOnlineAggregate{
+		Timestamp:  minuteBucket,
+		Total:      total,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+
+	// Use ON DUPLICATE KEY UPDATE for MySQL or equivalent
+	// For GORM, we'll use FirstOrCreate with updates
+	var existing models.TotalOnlineAggregate
+	result := db.Where("timestamp = ?", minuteBucket).First(&existing)
+	if result.Error != nil {
+		// Record doesn't exist, create new
+		if err := db.Create(aggregate).Error; err != nil {
+			log.Printf("Failed to persist total online aggregate: %v", err)
+		} else {
+			log.Printf("Persisted total online aggregate: %d at %s", total, minuteBucket.Format("2006-01-02 15:04:05"))
+		}
+	} else {
+		// Record exists, update it
+		existing.Total = total
+		if err := db.Save(&existing).Error; err != nil {
+			log.Printf("Failed to update total online aggregate: %v", err)
+		} else {
+			log.Printf("Updated total online aggregate: %d at %s", total, minuteBucket.Format("2006-01-02 15:04:05"))
+		}
 	}
 }
 
@@ -124,14 +170,17 @@ func (w *Worker) broadcastBatchUpdate() {
 		return
 	}
 
-	// Only get Hot 100 problems, not all problems
-	statuses := cache.GetCache().GetHot100(w.problems)
-
-	// If cache is empty, load from database
+	// Load all problems with complete info from database
+	statuses := w.loadLatestFromDB()
 	if len(statuses) == 0 {
-		statuses = w.loadLatestFromDB()
-		if len(statuses) == 0 {
-			return
+		return
+	}
+
+	// Merge with cache for real-time online counts
+	for _, s := range statuses {
+		if cached, ok := cache.GetCache().Get(s.Slug); ok {
+			s.OnlineCount = cached.OnlineCount
+			s.LastUpdated = cached.LastUpdated
 		}
 	}
 

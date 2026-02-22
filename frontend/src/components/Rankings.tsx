@@ -158,26 +158,49 @@ const Rankings: React.FC = () => {
     return () => clearTimeout(timeout);
   }, []);
 
-  // WebSocket
+  // WebSocket - 合并数据而不是替换
   useWebSocket((data) => {
     if (data.type === 'batch_update' && data.problems) {
       const wsProblems: WSProblem[] = data.problems;
-      const updatedProblems: Problem[] = wsProblems.map(p => {
-        // 优先使用 id，其次 frontend_id，确保是字符串
-        const problemId = String(p.id || p.frontend_id || '');
-        return {
-          id: problemId,
-          frontend_id: problemId,
-          slug: p.slug,
-          title: p.title_cn || p.title || formatSlug(p.slug),
-          difficulty: (p.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
-          acceptance: 0,
-          online_count: p.online_count,
-          last_updated: new Date(p.last_updated * 1000).toISOString(),
-          topic_tags: p.topic_tags || [],
-        };
+      
+      // 创建更新映射表
+      const updates = new Map<string, WSProblem>();
+      wsProblems.forEach(p => {
+        const id = String(p.id || p.frontend_id || '');
+        updates.set(id, p);
       });
-      setProblems(updatedProblems);
+      
+      // 合并：保留现有题目，只更新在线人数
+      setProblems(prevProblems => {
+        // 如果还没有数据，使用WebSocket数据（初始化时）
+        if (prevProblems.length === 0) {
+          return wsProblems.map(p => ({
+            id: String(p.id || p.frontend_id || ''),
+            frontend_id: String(p.id || p.frontend_id || ''),
+            slug: p.slug,
+            title: p.title_cn || p.title || formatSlug(p.slug),
+            difficulty: (p.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
+            acceptance: 0,
+            online_count: p.online_count,
+            last_updated: new Date(p.last_updated * 1000).toISOString(),
+            topic_tags: p.topic_tags || [],
+          }));
+        }
+        
+        // 合并现有数据和更新数据
+        return prevProblems.map(problem => {
+          const update = updates.get(String(problem.id));
+          if (update) {
+            return {
+              ...problem,
+              online_count: update.online_count,
+              last_updated: new Date(update.last_updated * 1000).toISOString(),
+            };
+          }
+          return problem;
+        });
+      });
+      
       setLoading(false);
       setInitialLoaded(true);
     }
@@ -340,14 +363,43 @@ const Rankings: React.FC = () => {
       title: '在线人数',
       dataIndex: 'online_count',
       key: 'online_count',
-      width: 130,
+      width: 150,
       align: 'center' as const,
       sorter: (a: Problem, b: Problem) => a.online_count - b.online_count,
       defaultSortOrder: 'descend' as const,
       render: (count: number) => (
-        <span className="lc-online-badge">
-          {count.toLocaleString()}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+          {/* 拥挤度竖条图标 */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-end', 
+            gap: 2,
+            height: 16
+          }}>
+            {[1, 2, 3, 4].map((level) => {
+              const threshold = level * 25;
+              const isActive = count >= threshold;
+              const height = level * 3 + 5;
+              return (
+                <div
+                  key={level}
+                  style={{
+                    width: 3,
+                    height: height,
+                    backgroundColor: isActive 
+                      ? count >= 75 ? '#ff4d4f' : count >= 50 ? '#ff7a45' : '#52c41a'
+                      : '#d9d9d9',
+                    borderRadius: 1,
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              );
+            })}
+          </div>
+          <span className="lc-online-badge" style={{ marginLeft: 4 }}>
+            {count.toLocaleString()}
+          </span>
+        </div>
       ),
     },
     {
@@ -408,7 +460,7 @@ const Rankings: React.FC = () => {
               onSearch={setSearchText}
               onChange={e => setSearchText(e.target.value)}
               className="rankings-search"
-              style={{ width: 200 }}
+              style={{ width: 320 }}
             />
             <Select 
               defaultValue="all" 

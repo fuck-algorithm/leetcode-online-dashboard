@@ -58,3 +58,76 @@
 .lc-rankings-table .ant-table-tbody > tr {
   position: relative;
 }
+
+/* 搜索框样式 - 更大更扁平 */
+.rankings-search {
+  width: 320px !important;
+}
+
+/* 完全重置 Ant Design Search 组件 - 移除所有边框 */
+.rankings-search.ant-input-search {
+  width: 320px;
+}
+
+.rankings-search.ant-input-search .ant-input-search-wrapper {
+  padding: 0;
+  border-radius: 4px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper {
+  height: 40px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 12px !important;
+  background: #fff !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper:hover,
+.rankings-search.ant-input-search .ant-input-affix-wrapper:focus,
+.rankings-search.ant-input-search .ant-input-affix-wrapper-focused {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper .ant-input {
+  height: 38px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button {
+  height: 40px !important;
+  width: 40px !important;
+  border-radius: 0 4px 4px 0 !important;
+  background: #1890ff !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button:hover {
+  background: #40a9ff !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button .anticon {
+  color: #fff !important;
+}
+
+/* 清除按钮样式 */
+.rankings-search .ant-input-clear-icon {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.rankings-search .ant-input-clear-icon:hover {
+  color: rgba(0, 0, 0, 0.45);
+}

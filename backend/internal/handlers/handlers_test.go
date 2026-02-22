@@ -26,10 +26,11 @@ func TestHealthCheck(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 
-	var response map[string]interface{}
+	var response Response
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
-	assert.Equal(t, "ok", response["status"])
+	assert.Equal(t, 200, response.Code)
+	assert.Equal(t, "success", response.Msg)
 }
 
 func TestGetProblems(t *testing.T) {

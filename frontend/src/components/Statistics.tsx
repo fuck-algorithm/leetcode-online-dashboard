@@ -3,6 +3,7 @@ import { Card, Row, Col, Statistic, Spin, message, Divider, Typography } from 'a
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, ScatterChart, Scatter, ZAxis, LineChart, Line, AreaChart, Area, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from 'recharts';
 import { fetchHot100, fetchPeakOnlineTimes } from '../api';
 import { Problem } from '../types';
+import TotalOnlineAggregateChart from './TotalOnlineAggregateChart';
 
 const { Title } = Typography;
 
@@ -481,6 +482,14 @@ const Statistics: React.FC = () => {
           <Card style={{ textAlign: 'center', background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', border: 'none' }}>
             <Statistic title={<span style={{ color: 'rgba(255,255,255,0.85)' }}>最低在线人数</span>} value={minOnline} valueStyle={{ color: '#fff', fontSize: 28, fontWeight: 'bold' }} />
           </Card>
+        </Col>
+      </Row>
+
+      <Divider style={{ margin: '24px 0' }} />
+      <Title level={4} style={{ marginBottom: 16 }}>📊 总在线人数趋势</Title>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24}>
+          <TotalOnlineAggregateChart />
         </Col>
       </Row>
 

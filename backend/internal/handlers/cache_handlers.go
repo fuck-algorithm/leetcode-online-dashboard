@@ -20,9 +20,17 @@ type ProblemStatusResponse struct {
 	LastUpdated time.Time `json:"last_updated"`
 }
 
-// GetProblemsFromCache returns all problems from memory cache
+// GetProblemsFromCache returns all problems from memory cache or Redis
 func GetProblemsFromCache(c *gin.Context) {
-	statuses := cache.GetCache().GetAll()
+	// 优先使用 RedisCache（支持跨进程数据交换）
+	redisCache := cache.GetRedisCache()
+	var statuses []*cache.ProblemStatus
+	
+	if redisCache.IsEnabled() {
+		statuses = redisCache.GetAll()
+	} else {
+		statuses = cache.GetCache().GetAll()
+	}
 
 	result := make([]ProblemStatusResponse, 0, len(statuses))
 	for _, s := range statuses {
@@ -46,10 +54,19 @@ func GetProblemsFromCache(c *gin.Context) {
 	Success(c, result)
 }
 
-// GetHot100FromCache returns Hot100 problems from memory cache
+// GetHot100FromCache returns Hot100 problems from memory cache or Redis
 func GetHot100FromCache(c *gin.Context) {
 	cfg := config.Load()
-	statuses := cache.GetCache().GetHot100(cfg.Problems)
+	
+	// 优先使用 RedisCache（支持跨进程数据交换）
+	redisCache := cache.GetRedisCache()
+	var statuses []*cache.ProblemStatus
+	
+	if redisCache.IsEnabled() {
+		statuses = redisCache.GetHot100(cfg.Problems)
+	} else {
+		statuses = cache.GetCache().GetHot100(cfg.Problems)
+	}
 
 	result := make([]ProblemStatusResponse, 0, len(statuses))
 	for _, s := range statuses {
@@ -73,9 +90,17 @@ func GetHot100FromCache(c *gin.Context) {
 	Success(c, result)
 }
 
-// GetLatestOnlineCountsFromCache returns latest online counts from memory cache
+// GetLatestOnlineCountsFromCache returns latest online counts from memory cache or Redis
 func GetLatestOnlineCountsFromCache(c *gin.Context) {
-	statuses := cache.GetCache().GetAll()
+	// 优先使用 RedisCache（支持跨进程数据交换）
+	redisCache := cache.GetRedisCache()
+	var statuses []*cache.ProblemStatus
+	
+	if redisCache.IsEnabled() {
+		statuses = redisCache.GetAll()
+	} else {
+		statuses = cache.GetCache().GetAll()
+	}
 
 	result := make([]map[string]interface{}, 0, len(statuses))
 	for _, s := range statuses {

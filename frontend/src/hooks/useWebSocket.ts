@@ -28,7 +28,8 @@ export class WebSocketClient {
   private isConnected = false;
 
   connect() {
-    const wsUrl = `ws://localhost:52106/ws`;
+    const host = window.location.hostname;
+    const wsUrl = `ws://${host}:52106/ws`;
     
     try {
       this.ws = new WebSocket(wsUrl);

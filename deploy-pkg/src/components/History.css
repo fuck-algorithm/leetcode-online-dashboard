@@ -1,0 +1,110 @@
+/* History component styles */
+
+/* Select dropdown styling */
+.history-select .ant-select-selector {
+  background: var(--lc-bg-card) !important;
+  border: 1px solid var(--lc-border) !important;
+  border-radius: 8px !important;
+  padding: 4px 12px !important;
+  height: auto !important;
+  min-height: 40px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.history-select .ant-select-selector:hover {
+  border-color: var(--lc-primary) !important;
+  box-shadow: 0 2px 8px rgba(212, 160, 23, 0.15) !important;
+}
+
+.history-select.ant-select-focused .ant-select-selector {
+  border-color: var(--lc-primary) !important;
+  box-shadow: 0 0 0 2px rgba(212, 160, 23, 0.2) !important;
+}
+
+/* Selected value display */
+.history-select .ant-select-selection-item {
+  font-weight: 500 !important;
+  color: var(--lc-text-primary) !important;
+  font-size: 14px !important;
+}
+
+/* Dropdown popup */
+.history-select-dropdown {
+  background: var(--lc-bg-card) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
+  border: 1px solid var(--lc-border) !important;
+  padding: 8px 0 !important;
+}
+
+.history-select-dropdown .ant-select-item {
+  padding: 10px 16px !important;
+  margin: 2px 8px !important;
+  border-radius: 8px !important;
+  transition: all 0.2s ease !important;
+  font-size: 14px !important;
+}
+
+.history-select-dropdown .ant-select-item:hover {
+  background: var(--lc-bg-hover) !important;
+}
+
+.history-select-dropdown .ant-select-item-selected {
+  background: var(--lc-primary) !important;
+  color: white !important;
+  font-weight: 600 !important;
+}
+
+.history-select-dropdown .ant-select-item-selected:hover {
+  background: var(--lc-primary-hover) !important;
+}
+
+/* Problem ID badge in options */
+.problem-id-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--lc-bg-elevated);
+  color: var(--lc-primary);
+  font-weight: 700;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 8px;
+  min-width: 36px;
+}
+
+.history-select-dropdown .ant-select-item-selected .problem-id-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+/* Online count badge */
+.online-count-badge {
+  color: var(--lc-online);
+  font-weight: 600;
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.history-select-dropdown .ant-select-item-selected .online-count-badge {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Search input in dropdown */
+.history-select-dropdown .ant-select-dropdown-search {
+  padding: 8px 12px !important;
+}
+
+.history-select-dropdown .ant-select-dropdown-search input {
+  border-radius: 6px !important;
+  border: 1px solid var(--lc-border) !important;
+  padding: 6px 12px !important;
+}
+
+/* Empty state */
+.history-select-dropdown .ant-empty {
+  color: var(--lc-text-muted) !important;
+  padding: 20px !important;
+}

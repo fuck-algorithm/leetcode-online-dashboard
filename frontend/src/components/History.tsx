@@ -58,11 +58,11 @@ const History: React.FC = () => {
   }, [timeRange, setPreference]);
 
   useEffect(() => {
-    // 当选中题目时，自动加载历史数据
+    // 当选中题目或时间范围变化时，自动加载历史数据
     if (selectedProblem) {
       loadHistory(selectedProblem);
     }
-  }, [selectedProblem]);
+  }, [selectedProblem, timeRange]);
 
   const loadProblems = async () => {
     try {
@@ -90,8 +90,25 @@ const History: React.FC = () => {
   const loadHistory = async (problemId: string) => {
     setChartLoading(true);
     try {
-      const hours = timeRange ? timeRange[1].diff(timeRange[0], 'hour') : 24;
-      const data = await fetchOnlineCounts(problemId, Math.min(hours * 2, 1000));
+      // 使用精确时间格式（包含小时分钟秒）
+      let startTime = timeRange?.[0].format('YYYY-MM-DD HH:mm:ss');
+      let endTime = timeRange?.[1].format('YYYY-MM-DD HH:mm:ss');
+      let data = await fetchOnlineCounts(problemId, 1000, startTime, endTime);
+      
+      // 如果没有数据，尝试使用最近24小时
+      if (data.length === 0) {
+        const now = dayjs();
+        const yesterday = now.subtract(24, 'hour');
+        startTime = yesterday.format('YYYY-MM-DD HH:mm:ss');
+        endTime = now.format('YYYY-MM-DD HH:mm:ss');
+        data = await fetchOnlineCounts(problemId, 1000, startTime, endTime);
+        
+        // 如果获取到新数据，更新时间范围
+        if (data.length > 0) {
+          setTimeRange([yesterday, now]);
+        }
+      }
+      
       setHistoryData(data);
     } catch (error) {
       message.error('加载历史数据失败');
@@ -128,43 +145,7 @@ const History: React.FC = () => {
 
   const selectedProblemData = problems.find(p => p.frontend_id === selectedProblem);
 
-  // 24小时平均在线人数统计（按分钟聚合）
-  const hourlyAverageData = useMemo(() => {
-    if (historyData.length === 0) return [];
-    
-    // 按分钟分组统计
-    const minuteGroups: { [key: string]: { total: number; count: number } } = {};
-    
-    // 初始化24小时所有分钟
-    for (let h = 0; h < 24; h++) {
-      for (let m = 0; m < 60; m++) {
-        const timeKey = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        minuteGroups[timeKey] = { total: 0, count: 0 };
-      }
-    }
-    
-    // 聚合历史数据
-    historyData.forEach(item => {
-      const itemTime = dayjs(item.timestamp);
-      const timeKey = itemTime.format('HH:mm');
-      if (minuteGroups[timeKey]) {
-        minuteGroups[timeKey].total += item.count;
-        minuteGroups[timeKey].count += 1;
-      }
-    });
-    
-    // 计算平均值并转换为数组
-    const result = Object.entries(minuteGroups)
-      .map(([time, data]) => ({
-        time,
-        avgCount: data.count > 0 ? Math.round(data.total / data.count) : 0,
-        sampleCount: data.count,
-      }))
-      .filter(item => item.sampleCount > 0); // 只显示有数据的时间点
-    
-    return result;
-  }, [historyData]);
-  const chartData = useMemo(() => {
+    const chartData = useMemo(() => {
     if (historyData.length === 0) return [];
     
     const result = [];
@@ -176,63 +157,69 @@ const History: React.FC = () => {
     const totalMinutes = endTime.diff(startTime, 'minute');
     // 分钟级精度：≤48小时用1分钟，>7天用60分钟，中间用10分钟
     const interval = totalMinutes > 7 * 24 * 60 ? 60 : totalMinutes > 2 * 24 * 60 ? 10 : 1;
-    const matchWindow = Math.max(1, Math.floor(interval / 2)); // 匹配窗口为间隔的一半
+    const matchWindow = Math.max(2, interval); // 扩大匹配窗口到至少2分钟或间隔大小
     
     for (let t = startTime; t.isBefore(endTime) || t.isSame(endTime); t = t.add(interval, 'minute')) {
       const currentTime = t.valueOf();
       let count = 0;
-      let found = false;
+      let minDiff = Infinity;
       
-      // 查找该时间点前后matchWindow分钟内的实际数据
+      // 查找该时间点前后matchWindow分钟内最接近的数据点
       for (const item of historyData) {
         const itemTime = dayjs(item.timestamp).valueOf();
         const diffMinutes = Math.abs(itemTime - currentTime) / (1000 * 60);
         
-        // 只有找到在精确时间窗口内的数据点才使用，否则为0
-        if (diffMinutes <= matchWindow) {
+        // 在匹配窗口内，选择最接近的数据点
+        if (diffMinutes <= matchWindow && diffMinutes < minDiff) {
           count = item.count;
-          found = true;
-          break;
+          minDiff = diffMinutes;
         }
       }
       
-      // 如果没有找到数据点，显示为0（而不是连接前后数据）
       result.push({
         time: t.format('MM-DD HH:mm'),
-        count: found ? count : 0,
+        count: count,
         fullTime: t.toISOString(),
       });
     }
     
     return result;
-  }, [historyData]);
+  }, [historyData, timeRange]);
 
-  const minuteAverageData = useMemo(() => {
-    // 每10分钟一个点，减少数据密度
-    const hourlyData = hourlyAverageData;
-    if (hourlyData.length === 0) return [];
+  // 24小时活跃时段：24根柱子，每根表示该小时的平均在线人数
+  const hourAverageData = useMemo(() => {
+    if (historyData.length === 0) return [];
     
-    // 按10分钟聚合
-    const tenMinuteGroups: { [key: string]: { total: number; count: number } } = {};
+    // 按小时分组统计（只统计count > 0的有效数据）
+    const hourGroups: { [key: number]: { total: number; count: number } } = {};
     
-    hourlyData.forEach(item => {
-      const [hour, minute] = item.time.split(':').map(Number);
-      const tenMinSlot = `${String(hour).padStart(2, '0')}:${String(Math.floor(minute / 10) * 10).padStart(2, '0')}`;
-      
-      if (!tenMinuteGroups[tenMinSlot]) {
-        tenMinuteGroups[tenMinSlot] = { total: 0, count: 0 };
+    // 初始化24个小时
+    for (let h = 0; h < 24; h++) {
+      hourGroups[h] = { total: 0, count: 0 };
+    }
+    
+    // 聚合历史数据（只统计count > 0的有效数据）
+    historyData.forEach(item => {
+      if (item.count > 0) { // 过滤掉为0的非法数据
+        const hour = dayjs(item.timestamp).hour();
+        hourGroups[hour].total += item.count;
+        hourGroups[hour].count += 1;
       }
-      tenMinuteGroups[tenMinSlot].total += item.avgCount;
-      tenMinuteGroups[tenMinSlot].count += 1;
     });
     
-    return Object.entries(tenMinuteGroups)
-      .map(([time, data]) => ({
-        time,
-        avgCount: Math.round(data.total / data.count),
-      }))
-      .sort((a, b) => a.time.localeCompare(b.time));
-  }, [hourlyAverageData]);
+    // 计算平均值，确保返回24个数据点
+    const result = [];
+    for (let h = 0; h < 24; h++) {
+      const data = hourGroups[h];
+      result.push({
+        time: `${String(h).padStart(2, '0')}:00`,
+        avgCount: data.count > 0 ? Math.round(data.total / data.count) : 0,
+        sampleCount: data.count,
+      });
+    }
+    
+    return result;
+  }, [historyData]);
 
   // 统计数据
   const stats = historyData.length > 0 ? {
@@ -411,16 +398,12 @@ const History: React.FC = () => {
           </TabPane>
           <TabPane tab="24小时活跃时段" key="hourly">
             <ResponsiveContainer width="100%" height={400}>
-              <BarChart data={minuteAverageData}>
+              <BarChart data={hourAverageData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#3e3e3e" />
                 <XAxis 
                   dataKey="time" 
-                  tick={{ fontSize: 11, fill: '#b0b0b0' }} 
+                  tick={{ fontSize: 12, fill: '#b0b0b0' }} 
                   stroke="#3e3e3e" 
-                  interval={5}
-                  angle={-45}
-                  textAnchor="end"
-                  height={60}
                 />
                 <YAxis tick={{ fill: '#b0b0b0' }} stroke="#3e3e3e" />
                 <Tooltip 
@@ -431,7 +414,7 @@ const History: React.FC = () => {
               </BarChart>
             </ResponsiveContainer>
             <div style={{ textAlign: 'center', color: 'var(--lc-text-secondary)', fontSize: 12, marginTop: 8 }}>
-              统计所选时间段内每天24小时各分钟的平均在线人数，展示刷题高峰时段
+              统计所选时间段内每天24小时各小时的平均在线人数，展示刷题高峰时段
             </div>
           </TabPane>
         </Tabs>

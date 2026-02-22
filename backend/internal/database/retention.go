@@ -2,8 +2,11 @@ package database
 
 import (
 	"log"
+	"os"
+	"strconv"
 	"time"
 
+	"leetcode-dashboard/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -17,6 +20,9 @@ type DataRetentionPolicy struct {
 
 // NewDataRetentionPolicy creates a new retention policy manager
 func NewDataRetentionPolicy(db *gorm.DB, retentionDays int) *DataRetentionPolicy {
+	if retentionDays <= 0 {
+		retentionDays = getEnvInt("DATA_RETENTION_DAYS", 30)
+	}
 	return &DataRetentionPolicy{
 		DB:              db,
 		RetentionDays:   retentionDays,
@@ -60,58 +66,55 @@ func (p *DataRetentionPolicy) Cleanup() {
 	cutoffTime := time.Now().AddDate(0, 0, -p.RetentionDays)
 
 	// Clean up old online counts
-	result := p.DB.Where("timestamp < ?", cutoffTime).Delete(&OnlineCount{})
+	result := p.DB.Where("timestamp < ?", cutoffTime).Delete(&models.OnlineCount{})
 	if result.Error != nil {
 		log.Printf("Error cleaning up old online counts: %v", result.Error)
 	} else {
 		log.Printf("Cleaned up %d old online count records", result.RowsAffected)
 	}
-
-	// Clean up old statistics (if implemented)
-	// result = p.DB.Where("date < ?", cutoffTime).Delete(&DailyStats{})
 }
 
-// CleanupByProblem removes all data for a specific problem
-func (p *DataRetentionPolicy) CleanupByProblem(problemID uint) error {
-	result := p.DB.Where("problem_id = ?", problemID).Delete(&OnlineCount{})
+// CleanupByFrontendID removes all data for a specific problem
+func (p *DataRetentionPolicy) CleanupByFrontendID(frontendID string) error {
+	result := p.DB.Where("frontend_id = ?", frontendID).Delete(&models.OnlineCount{})
 	return result.Error
 }
 
 // GetStorageStats returns storage statistics
 func (p *DataRetentionPolicy) GetStorageStats() map[string]interface{} {
 	var onlineCount int64
-	p.DB.Model(&OnlineCount{}).Count(&onlineCount)
+	p.DB.Model(&models.OnlineCount{}).Count(&onlineCount)
 
 	var problemCount int64
-	p.DB.Model(&Problem{}).Count(&problemCount)
+	p.DB.Model(&models.Problem{}).Count(&problemCount)
+
+	// Get oldest and newest records
+	var oldestRecord, newestRecord models.OnlineCount
+	var oldestTime, newestTime time.Time
+
+	if err := p.DB.Order("timestamp ASC").First(&oldestRecord).Error; err == nil {
+		oldestTime = oldestRecord.Timestamp
+	}
+	if err := p.DB.Order("timestamp DESC").First(&newestRecord).Error; err == nil {
+		newestTime = newestRecord.Timestamp
+	}
 
 	return map[string]interface{}{
 		"online_count_records": onlineCount,
 		"problem_records":      problemCount,
 		"retention_days":       p.RetentionDays,
+		"oldest_record":        oldestTime,
+		"newest_record":        newestTime,
 	}
 }
 
-// OnlineCount represents the online count model for retention
-// This is duplicated here to avoid import cycle
-type OnlineCount struct {
-	ID        uint      `gorm:"primarykey"`
-	ProblemID uint      `gorm:"index"`
-	Count     int
-	Timestamp time.Time `gorm:"index"`
+// getEnvInt gets environment variable as integer
+func getEnvInt(key string, defaultValue int) int {
+	if value := os.Getenv(key); value != "" {
+		if intVal, err := strconv.Atoi(value); err == nil {
+			return intVal
+		}
+	}
+	return defaultValue
 }
 
-// TableName specifies the table name
-func (OnlineCount) TableName() string {
-	return "online_counts"
-}
-
-// Problem represents the problem model
-type Problem struct {
-	ID uint `gorm:"primarykey"`
-}
-
-// TableName specifies the table name
-func (Problem) TableName() string {
-	return "problems"
-}

@@ -1,0 +1,133 @@
+/* Rankings 页面动画样式 */
+
+/* 表格行基础样式 */
+.lc-rankings-table .ant-table-row {
+  will-change: transform;
+}
+
+/* 排名变化时的动画效果 */
+.ranking-row {
+  transition: transform 400ms cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+
+/* 行在移动时的样式 */
+.ranking-row.animating {
+  z-index: 1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* 前三名特殊样式 */
+.ranking-row-1 {
+  background: linear-gradient(90deg, rgba(212, 160, 23, 0.1) 0%, transparent 100%);
+}
+
+.ranking-row-2 {
+  background: linear-gradient(90deg, rgba(140, 140, 140, 0.1) 0%, transparent 100%);
+}
+
+.ranking-row-3 {
+  background: linear-gradient(90deg, rgba(184, 115, 51, 0.1) 0%, transparent 100%);
+}
+
+/* 在线人数变化时的脉冲动画 */
+@keyframes countChange {
+  0% {
+    transform: scale(1);
+    color: inherit;
+  }
+  50% {
+    transform: scale(1.2);
+    color: #d4a017;
+  }
+  100% {
+    transform: scale(1);
+    color: inherit;
+  }
+}
+
+.lc-online-badge.animating {
+  animation: countChange 300ms ease-in-out;
+}
+
+/* 表格容器 */
+.lc-rankings-table .ant-table-container {
+  overflow: hidden;
+}
+
+/* 确保行在动画期间不被其他元素遮挡 */
+.lc-rankings-table .ant-table-tbody > tr {
+  position: relative;
+}
+
+/* 搜索框样式 - 更大更扁平 */
+.rankings-search {
+  width: 320px !important;
+}
+
+/* 完全重置 Ant Design Search 组件 - 移除所有边框 */
+.rankings-search.ant-input-search {
+  width: 320px;
+}
+
+.rankings-search.ant-input-search .ant-input-search-wrapper {
+  padding: 0;
+  border-radius: 4px;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper {
+  height: 40px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  padding: 0 12px !important;
+  background: #fff !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper:hover,
+.rankings-search.ant-input-search .ant-input-affix-wrapper:focus,
+.rankings-search.ant-input-search .ant-input-affix-wrapper-focused {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rankings-search.ant-input-search .ant-input-affix-wrapper .ant-input {
+  height: 38px !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button {
+  height: 40px !important;
+  width: 40px !important;
+  border-radius: 0 4px 4px 0 !important;
+  background: #1890ff !important;
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button:hover {
+  background: #40a9ff !important;
+}
+
+.rankings-search.ant-input-search .ant-input-search-button .anticon {
+  color: #fff !important;
+}
+
+/* 清除按钮样式 */
+.rankings-search .ant-input-clear-icon {
+  color: rgba(0, 0, 0, 0.25);
+}
+
+.rankings-search .ant-input-clear-icon:hover {
+  color: rgba(0, 0, 0, 0.45);
+}

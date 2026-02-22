@@ -1,5 +1,9 @@
 # 构建阶段
-FROM golang:1.21-alpine AS builder
+FROM golang:1.23-alpine AS builder
+
+# 使用国内Go代理
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GOSUMDB=off
 
 # 安装构建依赖
 RUN apk add --no-cache gcc musl-dev sqlite-dev

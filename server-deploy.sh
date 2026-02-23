@@ -192,9 +192,9 @@ health_check() {
             echo "========================================"
             echo "  LeetCode Dashboard Deployed!"
             echo "========================================"
-            echo "  Backend API: http://43.228.79.80:52106"
-            echo "  Frontend:    http://43.228.79.80:52107"
-            echo "  Health:      http://43.228.79.80:52106/api/health"
+            echo "  Backend API: http://YOUR_SERVER_IP:52106"
+            echo "  Frontend:    http://YOUR_SERVER_IP:52107"
+            echo "  Health:      http://YOUR_SERVER_IP:52106/api/health"
             echo "========================================"
             return 0
         fi

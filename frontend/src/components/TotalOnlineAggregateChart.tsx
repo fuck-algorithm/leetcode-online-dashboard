@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Card, DatePicker, Radio, Button, Spin, Empty, message } from 'antd';
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { SITE_COLORS, CHART_CONFIG } from './statistics/chartTheme';
 
 const { RangePicker } = DatePicker;
 
@@ -10,6 +11,8 @@ type Granularity = 'minute' | 'hour' | 'day';
 
 interface DataPoint {
   timestamp: string;
+  cn: number;
+  com: number;
   total: number;
   rawTimestamp: Date;
 }
@@ -23,6 +26,11 @@ interface AggregateData {
     timestamp: string;
     total: number;
   }>;
+}
+
+interface AggregateDataPoint {
+  timestamp: string;
+  total: number;
 }
 
 const TotalOnlineAggregateChart: React.FC = () => {
@@ -50,22 +58,50 @@ const TotalOnlineAggregateChart: React.FC = () => {
         end: end.toISOString(),
       });
 
-      const response = await fetch(`/api/total-online-aggregate?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      // Fetch all three sites in parallel
+      const [cnRes, comRes, unifiedRes] = await Promise.all([
+        fetch(`/api/total-online-aggregate?${params}&site=cn`),
+        fetch(`/api/total-online-aggregate?${params}&site=com`),
+        fetch(`/api/total-online-aggregate?${params}&site=unified`),
+      ]);
+
+      if (!cnRes.ok || !comRes.ok || !unifiedRes.ok) {
+        throw new Error('HTTP error');
       }
 
-      const result: { code: number; data?: AggregateData; msg?: string } = await response.json();
+      const cnData: { code: number; data?: AggregateData } = await cnRes.json();
+      const comData: { code: number; data?: AggregateData } = await comRes.json();
+      const unifiedData: { code: number; data?: AggregateData } = await unifiedRes.json();
 
-      if (result.code === 200 && result.data?.data) {
-        const chartData = result.data.data.map((point) => ({
-          timestamp: formatTimestamp(point.timestamp, granularity),
-          total: point.total,
-          rawTimestamp: new Date(point.timestamp),
-        }));
+      if (cnData.code === 200 && comData.code === 200 && unifiedData.code === 200) {
+        // Create a map to merge data by timestamp
+        const dataMap = new Map<string, { cn: number; com: number; total: number; rawTimestamp: Date }>();
+        
+        const processPoints = (points: AggregateDataPoint[] | undefined, key: 'cn' | 'com' | 'total') => {
+          if (!points) return;
+          points.forEach((point) => {
+            const formattedTs = formatTimestamp(point.timestamp, granularity);
+            const existing = dataMap.get(formattedTs) || { cn: 0, com: 0, total: 0, rawTimestamp: new Date(point.timestamp) };
+            existing[key] = point.total;
+            dataMap.set(formattedTs, existing);
+          });
+        };
+
+        processPoints(cnData.data?.data, 'cn');
+        processPoints(comData.data?.data, 'com');
+        processPoints(unifiedData.data?.data, 'total');
+
+        // Convert map to array and sort by timestamp
+        const chartData = Array.from(dataMap.entries())
+          .map(([timestamp, values]) => ({
+            timestamp,
+            ...values,
+          }))
+          .sort((a, b) => a.rawTimestamp.getTime() - b.rawTimestamp.getTime());
+
         setData(chartData);
       } else {
-        throw new Error(result.msg || '数据格式错误');
+        throw new Error('数据格式错误');
       }
     } catch (err) {
       message.error(err instanceof Error ? err.message : '加载数据失败');
@@ -152,35 +188,70 @@ const TotalOnlineAggregateChart: React.FC = () => {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
+                <linearGradient id="colorCN" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={SITE_COLORS.cn} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={SITE_COLORS.cn} stopOpacity={0} />
+                </linearGradient>
+                <linearGradient id="colorCOM" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={SITE_COLORS.com} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={SITE_COLORS.com} stopOpacity={0} />
+                </linearGradient>
                 <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#FFA116" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#FFA116" stopOpacity={0} />
+                  <stop offset="5%" stopColor={SITE_COLORS.total} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={SITE_COLORS.total} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray={CHART_CONFIG.gridStrokeDasharray} stroke={CHART_CONFIG.gridStroke} />
               <XAxis
                 dataKey="timestamp"
                 tick={{ fontSize: 12 }}
                 tickMargin={10}
                 minTickGap={30}
+                stroke={CHART_CONFIG.axisStroke}
               />
               <YAxis
                 tick={{ fontSize: 12 }}
                 tickFormatter={(value) => value.toLocaleString()}
+                stroke={CHART_CONFIG.axisStroke}
               />
               <Tooltip
                 contentStyle={{
-                  background: '#fff',
-                  border: '1px solid #f0f0f0',
+                  background: CHART_CONFIG.tooltipBg,
+                  border: `1px solid ${CHART_CONFIG.tooltipBorder}`,
                   borderRadius: 8,
                   boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
                 }}
-                formatter={(value: number) => [value.toLocaleString() + ' 人', '总在线人数']}
+                formatter={(value: number, name: string) => {
+                  const labels: Record<string, string> = { cn: '中文站', com: '国际站', total: '全球总在线' };
+                  return [value.toLocaleString() + ' 人', labels[name] || name];
+                }}
+              />
+              <Legend />
+              <Area
+                type="monotone"
+                dataKey="cn"
+                name="中文站"
+                stroke={SITE_COLORS.cn}
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorCN)"
+                animationDuration={500}
+              />
+              <Area
+                type="monotone"
+                dataKey="com"
+                name="国际站"
+                stroke={SITE_COLORS.com}
+                strokeWidth={2}
+                fillOpacity={1}
+                fill="url(#colorCOM)"
+                animationDuration={500}
               />
               <Area
                 type="monotone"
                 dataKey="total"
-                stroke="#FFA116"
+                name="全球总在线"
+                stroke={SITE_COLORS.total}
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorTotal)"

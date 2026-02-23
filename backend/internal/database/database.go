@@ -1,6 +1,7 @@
 package database
 
 import (
+	"encoding/json"
 	"leetcode-dashboard/internal/config"
 	"leetcode-dashboard/internal/models"
 	"log"
@@ -22,12 +23,16 @@ func Init(dsn string, problemData []config.ProblemInfo) error {
 		return err
 	}
 
-	// Auto migrate models
+	// Auto migrate models - 双站点架构
 	err = DB.AutoMigrate(
 		&models.Problem{},
-		&models.OnlineCount{},
+		&models.OnlineCountCN{},
+		&models.OnlineCountCOM{},
+		&models.OnlineCountUnified{},
 		&models.Hot100{},
-		&models.TotalOnlineAggregate{},
+		&models.TotalOnlineAggregateCN{},
+		&models.TotalOnlineAggregateCOM{},
+		&models.TotalOnlineAggregateUnified{},
 	)
 	if err != nil {
 		return err
@@ -55,6 +60,9 @@ func initHot100(problemData []config.ProblemInfo) error {
 		var problem models.Problem
 		result := DB.Where("frontend_id = ?", p.ID).First(&problem)
 		if result.Error != nil {
+			// Convert topic_tags to JSON string for Tags field
+			tagsJSON, _ := json.Marshal(p.TopicTags)
+			
 			// Create problem if not exists
 			problem = models.Problem{
 				FrontendID: p.ID,
@@ -62,10 +70,18 @@ func initHot100(problemData []config.ProblemInfo) error {
 				Title:      p.Title,
 				TitleCn:    p.TitleCn,
 				Difficulty: p.Difficulty,
+				Tags:       string(tagsJSON),
 			}
 			if err := DB.Create(&problem).Error; err != nil {
 				log.Printf("Failed to create problem %s: %v", p.Slug, err)
 				continue
+			}
+		} else {
+			// Update existing problem's Tags if empty
+			if problem.Tags == "" && len(p.TopicTags) > 0 {
+				tagsJSON, _ := json.Marshal(p.TopicTags)
+				problem.Tags = string(tagsJSON)
+				DB.Save(&problem)
 			}
 		}
 

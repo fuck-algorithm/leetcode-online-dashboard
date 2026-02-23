@@ -5,6 +5,9 @@ interface ProblemStatus {
   slug: string;
   title: string;
   online_count: number;
+  online_count_cn: number;
+  online_count_com: number;
+  online_count_total: number;
   last_updated: number;
 }
 

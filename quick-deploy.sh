@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-H=43.228.79.80
-P=26451
+H=YOUR_SERVER_IP
+P=22
 K=~/.ssh/id_ed25519
 U=root
 D=/opt/leetcode-dashboard
@@ -74,5 +74,5 @@ ssh -i $K -p $P -o StrictHostKeyChecking=no $U@$H "docker ps | grep leetcode"
 
 echo ""
 echo "==========================================="
-echo "  Deployed! http://43.228.79.80:52107"
+echo "  Deployed! http://YOUR_SERVER_IP:52107"
 echo "==========================================="

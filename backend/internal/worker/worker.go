@@ -2,21 +2,21 @@ package worker
 
 import (
 	"encoding/json"
-	"fmt"
 	"leetcode-dashboard/internal/cache"
 	"leetcode-dashboard/internal/database"
 	"leetcode-dashboard/internal/models"
+	"leetcode-dashboard/internal/redis"
 	"leetcode-dashboard/internal/websocket"
 	"log"
-	"sync"
 	"time"
+
+	"gorm.io/gorm"
 )
 
-// Worker manages WebSocket subscriptions for problems
+// Worker manages data broadcasting and persistence from Redis
+// Note: WebSocket crawling is now handled by the dedicated crawler service
 type Worker struct {
-	clients   map[string]*websocket.LeetCodeWSClient
 	problems  []string
-	mu        sync.RWMutex
 	stopChan  chan struct{}
 	batchSize int
 	interval  time.Duration
@@ -26,7 +26,6 @@ type Worker struct {
 // NewWorker creates a new worker instance
 func NewWorker(problems []string, batchSize int, interval time.Duration, hub *websocket.Hub) *Worker {
 	return &Worker{
-		clients:   make(map[string]*websocket.LeetCodeWSClient),
 		problems:  problems,
 		stopChan:  make(chan struct{}),
 		batchSize: batchSize,
@@ -44,13 +43,9 @@ func (w *Worker) Start() {
 
 	// Start real-time broadcaster
 	go w.broadcastWorker()
-
-	// Process problems in batches
-	go w.processBatches()
 }
 
-// persistenceWorker handles minute-level persistence to SQLite
-// Reads from memory cache once per minute, ensuring one record per problem per minute
+// persistenceWorker handles minute-level persistence from cache to MySQL
 func (w *Worker) persistenceWorker() {
 	minuteTicker := time.NewTicker(time.Minute)
 	defer minuteTicker.Stop()
@@ -65,10 +60,21 @@ func (w *Worker) persistenceWorker() {
 	}
 }
 
-// persistFromCache reads current state from memory cache and persists to database
+// persistFromCache reads current state from cache and persists to database (dual-site)
 func (w *Worker) persistFromCache() {
-	statuses := cache.GetCache().GetAll()
-	if len(statuses) == 0 {
+	// Get CN site data
+	cnStatuses, err := redis.GetAllOnlineCountsBySite("cn")
+	if err != nil {
+		log.Printf("Failed to get CN online counts: %v", err)
+	}
+
+	// Get COM site data
+	comStatuses, err := redis.GetAllOnlineCountsBySite("com")
+	if err != nil {
+		log.Printf("Failed to get COM online counts: %v", err)
+	}
+
+	if len(cnStatuses) == 0 && len(comStatuses) == 0 {
 		return
 	}
 
@@ -78,74 +84,151 @@ func (w *Worker) persistFromCache() {
 	}
 
 	now := time.Now()
-	batch := make([]*models.OnlineCount, 0, len(statuses))
-	totalOnline := 0
+	totalCN := 0
+	totalCOM := 0
 
-	for _, s := range statuses {
-		batch = append(batch, &models.OnlineCount{
+	// Persist CN site data
+	for _, s := range cnStatuses {
+		if s.FrontendID == "" {
+			continue
+		}
+		record := &models.OnlineCountCN{
 			FrontendID: s.FrontendID,
 			Count:      s.OnlineCount,
 			Timestamp:  now,
-		})
-		totalOnline += s.OnlineCount
-	}
-
-	// Use transaction for batch insert
-	tx := db.Begin()
-	for _, count := range batch {
-		if err := tx.Create(count).Error; err != nil {
-			log.Printf("Failed to persist online count: %v", err)
 		}
-	}
-	if err := tx.Commit().Error; err != nil {
-		log.Printf("Failed to commit batch: %v", err)
-		tx.Rollback()
-	} else {
-		log.Printf("Persisted %d online count records (minute snapshot)", len(batch))
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist CN online count for %s: %v", s.FrontendID, err)
+		}
+		totalCN += s.OnlineCount
 	}
 
-	// Persist total online count aggregate
-	w.persistTotalOnlineAggregate(totalOnline, now)
+	// Persist COM site data
+	for _, s := range comStatuses {
+		if s.FrontendID == "" {
+			continue
+		}
+		record := &models.OnlineCountCOM{
+			FrontendID: s.FrontendID,
+			Count:      s.OnlineCount,
+			Timestamp:  now,
+		}
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist COM online count for %s: %v", s.FrontendID, err)
+		}
+		totalCOM += s.OnlineCount
+	}
+
+	// Persist unified data (sum of CN + COM for each problem)
+	w.persistUnifiedData(db, cnStatuses, comStatuses, now)
+
+	// Persist total online aggregates
+	w.persistTotalOnlineAggregate(totalCN, totalCOM, now)
+
+	log.Printf("Persisted %d CN + %d COM records", len(cnStatuses), len(comStatuses))
 }
 
-// persistTotalOnlineAggregate stores the total online count to the aggregate table
-func (w *Worker) persistTotalOnlineAggregate(total int, timestamp time.Time) {
+// persistUnifiedData creates unified records combining CN and COM data
+func (w *Worker) persistUnifiedData(db *gorm.DB, cnStatuses, comStatuses []*redis.ProblemOnlineStatus, timestamp time.Time) {
+	// Create a map to track which problems we've processed
+	processed := make(map[string]bool)
+
+	// Process CN data
+	for _, s := range cnStatuses {
+		if s.FrontendID == "" {
+			continue
+		}
+		
+		// Find matching COM data
+		comCount := 0
+		for _, com := range comStatuses {
+			if com.FrontendID == s.FrontendID {
+				comCount = com.OnlineCount
+				break
+			}
+		}
+
+		record := &models.OnlineCountUnified{
+			FrontendID: s.FrontendID,
+			CountCN:    s.OnlineCount,
+			CountCOM:   comCount,
+			CountTotal: s.OnlineCount + comCount,
+			Timestamp:  timestamp,
+		}
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist unified online count for %s: %v", s.FrontendID, err)
+		}
+		processed[s.FrontendID] = true
+	}
+
+	// Process remaining COM-only data
+	for _, s := range comStatuses {
+		if s.FrontendID == "" || processed[s.FrontendID] {
+			continue
+		}
+		
+		record := &models.OnlineCountUnified{
+			FrontendID: s.FrontendID,
+			CountCN:    0,
+			CountCOM:   s.OnlineCount,
+			CountTotal: s.OnlineCount,
+			Timestamp:  timestamp,
+		}
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist unified online count for %s: %v", s.FrontendID, err)
+		}
+	}
+}
+
+// persistTotalOnlineAggregate stores the total online count to the aggregate tables
+func (w *Worker) persistTotalOnlineAggregate(totalCN, totalCOM int, timestamp time.Time) {
 	db := database.GetDB()
 	if db == nil {
 		return
 	}
 
-	// Truncate to minute for consistency
-	minuteBucket := timestamp.Truncate(time.Minute)
-	hourBucket := timestamp.Truncate(time.Hour)
-	dayBucket := time.Date(timestamp.Year(), timestamp.Month(), timestamp.Day(), 0, 0, 0, 0, timestamp.Location())
+	now := time.Now()
+	minuteBucket := now.Truncate(time.Minute)
+	hourBucket := now.Truncate(time.Hour)
+	dayBucket := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 
-	aggregate := &models.TotalOnlineAggregate{
+	// Save CN aggregate
+	cnAgg := &models.TotalOnlineAggregateCN{
 		Timestamp:  minuteBucket,
-		Total:      total,
+		Total:      totalCN,
 		HourBucket: hourBucket,
 		DayBucket:  dayBucket,
 	}
+	if err := db.Where("timestamp = ?", minuteBucket).Assign(cnAgg).FirstOrCreate(&models.TotalOnlineAggregateCN{}).Error; err != nil {
+		db.Model(&models.TotalOnlineAggregateCN{}).Where("timestamp = ?", minuteBucket).Update("total", totalCN)
+	}
 
-	// Use ON DUPLICATE KEY UPDATE for MySQL or equivalent
-	// For GORM, we'll use FirstOrCreate with updates
-	var existing models.TotalOnlineAggregate
-	result := db.Where("timestamp = ?", minuteBucket).First(&existing)
-	if result.Error != nil {
-		// Record doesn't exist, create new
-		if err := db.Create(aggregate).Error; err != nil {
-			log.Printf("Failed to persist total online aggregate: %v", err)
-		} else {
-			log.Printf("Persisted total online aggregate: %d at %s", total, minuteBucket.Format("2006-01-02 15:04:05"))
-		}
-	} else {
-		// Record exists, update it
-		existing.Total = total
-		if err := db.Save(&existing).Error; err != nil {
-			log.Printf("Failed to update total online aggregate: %v", err)
-		} else {
-			log.Printf("Updated total online aggregate: %d at %s", total, minuteBucket.Format("2006-01-02 15:04:05"))
-		}
+	// Save COM aggregate
+	comAgg := &models.TotalOnlineAggregateCOM{
+		Timestamp:  minuteBucket,
+		Total:      totalCOM,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+	if err := db.Where("timestamp = ?", minuteBucket).Assign(comAgg).FirstOrCreate(&models.TotalOnlineAggregateCOM{}).Error; err != nil {
+		db.Model(&models.TotalOnlineAggregateCOM{}).Where("timestamp = ?", minuteBucket).Update("total", totalCOM)
+	}
+
+	// Save unified aggregate
+	unifiedAgg := &models.TotalOnlineAggregateUnified{
+		Timestamp:  minuteBucket,
+		TotalCN:    totalCN,
+		TotalCOM:   totalCOM,
+		Total:      totalCN + totalCOM,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+	if err := db.Where("timestamp = ?", minuteBucket).Assign(unifiedAgg).FirstOrCreate(&models.TotalOnlineAggregateUnified{}).Error; err != nil {
+		db.Model(&models.TotalOnlineAggregateUnified{}).Where("timestamp = ?", minuteBucket).Updates(map[string]interface{}{
+			"total_cn":  totalCN,
+			"total_com": totalCOM,
+			"total":     totalCN + totalCOM,
+		})
 	}
 }
 
@@ -165,47 +248,110 @@ func (w *Worker) broadcastWorker() {
 }
 
 // broadcastBatchUpdate sends current status to all WebSocket clients (Hot 100 only)
+// 优先从 Redis 读取三列数据，Redis 不可用时回退到数据库
 func (w *Worker) broadcastBatchUpdate() {
 	if w.hub == nil {
 		return
 	}
 
-	// Load all problems with complete info from database
-	statuses := w.loadLatestFromDB()
-	if len(statuses) == 0 {
-		return
-	}
-
-	// Merge with cache for real-time online counts
-	for _, s := range statuses {
-		if cached, ok := cache.GetCache().Get(s.Slug); ok {
-			s.OnlineCount = cached.OnlineCount
-			s.LastUpdated = cached.LastUpdated
-		}
-	}
-
-	problems := make([]map[string]interface{}, 0, len(statuses))
+	problems := make([]map[string]interface{}, 0, len(w.problems))
 	total := 0
 
-	for _, s := range statuses {
+	for _, slug := range w.problems {
+		// 优先从 Redis 读取 CN/COM 数据
+		cnStatus, _ := redis.GetOnlineCountBySite(slug, "cn")
+		comStatus, _ := redis.GetOnlineCountBySite(slug, "com")
+
+		countCN := 0
+		countCOM := 0
+		frontendID := ""
+		title := ""
+		titleCn := ""
+		difficulty := "Medium"
+		paidOnly := false
+		var topicTags []string
+		lastUpdated := time.Now()
+
+		if cnStatus != nil {
+			countCN = cnStatus.OnlineCount
+			frontendID = cnStatus.FrontendID
+			title = cnStatus.Title
+			titleCn = cnStatus.TitleCn
+			difficulty = cnStatus.Difficulty
+			paidOnly = cnStatus.PaidOnly
+			topicTags = cnStatus.TopicTags
+			lastUpdated = cnStatus.LastUpdated
+		}
+
+		if comStatus != nil {
+			countCOM = comStatus.OnlineCount
+			// 如果 CN 没有元数据，使用 COM 的
+			if frontendID == "" {
+				frontendID = comStatus.FrontendID
+				title = comStatus.Title
+				titleCn = comStatus.TitleCn
+				difficulty = comStatus.Difficulty
+				paidOnly = comStatus.PaidOnly
+				topicTags = comStatus.TopicTags
+				lastUpdated = comStatus.LastUpdated
+			}
+		}
+
+		// Redis 没有数据时，从内存缓存或数据库兜底
+		if countCN == 0 && countCOM == 0 {
+			if cached, ok := cache.GetCache().Get(slug); ok && cached.OnlineCount > 0 {
+				// 使用缓存的汇总数据（旧版本兼容）
+				countCN = cached.OnlineCountCN
+				countCOM = cached.OnlineCountCOM
+				frontendID = cached.FrontendID
+				title = cached.Title
+				titleCn = cached.TitleCn
+				difficulty = cached.Difficulty
+				paidOnly = cached.PaidOnly
+				topicTags = cached.TopicTags
+				lastUpdated = cached.LastUpdated
+			} else {
+				// 从数据库兜底
+				db := database.GetDB()
+				if db != nil {
+					var problem models.Problem
+					if err := db.Where("slug = ?", slug).First(&problem).Error; err == nil {
+						frontendID = problem.FrontendID
+						title = problem.Title
+						titleCn = problem.TitleCn
+						difficulty = problem.Difficulty
+						paidOnly = problem.PaidOnly
+						if problem.Tags != "" {
+							json.Unmarshal([]byte(problem.Tags), &topicTags)
+						}
+					}
+				}
+			}
+		}
+
+		countTotal := countCN + countCOM
 		problems = append(problems, map[string]interface{}{
-			"frontend_id":  s.FrontendID,
-			"slug":         s.Slug,
-			"title":        s.Title,
-			"title_cn":     s.TitleCn,
-			"difficulty":   s.Difficulty,
-			"paid_only":    s.PaidOnly,
-			"topic_tags":   s.TopicTags,
-			"online_count": s.OnlineCount,
-			"last_updated": s.LastUpdated.Unix(),
+			"frontend_id":        frontendID,
+			"slug":               slug,
+			"title":              title,
+			"title_cn":           titleCn,
+			"difficulty":         difficulty,
+			"paid_only":          paidOnly,
+			"topic_tags":         topicTags,
+			"online_count":       countTotal,
+			"online_count_cn":    countCN,
+			"online_count_com":   countCOM,
+			"online_count_total": countTotal,
+			"last_updated":       lastUpdated.Unix(),
 		})
-		total += s.OnlineCount
+		total += countTotal
 	}
 
 	w.hub.BroadcastBatchUpdate(problems)
 }
 
 // loadLatestFromDB loads the latest online count data from database for all problems
+// Combines CN + COM data for display
 func (w *Worker) loadLatestFromDB() []*cache.ProblemStatus {
 	db := database.GetDB()
 	if db == nil {
@@ -220,15 +366,19 @@ func (w *Worker) loadLatestFromDB() []*cache.ProblemStatus {
 			continue
 		}
 
-		// Get latest online count for this problem
-		var latestCount models.OnlineCount
+		// Get latest unified online count (combines CN + COM)
+		var latestCount models.OnlineCountUnified
 		err := db.Where("frontend_id = ?", problem.FrontendID).
 			Order("timestamp DESC").
 			First(&latestCount).Error
 
 		count := 0
+		countCN := 0
+		countCOM := 0
 		if err == nil {
-			count = latestCount.Count
+			count = latestCount.CountTotal
+			countCN = latestCount.CountCN
+			countCOM = latestCount.CountCOM
 		}
 
 		// Parse Tags JSON string to []string
@@ -238,15 +388,17 @@ func (w *Worker) loadLatestFromDB() []*cache.ProblemStatus {
 		}
 
 		results = append(results, &cache.ProblemStatus{
-			FrontendID:  problem.FrontendID,
-			Slug:        problem.Slug,
-			Title:       problem.Title,
-			TitleCn:     problem.TitleCn,
-			Difficulty:  problem.Difficulty,
-			PaidOnly:    problem.PaidOnly,
-			TopicTags:   topicTags,
-			OnlineCount: count,
-			LastUpdated: latestCount.Timestamp,
+			FrontendID:     problem.FrontendID,
+			Slug:           problem.Slug,
+			Title:          problem.Title,
+			TitleCn:        problem.TitleCn,
+			Difficulty:     problem.Difficulty,
+			PaidOnly:       problem.PaidOnly,
+			TopicTags:      topicTags,
+			OnlineCount:    count,
+			OnlineCountCN:  countCN,
+			OnlineCountCOM: countCOM,
+			LastUpdated:    latestCount.Timestamp,
 		})
 	}
 
@@ -257,174 +409,12 @@ func (w *Worker) loadLatestFromDB() []*cache.ProblemStatus {
 	return results
 }
 
-// Stop terminates all WebSocket connections
+// Stop terminates the worker
 func (w *Worker) Stop() {
 	close(w.stopChan)
-
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	for slug, client := range w.clients {
-		log.Printf("Closing connection for %s", slug)
-		client.Close()
-	}
 }
 
-// processBatches processes problems in batches to avoid overwhelming the server
-func (w *Worker) processBatches() {
-	ticker := time.NewTicker(w.interval)
-	defer ticker.Stop()
-
-	batchIndex := 0
-	totalBatches := (len(w.problems) + w.batchSize - 1) / w.batchSize
-
-	// Process first batch immediately
-	w.processBatch(batchIndex, totalBatches)
-	batchIndex++
-
-	for {
-		select {
-		case <-w.stopChan:
-			return
-		case <-ticker.C:
-			w.processBatch(batchIndex, totalBatches)
-			batchIndex++
-			if batchIndex >= totalBatches {
-				batchIndex = 0 // Restart from beginning
-			}
-		}
-	}
-}
-
-// processBatch processes a single batch of problems
-func (w *Worker) processBatch(batchIndex, totalBatches int) {
-	start := batchIndex * w.batchSize
-	end := start + w.batchSize
-	if end > len(w.problems) {
-		end = len(w.problems)
-	}
-
-	batch := w.problems[start:end]
-	log.Printf("Processing batch %d/%d (%d problems)", batchIndex+1, totalBatches, len(batch))
-
-	for _, slug := range batch {
-		go w.subscribeToProblem(slug)
-	}
-}
-
-// subscribeToProblem creates and manages a WebSocket connection for a problem
-func (w *Worker) subscribeToProblem(slug string) {
-	w.mu.RLock()
-	existing, ok := w.clients[slug]
-	w.mu.RUnlock()
-
-	// If already connected, skip
-	if ok && existing.IsConnected() {
-		return
-	}
-
-	// Create new client
-	client := websocket.NewLeetCodeWSClient(slug,
-		func(data []byte) {
-			w.handleMessage(slug, data)
-		},
-		func(err error) {
-			log.Printf("WebSocket error for %s: %v", slug, err)
-			// Trigger reconnection
-			go func() {
-				time.Sleep(5 * time.Second)
-				w.subscribeToProblem(slug)
-			}()
-		},
-	)
-
-	if err := client.Connect(); err != nil {
-		log.Printf("Failed to connect to %s: %v", slug, err)
-		return
-	}
-
-	w.mu.Lock()
-	w.clients[slug] = client
-	w.mu.Unlock()
-
-	log.Printf("Connected to %s", slug)
-}
-
-// handleMessage processes incoming WebSocket messages
-// LeetCode sends plain text numbers like "44" representing online count
-func (w *Worker) handleMessage(slug string, data []byte) {
-	// Try to parse as plain number first (LeetCode format)
-	var count int
-	if _, err := fmt.Sscanf(string(data), "%d", &count); err == nil {
-		w.saveOnlineCount(slug, count)
-		log.Printf("[%s] Online count: %d", slug, count)
-		return
-	}
-
-	// Fallback: try JSON format (in case format changes)
-	var msg struct {
-		Type  string `json:"type"`
-		Count int    `json:"count"`
-		Data  struct {
-			Count int `json:"count"`
-		} `json:"data"`
-	}
-
-	if err := json.Unmarshal(data, &msg); err == nil {
-		if msg.Count > 0 {
-			w.saveOnlineCount(slug, msg.Count)
-			log.Printf("[%s] Online count from JSON: %d", slug, msg.Count)
-		} else if msg.Data.Count > 0 {
-			w.saveOnlineCount(slug, msg.Data.Count)
-			log.Printf("[%s] Online count from JSON data: %d", slug, msg.Data.Count)
-		}
-		return
-	}
-
-	// Log unrecognized message format for debugging
-	log.Printf("[%s] Unrecognized message format: %s", slug, string(data))
-}
-
-// saveOnlineCount updates memory cache only (persistence is handled by persistenceWorker)
-func (w *Worker) saveOnlineCount(slug string, count int) {
-	db := database.GetDB()
-	if db == nil {
-		return
-	}
-
-	// Find or create problem
-	var problem models.Problem
-	result := db.Where("slug = ?", slug).First(&problem)
-	if result.Error != nil {
-		problem = models.Problem{Slug: slug}
-		if err := db.Create(&problem).Error; err != nil {
-			log.Printf("Failed to create problem %s: %v", slug, err)
-			return
-		}
-	}
-
-	// Update memory cache (real-time only, no persistence here)
-	// Parse Tags JSON string to []string
-	var topicTags []string
-	if problem.Tags != "" {
-		json.Unmarshal([]byte(problem.Tags), &topicTags)
-	}
-	cache.GetCache().Update(slug, count, problem.FrontendID, problem.Title, problem.TitleCn, problem.Difficulty, problem.PaidOnly, topicTags)
-
-	// Broadcast immediate update to WebSocket clients
-	if w.hub != nil {
-		w.hub.BroadcastStatusUpdate(slug, count, cache.GetCache().GetTotalOnline())
-	}
-}
-
-// GetConnectionStatus returns the status of all connections
+// GetConnectionStatus returns dummy status (crawler handles actual connections)
 func (w *Worker) GetConnectionStatus() map[string]bool {
-	w.mu.RLock()
-	defer w.mu.RUnlock()
-
-	status := make(map[string]bool)
-	for slug, client := range w.clients {
-		status[slug] = client.IsConnected()
-	}
-	return status
+	return make(map[string]bool)
 }

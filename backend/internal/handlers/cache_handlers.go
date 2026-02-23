@@ -10,14 +10,16 @@ import (
 
 // ProblemStatusResponse represents the API response for problem status
 type ProblemStatusResponse struct {
-	FrontendID  string    `json:"frontend_id"`
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	Difficulty  string    `json:"difficulty"`
-	PaidOnly    bool      `json:"paid_only"`
-	TopicTags   []string  `json:"topic_tags"`
-	OnlineCount int       `json:"online_count"`
-	LastUpdated time.Time `json:"last_updated"`
+	FrontendID     string    `json:"frontend_id"`
+	Slug           string    `json:"slug"`
+	Title          string    `json:"title"`
+	Difficulty     string    `json:"difficulty"`
+	PaidOnly       bool      `json:"paid_only"`
+	TopicTags      []string  `json:"topic_tags"`
+	OnlineCount    int       `json:"online_count"`
+	OnlineCountCN  int       `json:"online_count_cn"`
+	OnlineCountCOM int       `json:"online_count_com"`
+	LastUpdated    time.Time `json:"last_updated"`
 }
 
 // GetProblemsFromCache returns all problems from memory cache or Redis
@@ -40,14 +42,16 @@ func GetProblemsFromCache(c *gin.Context) {
 			title = s.Title
 		}
 		result = append(result, ProblemStatusResponse{
-			FrontendID:  s.FrontendID,
-			Slug:        s.Slug,
-			Title:       title,
-			Difficulty:  s.Difficulty,
-			PaidOnly:    s.PaidOnly,
-			TopicTags:   s.TopicTags,
-			OnlineCount: s.OnlineCount,
-			LastUpdated: s.LastUpdated,
+			FrontendID:     s.FrontendID,
+			Slug:           s.Slug,
+			Title:          title,
+			Difficulty:     s.Difficulty,
+			PaidOnly:       s.PaidOnly,
+			TopicTags:      s.TopicTags,
+			OnlineCount:    s.OnlineCount,
+			OnlineCountCN:  s.OnlineCountCN,
+			OnlineCountCOM: s.OnlineCountCOM,
+			LastUpdated:    s.LastUpdated,
 		})
 	}
 
@@ -76,14 +80,16 @@ func GetHot100FromCache(c *gin.Context) {
 			title = s.Title
 		}
 		result = append(result, ProblemStatusResponse{
-			FrontendID:  s.FrontendID,
-			Slug:        s.Slug,
-			Title:       title,
-			Difficulty:  s.Difficulty,
-			PaidOnly:    s.PaidOnly,
-			TopicTags:   s.TopicTags,
-			OnlineCount: s.OnlineCount,
-			LastUpdated: s.LastUpdated,
+			FrontendID:     s.FrontendID,
+			Slug:           s.Slug,
+			Title:          title,
+			Difficulty:     s.Difficulty,
+			PaidOnly:       s.PaidOnly,
+			TopicTags:      s.TopicTags,
+			OnlineCount:    s.OnlineCount,
+			OnlineCountCN:  s.OnlineCountCN,
+			OnlineCountCOM: s.OnlineCountCOM,
+			LastUpdated:    s.LastUpdated,
 		})
 	}
 

@@ -2,8 +2,8 @@
 # 直接在服务器上执行的部署脚本
 set -e
 
-REMOTE_HOST="${REMOTE_HOST:-43.228.79.80}"
-REMOTE_PORT="${REMOTE_PORT:-26451}"
+REMOTE_HOST="${REMOTE_HOST:-YOUR_SERVER_IP}"
+REMOTE_PORT="${REMOTE_PORT:-22}"
 REMOTE_USER="${REMOTE_USER:-root}"
 REMOTE_DIR="/opt/leetcode-dashboard"
 SSH_KEY="${SSH_KEY:-~/.ssh/id_ed25519}"
@@ -152,7 +152,7 @@ echo ""
 echo "========================================"
 echo "  Deployment Complete!"
 echo "========================================"
-echo "  Backend:  http://43.228.79.80:52106"
-echo "  Frontend: http://43.228.79.80:52107"
+echo "  Backend:  http://YOUR_SERVER_IP:52106"
+echo "  Frontend: http://YOUR_SERVER_IP:52107"
 echo "  Network:  host mode"
 echo "========================================"

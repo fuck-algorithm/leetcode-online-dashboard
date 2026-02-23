@@ -1,0 +1,47 @@
+# Backend binaries
+/crawler
+/dashboard-backend
+/leetcode-crawler
+/leetcode-dashboard
+/main
+
+# Log files
+*.log
+nohup.out
+
+# Test binary
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Go vendor directory
+vendor/
+
+# IDE directories
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build directories
+bin/
+dist/
+build/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*~

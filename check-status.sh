@@ -1,6 +1,6 @@
 #!/bin/bash
 # 快速检查部署状态
-ssh -i ~/.ssh/id_ed25519 -p 26451 root@43.228.79.80 "
+ssh -i ~/.ssh/id_ed25519 -p 22 root@YOUR_SERVER_IP "
 echo '=== 部署状态检查 ==='
 date
 echo ''

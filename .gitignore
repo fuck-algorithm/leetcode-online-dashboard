@@ -1,0 +1,57 @@
+# ============================================
+# LeetCode Dashboard - Git Ignore
+# ============================================
+
+# 日志文件
+*.log
+backend.log
+frontend.log
+redis.log
+crawler.log
+nohup.out
+pm2.log
+pm2.error.log
+pm2.out.log
+
+# 构建产物
+backend/bin/
+backend/leetcode-crawler
+backend/leetcode-dashboard
+backend/dashboard-backend*
+backend/data.db
+frontend/dist/assets/*.js
+frontend/dist/assets/*.css
+deploy-pkg/bin/
+deploy-pkg/dist/assets/*.js
+deploy-pkg/dist/assets/*.css
+*.tar.gz
+
+# 数据目录
+data/
+redis-data/
+redis/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+# 依赖
+node_modules/
+vendor/
+
+# 环境配置（包含敏感信息）
+.env.local
+.env.production
+.env.development
+
+# 临时文件
+tmp/
+temp/
+*.tmp

@@ -18,9 +18,9 @@ NC='\033[0m'
 # 配置
 PROJECT_NAME="leetcode-dashboard"
 REMOTE_USER="${REMOTE_USER:-root}"
-REMOTE_HOST="${REMOTE_HOST:-43.228.79.80}"
+REMOTE_HOST="${REMOTE_HOST:-YOUR_SERVER_IP}"
 REMOTE_DIR="${REMOTE_DIR:-/opt/leetcode-dashboard}"
-SSH_PORT="${SSH_PORT:-26451}"
+SSH_PORT="${SSH_PORT:-22}"
 SSH_KEY="${SSH_KEY:-~/.ssh/id_rsa}"
 
 # 云服务商配置

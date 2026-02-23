@@ -20,12 +20,53 @@ type Problem struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 }
 
-// OnlineCount represents a snapshot of online users for a problem
-type OnlineCount struct {
+// SiteType represents the LeetCode site type
+type SiteType string
+
+const (
+	SiteCN  SiteType = "cn"
+	SiteCOM SiteType = "com"
+)
+
+// OnlineCountCN represents online users for a problem from leetcode.cn
+type OnlineCountCN struct {
 	ID         uint      `json:"id" gorm:"primaryKey"`
-	FrontendID string    `json:"frontend_id" gorm:"index:idx_frontend_ts;size:50"`
+	FrontendID string    `json:"frontend_id" gorm:"index:idx_cn_frontend_ts;size:50"`
 	Count      int       `json:"count"`
-	Timestamp  time.Time `json:"timestamp" gorm:"index:idx_frontend_ts"`
+	Timestamp  time.Time `json:"timestamp" gorm:"index:idx_cn_frontend_ts;index:idx_cn_ts"`
+}
+
+// TableName specifies the table name for OnlineCountCN
+func (OnlineCountCN) TableName() string {
+	return "online_counts_cn"
+}
+
+// OnlineCountCOM represents online users for a problem from leetcode.com
+type OnlineCountCOM struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	FrontendID string    `json:"frontend_id" gorm:"index:idx_com_frontend_ts;size:50"`
+	Count      int       `json:"count"`
+	Timestamp  time.Time `json:"timestamp" gorm:"index:idx_com_frontend_ts;index:idx_com_ts"`
+}
+
+// TableName specifies the table name for OnlineCountCOM
+func (OnlineCountCOM) TableName() string {
+	return "online_counts_com"
+}
+
+// OnlineCountUnified represents unified online count combining cn and com data
+type OnlineCountUnified struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	FrontendID string    `json:"frontend_id" gorm:"index:idx_unified_frontend_ts;size:50"`
+	CountCN    int       `json:"count_cn"`
+	CountCOM   int       `json:"count_com"`
+	CountTotal int       `json:"count_total"` // count_cn + count_com
+	Timestamp  time.Time `json:"timestamp" gorm:"index:idx_unified_frontend_ts;index:idx_unified_ts"`
+}
+
+// TableName specifies the table name for OnlineCountUnified
+func (OnlineCountUnified) TableName() string {
+	return "online_counts_unified"
 }
 
 // Hot100 represents the LeetCode Hot 100 list
@@ -47,18 +88,46 @@ type ProblemWithOnlineCount struct {
 	LastUpdated time.Time `json:"last_updated"`
 }
 
-// TotalOnlineAggregate stores pre-aggregated total online count per minute
-// This table is populated by the worker to avoid real-time aggregation queries
-type TotalOnlineAggregate struct {
-	ID        uint      `json:"id" gorm:"primaryKey"`
-	Timestamp time.Time `json:"timestamp" gorm:"uniqueIndex:idx_timestamp;index:idx_ts_hour;index:idx_ts_day"`
-	Total     int       `json:"total"`
-	// Pre-computed granularities for faster queries
-	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_ts_hour"`  // Truncated to hour
-	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_ts_day"`    // Truncated to day
+// TotalOnlineAggregateCN stores pre-aggregated total online count from leetcode.cn
+type TotalOnlineAggregateCN struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_cn_ts;index:idx_cn_hour;index:idx_cn_day"`
+	Total      int       `json:"total"`
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_cn_hour"`
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_cn_day"`
 }
 
-// TableName specifies the table name for TotalOnlineAggregate
-func (TotalOnlineAggregate) TableName() string {
-	return "total_online_aggregates"
+// TableName specifies the table name for TotalOnlineAggregateCN
+func (TotalOnlineAggregateCN) TableName() string {
+	return "total_online_aggregates_cn"
+}
+
+// TotalOnlineAggregateCOM stores pre-aggregated total online count from leetcode.com
+type TotalOnlineAggregateCOM struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_com_ts;index:idx_com_hour;index:idx_com_day"`
+	Total      int       `json:"total"`
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_com_hour"`
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_com_day"`
+}
+
+// TableName specifies the table name for TotalOnlineAggregateCOM
+func (TotalOnlineAggregateCOM) TableName() string {
+	return "total_online_aggregates_com"
+}
+
+// TotalOnlineAggregateUnified stores unified pre-aggregated total online count
+type TotalOnlineAggregateUnified struct {
+	ID         uint      `json:"id" gorm:"primaryKey"`
+	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_unified_agg_ts;index:idx_unified_agg_hour;index:idx_unified_agg_day"`
+	TotalCN    int       `json:"total_cn"`
+	TotalCOM   int       `json:"total_com"`
+	Total      int       `json:"total"` // total_cn + total_com
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_unified_agg_hour"`
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_unified_agg_day"`
+}
+
+// TableName specifies the table name for TotalOnlineAggregateUnified
+func (TotalOnlineAggregateUnified) TableName() string {
+	return "total_online_aggregates_unified"
 }

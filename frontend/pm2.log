@@ -146,3 +146,973 @@
 2026-02-22 21:06:48 +08:00:   ➜  Local:   http://localhost:52107/
 2026-02-22 21:06:48 +08:00:   ➜  Network: http://192.168.3.37:52107/
 2026-02-22 21:06:48 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-22 21:48:20 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-22 21:48:20 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-22 21:48:20 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-22 21:49:49 +08:00: 
+2026-02-22 21:49:49 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-22 21:49:49 +08:00: > vite
+2026-02-22 21:49:49 +08:00: 
+2026-02-22 21:49:50 +08:00: 
+2026-02-22 21:49:50 +08:00:   VITE v5.4.21  ready in 130 ms
+2026-02-22 21:49:50 +08:00: 
+2026-02-22 21:49:50 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-22 21:49:50 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-22 21:49:50 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-22 21:52:10 +08:00: 9:52:10 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:14:22 +08:00: 10:14:22 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:16:07 +08:00: 10:16:07 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:16:59 +08:00: 10:16:59 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:17:41 +08:00: 10:17:41 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:18:42 +08:00: 10:18:42 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:20:28 +08:00: 10:20:28 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:20:47 +08:00: 10:20:47 PM [vite] hmr update /src/components/Rankings.tsx, /src/components/Home.tsx
+2026-02-22 22:21:10 +08:00: 10:21:10 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:21:22 +08:00: 10:21:22 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:21:31 +08:00: 10:21:31 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:21:53 +08:00: 10:21:53 PM [vite] hmr update /src/components/Rankings.css
+2026-02-22 22:22:27 +08:00: 10:22:27 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:22:36 +08:00: 10:22:36 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 22:22:57 +08:00: 10:22:57 PM [vite] hmr update /src/components/Rankings.css
+2026-02-22 22:31:45 +08:00: 10:31:45 PM [vite] http proxy error: /api/hot100
+2026-02-22 22:31:45 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-22 22:31:45 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-22 22:31:45 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-22 22:31:45 +08:00: 10:31:45 PM [vite] http proxy error: /api/hot100/online-counts/1?limit=1000&startTime=2026-02-21+15%3A07%3A52&endTime=2026-02-22+15%3A07%3A52
+2026-02-22 22:31:45 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-22 22:31:45 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-22 22:31:45 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-22 22:31:45 +08:00: 10:31:45 PM [vite] http proxy error: /api/hot100
+2026-02-22 22:31:45 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-22 22:31:45 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-22 22:31:45 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-22 22:31:45 +08:00: 10:31:45 PM [vite] http proxy error: /api/hot100/online-counts/1?limit=1000&startTime=2026-02-21+15%3A07%3A52&endTime=2026-02-22+15%3A07%3A52
+2026-02-22 22:31:45 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-22 22:31:45 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-22 22:31:45 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-22 22:50:11 +08:00: 10:50:11 PM [vite] hmr update /src/components/Rankings.tsx, /src/components/Statistics.tsx, /src/components/History.tsx
+2026-02-22 22:50:29 +08:00: 10:50:29 PM [vite] hmr update /src/components/History.tsx
+2026-02-22 22:50:29 +08:00: 10:50:29 PM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx: 'import' and 'export' may only appear at the top level. (505:0)
+2026-02-22 22:50:29 +08:00: 
+2026-02-22 22:50:29 +08:00:   503 | };
+2026-02-22 22:50:29 +08:00:   504 |
+2026-02-22 22:50:29 +08:00: > 505 | export default History;
+2026-02-22 22:50:29 +08:00:       | ^
+2026-02-22 22:50:29 +08:00:   506 |
+2026-02-22 22:50:29 +08:00:   Plugin: vite:react-babel
+2026-02-22 22:50:29 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx:505:0
+2026-02-22 22:50:29 +08:00:   503|  };
+2026-02-22 22:50:29 +08:00:   504|  
+2026-02-22 22:50:29 +08:00:   505|  export default History;
+2026-02-22 22:50:29 +08:00:      |  ^
+2026-02-22 22:50:29 +08:00:   506|  
+2026-02-22 22:50:29 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12871:18)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementListItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseBlock (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseFunctionBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseArrowExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-22 22:50:29 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseVar (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13384:91)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13230:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9408:31)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12851:23)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-22 22:50:29 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-22 22:50:29 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-22 22:50:29 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-22 22:50:29 +08:00:       at parser.next (<anonymous>)
+2026-02-22 22:50:29 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-22 22:50:29 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-22 22:50:29 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-22 22:50:29 +08:00:       at run.next (<anonymous>)
+2026-02-22 22:50:29 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-22 22:50:29 +08:00:       at transform.next (<anonymous>)
+2026-02-22 22:50:29 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-22 22:50:29 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-22 22:51:33 +08:00: 10:51:33 PM [vite] hmr update /src/components/History.tsx
+2026-02-22 22:51:33 +08:00: 10:51:33 PM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx: 'import' and 'export' may only appear at the top level. (528:0)
+2026-02-22 22:51:33 +08:00: 
+2026-02-22 22:51:33 +08:00:   526 | };
+2026-02-22 22:51:33 +08:00:   527 |
+2026-02-22 22:51:33 +08:00: > 528 | export default History;
+2026-02-22 22:51:33 +08:00:       | ^
+2026-02-22 22:51:33 +08:00:   529 |
+2026-02-22 22:51:33 +08:00:   Plugin: vite:react-babel
+2026-02-22 22:51:33 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx:528:0
+2026-02-22 22:51:33 +08:00:   526|  };
+2026-02-22 22:51:33 +08:00:   527|  
+2026-02-22 22:51:33 +08:00:   528|  export default History;
+2026-02-22 22:51:33 +08:00:      |  ^
+2026-02-22 22:51:33 +08:00:   529|  
+2026-02-22 22:51:33 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12871:18)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementListItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseBlock (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseFunctionBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseArrowExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-22 22:51:33 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseVar (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13384:91)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13230:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9408:31)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12851:23)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-22 22:51:33 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-22 22:51:33 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-22 22:51:33 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-22 22:51:33 +08:00:       at parser.next (<anonymous>)
+2026-02-22 22:51:33 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-22 22:51:33 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-22 22:51:33 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-22 22:51:33 +08:00:       at run.next (<anonymous>)
+2026-02-22 22:51:33 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-22 22:51:33 +08:00:       at transform.next (<anonymous>)
+2026-02-22 22:51:33 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-22 22:51:33 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-22 22:52:34 +08:00: 10:52:34 PM [vite] Pre-transform error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx: 'import' and 'export' may only appear at the top level. (528:0)
+2026-02-22 22:52:34 +08:00: 
+2026-02-22 22:52:34 +08:00:   526 | };
+2026-02-22 22:52:34 +08:00:   527 |
+2026-02-22 22:52:34 +08:00: > 528 | export default History;
+2026-02-22 22:52:34 +08:00:       | ^
+2026-02-22 22:52:34 +08:00:   529 |
+2026-02-22 22:53:10 +08:00: 10:53:10 PM [vite] hmr update /src/components/History.tsx
+2026-02-22 22:53:10 +08:00: 10:53:10 PM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx: 'import' and 'export' may only appear at the top level. (528:0)
+2026-02-22 22:53:10 +08:00: 
+2026-02-22 22:53:10 +08:00:   526 | };
+2026-02-22 22:53:10 +08:00:   527 |
+2026-02-22 22:53:10 +08:00: > 528 | export default History;
+2026-02-22 22:53:10 +08:00:       | ^
+2026-02-22 22:53:10 +08:00:   529 | }
+2026-02-22 22:53:10 +08:00:   530 |
+2026-02-22 22:53:10 +08:00:   Plugin: vite:react-babel
+2026-02-22 22:53:10 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx:528:0
+2026-02-22 22:53:10 +08:00:   526|  };
+2026-02-22 22:53:10 +08:00:   527|  
+2026-02-22 22:53:10 +08:00:   528|  export default History;
+2026-02-22 22:53:10 +08:00:      |  ^
+2026-02-22 22:53:10 +08:00:   529|  }
+2026-02-22 22:53:10 +08:00:   530|  
+2026-02-22 22:53:10 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12871:18)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementListItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseBlock (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseFunctionBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseArrowExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-22 22:53:10 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseVar (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13384:91)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13230:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseVarStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9408:31)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12851:23)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-22 22:53:10 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-22 22:53:10 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-22 22:53:10 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-22 22:53:10 +08:00:       at parser.next (<anonymous>)
+2026-02-22 22:53:10 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-22 22:53:10 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-22 22:53:10 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-22 22:53:10 +08:00:       at run.next (<anonymous>)
+2026-02-22 22:53:10 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-22 22:53:10 +08:00:       at transform.next (<anonymous>)
+2026-02-22 22:53:10 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-22 22:53:10 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-22 22:54:11 +08:00: 10:54:11 PM [vite] Pre-transform error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/History.tsx: 'import' and 'export' may only appear at the top level. (528:0)
+2026-02-22 22:54:11 +08:00: 
+2026-02-22 22:54:11 +08:00:   526 | };
+2026-02-22 22:54:11 +08:00:   527 |
+2026-02-22 22:54:11 +08:00: > 528 | export default History;
+2026-02-22 22:54:11 +08:00:       | ^
+2026-02-22 22:54:11 +08:00:   529 | }
+2026-02-22 22:54:11 +08:00:   530 |
+2026-02-22 22:54:17 +08:00: 10:54:17 PM [vite] hmr update /src/components/History.tsx
+2026-02-22 22:57:19 +08:00: 10:57:19 PM [vite] hmr update /src/components/Navigation.tsx
+2026-02-22 22:57:41 +08:00: 10:57:41 PM [vite] hmr update /src/components/Rankings.tsx
+2026-02-22 23:16:15 +08:00: 11:16:15 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:16:30 +08:00: 11:16:30 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:16:40 +08:00: 11:16:40 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:16:52 +08:00: 11:16:52 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:17:04 +08:00: 11:17:04 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:17:14 +08:00: 11:17:14 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:17:26 +08:00: 11:17:26 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:17:37 +08:00: 11:17:37 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:17:44 +08:00: 11:17:44 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:26:56 +08:00: 11:26:56 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:27:21 +08:00: 11:27:21 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:31:37 +08:00: 11:31:37 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:32:20 +08:00: 11:32:20 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:33:06 +08:00: 11:33:06 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:33:46 +08:00: 11:33:46 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:34:00 +08:00: 11:34:00 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:34:11 +08:00: 11:34:11 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:36:58 +08:00: 11:36:58 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:37:37 +08:00: 11:37:37 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:42:08 +08:00: 11:42:08 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:42:08 +08:00: 11:42:08 PM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Home.tsx: Unexpected token (1051:26)
+2026-02-22 23:42:08 +08:00: 
+2026-02-22 23:42:08 +08:00:   1049 |                             width: 12,
+2026-02-22 23:42:08 +08:00:   1050 |                             height: 12,
+2026-02-22 23:42:08 +08:00: > 1051 |                           </div>
+2026-02-22 23:42:08 +08:00:        |                           ^
+2026-02-22 23:42:08 +08:00:   1052 |                         </div>
+2026-02-22 23:42:08 +08:00:   1053 |                       </div>
+2026-02-22 23:42:08 +08:00:   1054 |                       <Progress 
+2026-02-22 23:42:08 +08:00:   Plugin: vite:react-babel
+2026-02-22 23:42:08 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Home.tsx:1051:26
+2026-02-22 23:42:08 +08:00:   1049|                              width: 12,
+2026-02-22 23:42:08 +08:00:   1050|                              height: 12,
+2026-02-22 23:42:08 +08:00:   1051|                            </div>
+2026-02-22 23:42:08 +08:00:      |                            ^
+2026-02-22 23:42:08 +08:00:   1052|                          </div>
+2026-02-22 23:42:08 +08:00:   1053|                        </div>
+2026-02-22 23:42:08 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.unexpected (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6619:16)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parsePropertyName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12024:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parsePropertyDefinition (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11889:10)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseObjectLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11832:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11339:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseExpressionContainer (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4632:31)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseAttributeValue (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4604:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseAttribute (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4653:38)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4667:28)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10043:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4662:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4686:33)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4749:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4759:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.tryParse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6907:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:18)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12493:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11675:28)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-22 23:42:08 +08:00: 11:42:08 PM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Home.tsx: Unexpected token (1051:26)
+2026-02-22 23:42:08 +08:00: 
+2026-02-22 23:42:08 +08:00:   1049 |                             width: 12,
+2026-02-22 23:42:08 +08:00:   1050 |                             height: 12,
+2026-02-22 23:42:08 +08:00: > 1051 |                           </div>
+2026-02-22 23:42:08 +08:00:        |                           ^
+2026-02-22 23:42:08 +08:00:   1052 |                         </div>
+2026-02-22 23:42:08 +08:00:   1053 |                       </div>
+2026-02-22 23:42:08 +08:00:   1054 |                       <Progress 
+2026-02-22 23:42:08 +08:00:   Plugin: vite:react-babel
+2026-02-22 23:42:08 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Home.tsx:1051:26
+2026-02-22 23:42:08 +08:00:   1049|                              width: 12,
+2026-02-22 23:42:08 +08:00:   1050|                              height: 12,
+2026-02-22 23:42:08 +08:00:   1051|                            </div>
+2026-02-22 23:42:08 +08:00:      |                            ^
+2026-02-22 23:42:08 +08:00:   1052|                          </div>
+2026-02-22 23:42:08 +08:00:   1053|                        </div>
+2026-02-22 23:42:08 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.unexpected (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6619:16)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parsePropertyName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12024:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parsePropertyDefinition (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11889:10)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseObjectLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11832:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11339:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseExpressionContainer (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4632:31)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseAttributeValue (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4604:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseAttribute (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4653:38)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4667:28)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAfterName (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10043:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseOpeningElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4662:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4686:33)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.jsxParseElement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4749:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4759:19)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.tryParse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6907:20)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:18)
+2026-02-22 23:42:08 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12493:17)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11675:28)
+2026-02-22 23:42:08 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-22 23:42:46 +08:00: 11:42:46 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:43:09 +08:00: 11:43:09 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:50:44 +08:00: 11:50:44 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:51:45 +08:00: 11:51:45 PM [vite] hmr update /src/components/TotalOnlineChart.tsx
+2026-02-22 23:52:04 +08:00: 11:52:04 PM [vite] hmr update /src/components/TotalOnlineChart.tsx
+2026-02-22 23:52:14 +08:00: 11:52:14 PM [vite] hmr update /src/components/TotalOnlineChart.tsx
+2026-02-22 23:52:38 +08:00: 11:52:38 PM [vite] hmr update /src/components/TotalOnlineChart.tsx
+2026-02-22 23:52:46 +08:00: 11:52:46 PM [vite] hmr update /src/components/TotalOnlineChart.tsx
+2026-02-22 23:55:51 +08:00: 11:55:51 PM [vite] hmr update /src/components/Home.tsx
+2026-02-22 23:58:44 +08:00: 11:58:44 PM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:05:26 +08:00: 12:05:26 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:07:02 +08:00: 12:07:02 AM [vite] hmr update /src/components/GitHubStarButton.tsx
+2026-02-23 00:07:11 +08:00: 12:07:11 AM [vite] hmr update /src/components/Navigation.tsx
+2026-02-23 00:07:52 +08:00: 12:07:52 AM [vite] hmr update /src/components/GitHubStarButton.tsx
+2026-02-23 00:09:29 +08:00: 12:09:29 AM [vite] hmr update /src/components/GitHubStarButton.tsx
+2026-02-23 00:09:49 +08:00: 12:09:49 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:10:35 +08:00: 12:10:35 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:12:05 +08:00: 12:12:05 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:13:13 +08:00: 12:13:13 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:14:59 +08:00: 12:14:59 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:16:04 +08:00: 12:16:04 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:17:49 +08:00: 12:17:49 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:19:50 +08:00: 12:19:50 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 00:19:50 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 00:19:50 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 00:19:50 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 00:19:50 +08:00: 12:19:50 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 00:19:50 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 00:19:50 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 00:19:50 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 00:20:27 +08:00: 12:20:27 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:33:55 +08:00: 12:33:55 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:34:05 +08:00: 12:34:05 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:34:26 +08:00: 12:34:26 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:34:42 +08:00: 12:34:42 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:34:55 +08:00: 12:34:55 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:35:00 +08:00: 12:35:00 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:36:37 +08:00: 12:36:37 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:36:49 +08:00: 12:36:49 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:36:56 +08:00: 12:36:56 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:39:39 +08:00: 12:39:39 AM [vite] hmr update /src/components/Rankings.tsx, /src/components/Statistics.tsx, /src/components/History.tsx
+2026-02-23 00:39:46 +08:00: 12:39:46 AM [vite] hmr update /src/components/Rankings.tsx, /src/components/Statistics.tsx, /src/components/History.tsx
+2026-02-23 00:40:28 +08:00: 12:40:28 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:40:36 +08:00: 12:40:36 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:41:18 +08:00: 12:41:18 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:41:53 +08:00: 12:41:53 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:41:59 +08:00: 12:41:59 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:42:21 +08:00: 12:42:21 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:43:48 +08:00: 12:43:48 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:44:01 +08:00: 12:44:01 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:44:09 +08:00: 12:44:09 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:45:18 +08:00: 12:45:18 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:45:44 +08:00: 12:45:44 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:45:58 +08:00: 12:45:58 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:46:05 +08:00: 12:46:05 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:46:16 +08:00: 12:46:16 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:46:34 +08:00: 12:46:34 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:46:57 +08:00: 12:46:57 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:47:15 +08:00: 12:47:15 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:47:21 +08:00: 12:47:21 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:48:23 +08:00: 12:48:23 AM [vite] hmr update /src/components/Home.tsx
+2026-02-23 00:48:59 +08:00: 12:48:59 AM [vite] hmr update /src/components/History.tsx
+2026-02-23 00:49:53 +08:00: 12:49:53 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:50:00 +08:00: 12:50:00 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:51:36 +08:00: 12:51:36 AM [vite] hmr update /src/components/TotalOnlineAggregateChart.tsx
+2026-02-23 00:53:03 +08:00: 12:53:03 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 00:54:44 +08:00: 12:54:44 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:02:57 +08:00: 1:02:57 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:02:57 +08:00: 1:02:57 AM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Expected corresponding JSX closing tag for <Card>. (1484:0)
+2026-02-23 01:02:57 +08:00: 
+2026-02-23 01:02:57 +08:00:   1482 | </Col>
+2026-02-23 01:02:57 +08:00:   1483 | </Row>
+2026-02-23 01:02:57 +08:00: > 1484 | </div>
+2026-02-23 01:02:57 +08:00:        | ^
+2026-02-23 01:02:57 +08:00:   1485 | );
+2026-02-23 01:02:57 +08:00:   1486 |         <Col xs={24} lg={6}>
+2026-02-23 01:02:57 +08:00:   1487 |           <Card>
+2026-02-23 01:02:57 +08:00:   Plugin: vite:react-babel
+2026-02-23 01:02:57 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx:1484:0
+2026-02-23 01:02:57 +08:00:   1482|  </Col>
+2026-02-23 01:02:57 +08:00:   1483|  </Row>
+2026-02-23 01:02:57 +08:00:   1484|  </div>
+2026-02-23 01:02:57 +08:00:      |  ^
+2026-02-23 01:02:57 +08:00:   1485|  );
+2026-02-23 01:02:57 +08:00:   1486|          <Col xs={24} lg={6}>
+2026-02-23 01:02:57 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4727:16)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.jsxParseElement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4749:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4759:19)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:02:57 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:39
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.tryParse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6907:20)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:18)
+2026-02-23 01:02:57 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12493:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11675:28)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-23 01:02:57 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseReturnStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13142:28)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12798:21)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseStatementListItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseBlock (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseFunctionBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseArrowExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+2026-02-23 01:02:57 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+2026-02-23 01:03:00 +08:00: 1:03:00 AM [vite] Pre-transform error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Expected corresponding JSX closing tag for <Card>. (1484:0)
+2026-02-23 01:03:00 +08:00: 
+2026-02-23 01:03:00 +08:00:   1482 | </Col>
+2026-02-23 01:03:00 +08:00:   1483 | </Row>
+2026-02-23 01:03:00 +08:00: > 1484 | </div>
+2026-02-23 01:03:00 +08:00:        | ^
+2026-02-23 01:03:00 +08:00:   1485 | );
+2026-02-23 01:03:00 +08:00:   1486 |         <Col xs={24} lg={6}>
+2026-02-23 01:03:00 +08:00:   1487 |           <Card>
+2026-02-23 01:03:00 +08:00: 1:03:00 AM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Expected corresponding JSX closing tag for <Card>. (1484:0)
+2026-02-23 01:03:00 +08:00: 
+2026-02-23 01:03:00 +08:00:   1482 | </Col>
+2026-02-23 01:03:00 +08:00:   1483 | </Row>
+2026-02-23 01:03:00 +08:00: > 1484 | </div>
+2026-02-23 01:03:00 +08:00:        | ^
+2026-02-23 01:03:00 +08:00:   1485 | );
+2026-02-23 01:03:00 +08:00:   1486 |         <Col xs={24} lg={6}>
+2026-02-23 01:03:00 +08:00:   1487 |           <Card>
+2026-02-23 01:03:00 +08:00:   Plugin: vite:react-babel
+2026-02-23 01:03:00 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx:1484:0
+2026-02-23 01:03:00 +08:00:   1482|  </Col>
+2026-02-23 01:03:00 +08:00:   1483|  </Row>
+2026-02-23 01:03:00 +08:00:   1484|  </div>
+2026-02-23 01:03:00 +08:00:      |  ^
+2026-02-23 01:03:00 +08:00:   1485|  );
+2026-02-23 01:03:00 +08:00:   1486|          <Col xs={24} lg={6}>
+2026-02-23 01:03:00 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4727:16)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.jsxParseElementAt (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4698:32)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.jsxParseElement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4749:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4759:19)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:03:00 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:39
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.tryParse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6907:20)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9775:18)
+2026-02-23 01:03:00 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:39
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12426:12)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowIn (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10800:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssignAllowInOrVoidPattern (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12493:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11675:28)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11331:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-23 01:03:00 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseReturnStatement (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13142:28)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12798:21)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseStatementListItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12747:17)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:61)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseBlock (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13297:10)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseFunctionBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12100:24)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseArrowExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12075:10)
+2026-02-23 01:03:00 +08:00:       at TypeScriptParserMixin.parseParenAndDistinguishExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11687:12)
+2026-02-23 01:03:25 +08:00: 1:03:25 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:03:49 +08:00: 1:03:49 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:05:38 +08:00: 1:05:38 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:06:15 +08:00: 1:06:15 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:06:42 +08:00: 1:06:42 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:11:47 +08:00: 1:11:47 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:11:47 +08:00: 1:11:47 AM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Unexpected token (73:4)
+2026-02-23 01:11:47 +08:00: 
+2026-02-23 01:11:47 +08:00:   71 | export default Statistics;
+2026-02-23 01:11:47 +08:00:   72 |       setLoading(false);
+2026-02-23 01:11:47 +08:00: > 73 |     }
+2026-02-23 01:11:47 +08:00:      |     ^
+2026-02-23 01:11:47 +08:00:   74 |   };
+2026-02-23 01:11:47 +08:00:   75 |
+2026-02-23 01:11:47 +08:00:   76 |   // 难度分布数据
+2026-02-23 01:11:47 +08:00:   Plugin: vite:react-babel
+2026-02-23 01:11:47 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx:73:4
+2026-02-23 01:11:47 +08:00:   71 |  export default Statistics;
+2026-02-23 01:11:47 +08:00:   72 |        setLoading(false);
+2026-02-23 01:11:47 +08:00:   73 |      }
+2026-02-23 01:11:47 +08:00:      |      ^
+2026-02-23 01:11:47 +08:00:   74 |    };
+2026-02-23 01:11:47 +08:00:   75 |  
+2026-02-23 01:11:47 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.unexpected (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6619:16)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11442:22)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12895:23)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-23 01:11:47 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-23 01:11:47 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-23 01:11:47 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-23 01:11:47 +08:00:       at parser.next (<anonymous>)
+2026-02-23 01:11:47 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-23 01:11:47 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-23 01:11:47 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-23 01:11:47 +08:00:       at run.next (<anonymous>)
+2026-02-23 01:11:47 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-23 01:11:47 +08:00:       at transform.next (<anonymous>)
+2026-02-23 01:11:47 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:11:47 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:189:28
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:113:33
+2026-02-23 01:11:47 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:287:14)
+2026-02-23 01:11:47 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:11:47 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:12:00 +08:00: 1:12:00 AM [vite] Pre-transform error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Unexpected token (73:4)
+2026-02-23 01:12:00 +08:00: 
+2026-02-23 01:12:00 +08:00:   71 | export default Statistics;
+2026-02-23 01:12:00 +08:00:   72 |       setLoading(false);
+2026-02-23 01:12:00 +08:00: > 73 |     }
+2026-02-23 01:12:00 +08:00:      |     ^
+2026-02-23 01:12:00 +08:00:   74 |   };
+2026-02-23 01:12:00 +08:00:   75 |
+2026-02-23 01:12:00 +08:00:   76 |   // 难度分布数据
+2026-02-23 01:12:03 +08:00: 1:12:03 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:12:03 +08:00: 1:12:03 AM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Unexpected token (72:2)
+2026-02-23 01:12:03 +08:00: 
+2026-02-23 01:12:03 +08:00:   70 |
+2026-02-23 01:12:03 +08:00:   71 | export default Statistics;
+2026-02-23 01:12:03 +08:00: > 72 |   ];
+2026-02-23 01:12:03 +08:00:      |   ^
+2026-02-23 01:12:03 +08:00:   73 |
+2026-02-23 01:12:03 +08:00:   74 |   // 付费/免费分布
+2026-02-23 01:12:03 +08:00:   75 |   const premiumData = [
+2026-02-23 01:12:03 +08:00:   Plugin: vite:react-babel
+2026-02-23 01:12:03 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx:72:2
+2026-02-23 01:12:03 +08:00:   70 |  
+2026-02-23 01:12:03 +08:00:   71 |  export default Statistics;
+2026-02-23 01:12:03 +08:00:   72 |    ];
+2026-02-23 01:12:03 +08:00:      |    ^
+2026-02-23 01:12:03 +08:00:   73 |  
+2026-02-23 01:12:03 +08:00:   74 |    // 付费/免费分布
+2026-02-23 01:12:03 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.unexpected (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6619:16)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11442:22)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12895:23)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-23 01:12:03 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-23 01:12:03 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-23 01:12:03 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-23 01:12:03 +08:00:       at parser.next (<anonymous>)
+2026-02-23 01:12:03 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-23 01:12:03 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-23 01:12:03 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-23 01:12:03 +08:00:       at run.next (<anonymous>)
+2026-02-23 01:12:03 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-23 01:12:03 +08:00:       at transform.next (<anonymous>)
+2026-02-23 01:12:03 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:12:03 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:189:28
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:113:33
+2026-02-23 01:12:03 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:287:14)
+2026-02-23 01:12:03 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:12:03 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:12:11 +08:00: 1:12:11 AM [vite] Pre-transform error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Unexpected token (72:2)
+2026-02-23 01:12:11 +08:00: 
+2026-02-23 01:12:11 +08:00:   70 |
+2026-02-23 01:12:11 +08:00:   71 | export default Statistics;
+2026-02-23 01:12:11 +08:00: > 72 |   ];
+2026-02-23 01:12:11 +08:00:      |   ^
+2026-02-23 01:12:11 +08:00:   73 |
+2026-02-23 01:12:11 +08:00:   74 |   // 付费/免费分布
+2026-02-23 01:12:11 +08:00:   75 |   const premiumData = [
+2026-02-23 01:12:11 +08:00: 1:12:11 AM [vite] Internal server error: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx: Unexpected token (72:2)
+2026-02-23 01:12:11 +08:00: 
+2026-02-23 01:12:11 +08:00:   70 |
+2026-02-23 01:12:11 +08:00:   71 | export default Statistics;
+2026-02-23 01:12:11 +08:00: > 72 |   ];
+2026-02-23 01:12:11 +08:00:      |   ^
+2026-02-23 01:12:11 +08:00:   73 |
+2026-02-23 01:12:11 +08:00:   74 |   // 付费/免费分布
+2026-02-23 01:12:11 +08:00:   75 |   const premiumData = [
+2026-02-23 01:12:11 +08:00:   Plugin: vite:react-babel
+2026-02-23 01:12:11 +08:00:   File: /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/src/components/Statistics.tsx:72:2
+2026-02-23 01:12:11 +08:00:   70 |  
+2026-02-23 01:12:11 +08:00:   71 |  export default Statistics;
+2026-02-23 01:12:11 +08:00:   72 |    ];
+2026-02-23 01:12:11 +08:00:      |    ^
+2026-02-23 01:12:11 +08:00:   73 |  
+2026-02-23 01:12:11 +08:00:   74 |    // 付费/免费分布
+2026-02-23 01:12:11 +08:00:       at constructor (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:365:19)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.raise (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6599:19)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.unexpected (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:6619:16)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11442:22)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExprAtom (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:4764:20)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExprSubscripts (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11081:23)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseUpdate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11066:21)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:11046:23)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeUnary (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9837:18)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeUnaryOrPrivate (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10899:61)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExprOps (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10904:23)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeConditional (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10881:23)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10831:21)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseMaybeAssign (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9786:20)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExpressionBase (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10784:23)
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:39
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.allowInAnd (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12421:16)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseExpression (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10780:17)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12895:23)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseStatementContent (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:9508:18)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseStatementLike (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12767:17)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseModuleItem (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12744:17)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseBlockOrModuleBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13316:36)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseBlockBody (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:13309:10)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseProgram (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12622:10)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parseTopLevel (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:12612:25)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14488:25)
+2026-02-23 01:12:11 +08:00:       at TypeScriptParserMixin.parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:10126:18)
+2026-02-23 01:12:11 +08:00:       at parse (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/parser/lib/index.js:14522:38)
+2026-02-23 01:12:11 +08:00:       at parser (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/parser/index.js:41:34)
+2026-02-23 01:12:11 +08:00:       at parser.next (<anonymous>)
+2026-02-23 01:12:11 +08:00:       at normalizeFile (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/normalize-file.js:64:37)
+2026-02-23 01:12:11 +08:00:       at normalizeFile.next (<anonymous>)
+2026-02-23 01:12:11 +08:00:       at run (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transformation/index.js:22:50)
+2026-02-23 01:12:11 +08:00:       at run.next (<anonymous>)
+2026-02-23 01:12:11 +08:00:       at transform (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/transform.js:22:33)
+2026-02-23 01:12:11 +08:00:       at transform.next (<anonymous>)
+2026-02-23 01:12:11 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:261:32)
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:12:11 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:189:28
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/@babel/core/lib/gensync-utils/async.js:67:7
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:113:33
+2026-02-23 01:12:11 +08:00:       at step (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:287:14)
+2026-02-23 01:12:11 +08:00:       at /Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:273:13
+2026-02-23 01:12:11 +08:00:       at async.call.result.err.err (/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/node_modules/gensync/index.js:223:11)
+2026-02-23 01:12:12 +08:00: 1:12:12 AM [vite] hmr update /src/components/Statistics.tsx
+2026-02-23 01:12:33 +08:00: 1:12:33 AM [vite] hmr update /src/components/statistics/AcceptanceStatsSection.tsx
+2026-02-23 01:12:38 +08:00: 1:12:38 AM [vite] hmr update /src/components/statistics/AcceptanceStatsSection.tsx
+2026-02-23 01:12:49 +08:00: 1:12:49 AM [vite] hmr update /src/components/statistics/UpdateRadarSection.tsx
+2026-02-23 01:12:56 +08:00: 1:12:56 AM [vite] hmr update /src/components/statistics/UpdateRadarSection.tsx
+2026-02-23 01:12:56 +08:00: 1:12:56 AM [vite] hmr update /src/components/statistics/UpdateRadarSection.tsx
+2026-02-23 01:14:38 +08:00: 1:14:38 AM [vite] hmr update /src/components/statistics/OverviewSection.tsx
+2026-02-23 01:14:48 +08:00: 1:14:48 AM [vite] hmr update /src/components/TotalOnlineAggregateChart.tsx
+2026-02-23 01:15:07 +08:00: 1:15:07 AM [vite] hmr update /src/components/TotalOnlineAggregateChart.tsx
+2026-02-23 01:15:12 +08:00: 1:15:12 AM [vite] hmr update /src/components/TotalOnlineAggregateChart.tsx
+2026-02-23 01:15:46 +08:00: 1:15:46 AM [vite] hmr update /src/components/statistics/OnlineAnalysisSection.tsx
+2026-02-23 01:16:17 +08:00: 1:16:17 AM [vite] hmr update /src/components/statistics/DifficultyTagSection.tsx
+2026-02-23 01:16:46 +08:00: 1:16:46 AM [vite] hmr update /src/components/statistics/RankingSection.tsx
+2026-02-23 01:17:28 +08:00: 1:17:28 AM [vite] hmr update /src/components/statistics/AcceptanceStatsSection.tsx
+2026-02-23 01:18:00 +08:00: 1:18:00 AM [vite] hmr update /src/components/statistics/GroupingSection.tsx
+2026-02-23 01:18:47 +08:00: 1:18:47 AM [vite] hmr update /src/components/statistics/UpdateRadarSection.tsx
+2026-02-23 01:18:55 +08:00: 1:18:55 AM [vite] hmr update /src/components/statistics/UpdateRadarSection.tsx
+2026-02-23 01:21:03 +08:00: 1:21:03 AM [vite] page reload public/api-docs.html
+2026-02-23 01:22:40 +08:00: 1:22:40 AM [vite] page reload public/api-docs.html
+2026-02-23 01:23:19 +08:00: 1:23:19 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:23:19 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:23:19 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:23:19 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:03 +08:00: 1:24:03 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:24:03 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:03 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:03 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:12 +08:00: 1:24:12 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:24:12 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:12 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:12 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:29 +08:00: 1:24:29 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:24:29 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:29 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:29 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:37 +08:00: 1:24:37 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:24:37 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:37 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:37 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:37 +08:00: 1:24:37 AM [vite] http proxy error: /api/hot100/online-counts/4?limit=1000&startTime=2026-02-21+22%3A57%3A15&endTime=2026-02-22+22%3A57%3A15&site=all
+2026-02-23 01:24:37 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:37 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:37 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:37 +08:00: 1:24:37 AM [vite] http proxy error: /api/hot100
+2026-02-23 01:24:37 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:37 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:37 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:24:37 +08:00: 1:24:37 AM [vite] http proxy error: /api/hot100/online-counts/4?limit=1000&startTime=2026-02-21+22%3A57%3A15&endTime=2026-02-22+22%3A57%3A15&site=all
+2026-02-23 01:24:37 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 01:24:37 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 01:24:37 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 01:51:06 +08:00: 
+2026-02-23 01:51:06 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-23 01:51:06 +08:00: > vite
+2026-02-23 01:51:06 +08:00: 
+2026-02-23 01:51:06 +08:00: 
+2026-02-23 01:51:06 +08:00:   VITE v5.4.21  ready in 118 ms
+2026-02-23 01:51:06 +08:00: 
+2026-02-23 01:51:06 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-23 01:51:06 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-23 01:51:06 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-23 01:51:49 +08:00: 1:51:49 AM [vite] hmr update /src/components/home/HeroSection.tsx
+2026-02-23 01:52:11 +08:00: 
+2026-02-23 01:52:11 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-23 01:52:11 +08:00: > vite
+2026-02-23 01:52:11 +08:00: 
+2026-02-23 01:52:11 +08:00: 
+2026-02-23 01:52:11 +08:00:   VITE v5.4.21  ready in 124 ms
+2026-02-23 01:52:11 +08:00: 
+2026-02-23 01:52:11 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-23 01:52:11 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-23 01:52:11 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-23 01:52:50 +08:00: 1:52:50 AM [vite] hmr update /src/components/home/HeroSection.tsx
+2026-02-23 01:52:55 +08:00: 1:52:55 AM [vite] hmr update /src/components/home/HeroSection.tsx
+2026-02-23 01:53:18 +08:00: 
+2026-02-23 01:53:18 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-23 01:53:18 +08:00: > vite
+2026-02-23 01:53:18 +08:00: 
+2026-02-23 01:53:18 +08:00: 
+2026-02-23 01:53:18 +08:00:   VITE v5.4.21  ready in 121 ms
+2026-02-23 01:53:18 +08:00: 
+2026-02-23 01:53:18 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-23 01:53:18 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-23 01:53:18 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-23 01:56:14 +08:00: 1:56:14 AM [vite] hmr update /src/components/API/IdFormatsSection.tsx
+2026-02-23 01:56:42 +08:00: 
+2026-02-23 01:56:42 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-23 01:56:42 +08:00: > vite
+2026-02-23 01:56:42 +08:00: 
+2026-02-23 01:56:42 +08:00: 
+2026-02-23 01:56:42 +08:00:   VITE v5.4.21  ready in 128 ms
+2026-02-23 01:56:42 +08:00: 
+2026-02-23 01:56:42 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-23 01:56:42 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-23 01:56:42 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-23 01:59:57 +08:00: 1:59:57 AM [vite] hmr update /src/components/API/index.tsx
+2026-02-23 02:00:03 +08:00: 2:00:03 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 02:00:03 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 02:00:03 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 02:00:03 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 02:00:03 +08:00: 2:00:03 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 02:00:03 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 02:00:03 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 02:00:03 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 02:00:20 +08:00: 
+2026-02-23 02:00:20 +08:00: > leetcode-dashboard-frontend@1.0.0 dev
+2026-02-23 02:00:20 +08:00: > vite
+2026-02-23 02:00:20 +08:00: 
+2026-02-23 02:00:20 +08:00: 
+2026-02-23 02:00:20 +08:00:   VITE v5.4.21  ready in 132 ms
+2026-02-23 02:00:20 +08:00: 
+2026-02-23 02:00:20 +08:00:   ➜  Local:   http://localhost:52107/
+2026-02-23 02:00:20 +08:00:   ➜  Network: http://192.168.3.37:52107/
+2026-02-23 02:00:20 +08:00:   ➜  Network: http://198.18.0.1:52107/
+2026-02-23 02:04:12 +08:00: 2:04:12 AM [vite] hmr update /src/components/MCP.tsx
+2026-02-23 02:04:21 +08:00: 2:04:21 AM [vite] hmr update /src/components/MCP.tsx
+2026-02-23 02:22:26 +08:00: 2:22:26 AM [vite] hmr update /src/components/MCP.tsx
+2026-02-23 02:23:50 +08:00: 2:23:50 AM [vite] hmr update /src/components/MCP.tsx
+2026-02-23 02:23:57 +08:00: 2:23:57 AM [vite] hmr update /src/components/MCP.tsx
+2026-02-23 02:33:39 +08:00: 2:33:39 AM [vite] http proxy error: /api/total-online-history?hours=24
+2026-02-23 02:33:39 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 02:33:39 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 02:33:39 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 02:34:00 +08:00: 2:34:00 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 02:34:00 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 02:34:00 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 02:34:00 +08:00:     at afterConnectMultiple (node:net:1715:7)
+2026-02-23 02:34:00 +08:00: 2:34:00 AM [vite] http proxy error: /api/hot100/problems
+2026-02-23 02:34:00 +08:00: AggregateError [ECONNREFUSED]: 
+2026-02-23 02:34:00 +08:00:     at internalConnectMultiple (node:net:1134:18)
+2026-02-23 02:34:00 +08:00:     at afterConnectMultiple (node:net:1715:7)

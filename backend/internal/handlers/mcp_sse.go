@@ -60,13 +60,26 @@ func registerTools(s *server.MCPServer) {
 			mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
 		),
 	)
-	s.AddTool(problemCountTool, handleGetProblemOnlineCountMCP)
+	// Tool: get_hot100_problems
+	hot100ProblemsTool := mcp.NewTool(
+		"get_hot100_problems",
+		mcp.WithDescription("获取LeetCode Hot 100题目列表（包含题目信息和在线人数）"),
+	)
+	s.AddTool(hot100ProblemsTool, handleGetHot100ProblemsMCP)
 }
 
 // handleGetHot100OnlineCountMCP handles the get_hot100_online_count tool
 func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	// Get all problems from cache
-	statuses := cache.GetCache().GetAll()
+	// Get all problems from cache (like HTTP API - prefer Redis)
+	var statuses []*cache.ProblemStatus
+	
+	// Try Redis cache first (same as HTTP API)
+	redisCache := cache.GetRedisCache()
+	if redisCache.IsEnabled() {
+		statuses = redisCache.GetAll()
+	} else {
+		statuses = cache.GetCache().GetAll()
+	}
 
 	// If cache is empty, load from database
 	if len(statuses) == 0 {
@@ -81,9 +94,15 @@ func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest)
 						Order("timestamp DESC").
 						First(&latestCount).Error
 
-					count := 0
+					countCN := 0
+					countCOM := 0
+					countTotal := 0
+					lastUpdated := time.Now()
 					if err == nil {
-						count = latestCount.CountTotal
+						countCN = latestCount.CountCN
+						countCOM = latestCount.CountCOM
+						countTotal = latestCount.CountTotal
+						lastUpdated = latestCount.Timestamp
 					}
 
 					// Parse tags
@@ -93,34 +112,68 @@ func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest)
 					}
 
 					statuses = append(statuses, &cache.ProblemStatus{
-						FrontendID:  problem.FrontendID,
-						Slug:        problem.Slug,
-						Title:       problem.Title,
-						TitleCn:     problem.TitleCn,
-						Difficulty:  problem.Difficulty,
-						PaidOnly:    problem.PaidOnly,
-						TopicTags:   topicTags,
-						OnlineCount: count,
-						LastUpdated: latestCount.Timestamp,
+						FrontendID:     problem.FrontendID,
+						Slug:           problem.Slug,
+						Title:          problem.Title,
+						TitleCn:        problem.TitleCn,
+						Difficulty:     problem.Difficulty,
+						PaidOnly:       problem.PaidOnly,
+						TopicTags:      topicTags,
+						OnlineCount:    countTotal,
+						OnlineCountCN:  countCN,
+						OnlineCountCOM: countCOM,
+						LastUpdated:    lastUpdated,
 					})
 				}
 			}
 		}
 	}
 
-	// Format response
+	// Format response with all three counts
+	// Load all problem tags from database to supplement missing topic_tags from cache
+	db := database.GetDB()
+	problemTagsMap := make(map[string]string)
+	if db != nil {
+		var problems []models.Problem
+		if result := db.Select("slug", "tags").Find(&problems); result.Error == nil {
+			for _, p := range problems {
+				if p.Tags != "" {
+					problemTagsMap[p.Slug] = p.Tags
+				}
+			}
+		}
+	}
+
 	var result []map[string]interface{}
 	for _, s := range statuses {
+		// Get topic tags from cache or database
+		topicTags := s.TopicTags
+		if topicTags == nil {
+			topicTags = []string{}
+		}
+		if len(topicTags) == 0 && s.Slug != "" {
+			if tagsJSON, ok := problemTagsMap[s.Slug]; ok && tagsJSON != "" {
+				json.Unmarshal([]byte(tagsJSON), &topicTags)
+			}
+		}
+		// Ensure topicTags is never nil (return [] instead of null)
+		if topicTags == nil {
+			topicTags = []string{}
+		}
+
 		result = append(result, map[string]interface{}{
-			"frontend_id":  s.FrontendID,
-			"slug":         s.Slug,
-			"title":        s.Title,
-			"title_cn":     s.TitleCn,
-			"difficulty":   s.Difficulty,
-			"paid_only":    s.PaidOnly,
-			"topic_tags":   s.TopicTags,
-			"online_count": s.OnlineCount,
-			"last_updated": s.LastUpdated.Format(time.RFC3339),
+			"frontend_id":       s.FrontendID,
+			"slug":              s.Slug,
+			"title":             s.Title,
+			"title_cn":          s.TitleCn,
+			"difficulty":        s.Difficulty,
+			"paid_only":         s.PaidOnly,
+			"topic_tags":        topicTags,
+			"online_count":      s.OnlineCount,
+			"online_count_cn":   s.OnlineCountCN,
+			"online_count_com":  s.OnlineCountCOM,
+			"online_count_total": s.OnlineCountCN + s.OnlineCountCOM,
+			"last_updated":      s.LastUpdated.Format(time.RFC3339),
 		})
 	}
 
@@ -223,29 +276,133 @@ func handleGetProblemOnlineCountMCP(ctx context.Context, req mcp.CallToolRequest
 		Order("timestamp DESC").
 		First(&latestCount).Error
 
-	count := 0
+	countCN := 0
+	countCOM := 0
+	countTotal := 0
 	lastUpdated := time.Now()
 	if err == nil {
-		count = latestCount.CountTotal
+		countCN = latestCount.CountCN
+		countCOM = latestCount.CountCOM
+		countTotal = latestCount.CountTotal
 		lastUpdated = latestCount.Timestamp
 	}
 
 	// Parse tags
-	var topicTags []string
+	topicTags := []string{}
 	if problem.Tags != "" {
 		json.Unmarshal([]byte(problem.Tags), &topicTags)
 	}
 
 	result := map[string]interface{}{
-		"frontend_id":  problem.FrontendID,
-		"slug":         problem.Slug,
-		"title":        problem.Title,
-		"title_cn":     problem.TitleCn,
-		"difficulty":   problem.Difficulty,
-		"paid_only":    problem.PaidOnly,
-		"topic_tags":   topicTags,
-		"online_count": count,
-		"last_updated": lastUpdated.Format(time.RFC3339),
+		"frontend_id":        problem.FrontendID,
+		"slug":               problem.Slug,
+		"title":              problem.Title,
+		"title_cn":           problem.TitleCn,
+		"difficulty":         problem.Difficulty,
+		"paid_only":          problem.PaidOnly,
+		"topic_tags":         topicTags,
+		"online_count":       countTotal,
+		"online_count_cn":    countCN,
+		"online_count_com":   countCOM,
+		"online_count_total": countCN + countCOM,
+		"last_updated":       lastUpdated.Format(time.RFC3339),
+	}
+
+	resultJSON, err := json.Marshal(result)
+	if err != nil {
+		return mcp.NewToolResultError(fmt.Sprintf("Failed to marshal result: %v", err)), nil
+	}
+
+	return mcp.NewToolResultText(string(resultJSON)), nil
+}
+// handleGetHot100ProblemsMCP handles the get_hot100_problems tool
+func handleGetHot100ProblemsMCP(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	// Get all problems from cache (prefer Redis like HTTP API)
+	var statuses []*cache.ProblemStatus
+	
+	// Try Redis cache first
+	redisCache := cache.GetRedisCache()
+	if redisCache.IsEnabled() {
+		statuses = redisCache.GetAll()
+	} else {
+		statuses = cache.GetCache().GetAll()
+	}
+
+	// If cache is empty, load from database
+	if len(statuses) == 0 {
+		db := database.GetDB()
+		if db != nil {
+			var problems []models.Problem
+			if result := db.Find(&problems); result.Error == nil {
+				for _, problem := range problems {
+					// Parse tags
+					topicTags := []string{}
+					if problem.Tags != "" {
+						json.Unmarshal([]byte(problem.Tags), &topicTags)
+					}
+
+					statuses = append(statuses, &cache.ProblemStatus{
+						FrontendID:  problem.FrontendID,
+						Slug:        problem.Slug,
+						Title:       problem.Title,
+						TitleCn:     problem.TitleCn,
+						Difficulty:  problem.Difficulty,
+						PaidOnly:    problem.PaidOnly,
+						TopicTags:   topicTags,
+						OnlineCount: 0,
+						LastUpdated: time.Now(),
+					})
+				}
+			}
+		}
+	}
+
+	// Load all problem tags from database to supplement missing topic_tags from cache
+	db := database.GetDB()
+	problemTagsMap := make(map[string]string)
+	if db != nil {
+		var problems []models.Problem
+		if result := db.Select("slug", "tags").Find(&problems); result.Error == nil {
+			for _, p := range problems {
+				if p.Tags != "" {
+					problemTagsMap[p.Slug] = p.Tags
+				}
+			}
+		}
+	}
+
+	// Format response with complete problem info
+	var result []map[string]interface{}
+	for _, s := range statuses {
+		// Get topic tags from cache or database
+		topicTags := s.TopicTags
+		if topicTags == nil {
+			topicTags = []string{}
+		}
+		if len(topicTags) == 0 && s.Slug != "" {
+			if tagsJSON, ok := problemTagsMap[s.Slug]; ok && tagsJSON != "" {
+				json.Unmarshal([]byte(tagsJSON), &topicTags)
+			}
+		}
+		// Ensure topicTags is never nil
+		if topicTags == nil {
+			topicTags = []string{}
+		}
+
+		result = append(result, map[string]interface{}{
+			"frontend_id":       s.FrontendID,
+			"slug":              s.Slug,
+			"title":             s.Title,
+			"title_cn":          s.TitleCn,
+			"difficulty":        s.Difficulty,
+			"paid_only":         s.PaidOnly,
+			"topic_tags":        topicTags,
+			"online_count":      s.OnlineCount,
+			"online_count_cn":   s.OnlineCountCN,
+			"online_count_com":  s.OnlineCountCOM,
+			"online_count_total": s.OnlineCountCN + s.OnlineCountCOM,
+			"last_updated":      s.LastUpdated.Format(time.RFC3339),
+		})
 	}
 
 	resultJSON, err := json.Marshal(result)

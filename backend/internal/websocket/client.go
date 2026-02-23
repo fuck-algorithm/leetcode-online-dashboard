@@ -10,11 +10,20 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// SiteType represents the LeetCode site (cn or com)
+type SiteType string
+
+const (
+	SiteCN  SiteType = "cn"
+	SiteCOM SiteType = "com"
+)
+
 // LeetCodeWSClient represents a WebSocket client for LeetCode
 type LeetCodeWSClient struct {
 	conn      *websocket.Conn
 	url       string
 	slug      string
+	site      SiteType
 	onMessage func([]byte)
 	onError   func(error)
 	mu        sync.RWMutex
@@ -29,22 +38,42 @@ type WSMessage struct {
 	Problem string      `json:"problem,omitempty"`
 }
 
-// NewLeetCodeWSClient creates a new WebSocket client
-func NewLeetCodeWSClient(problemSlug string, onMessage func([]byte), onError func(error)) *LeetCodeWSClient {
+// NewLeetCodeWSClient creates a new WebSocket client for a specific site (cn or com)
+func NewLeetCodeWSClient(problemSlug string, site SiteType, onMessage func([]byte), onError func(error)) *LeetCodeWSClient {
+	var wsURL string
+	if site == SiteCOM {
+		wsURL = "wss://collaboration-ws.leetcode.com/problems/" + problemSlug
+	} else {
+		wsURL = "wss://collaboration-ws.leetcode.cn/problems/" + problemSlug
+	}
+
 	return &LeetCodeWSClient{
-		url:       "wss://collaboration-ws.leetcode.cn/problems/" + problemSlug,
+		url:       wsURL,
 		slug:      problemSlug,
+		site:      site,
 		onMessage: onMessage,
 		onError:   onError,
 	}
 }
 
+// GetSite returns the site type of this client
+func (c *LeetCodeWSClient) GetSite() SiteType {
+	return c.site
+}
+
 // Connect establishes the WebSocket connection and sends subscription message
 func (c *LeetCodeWSClient) Connect() error {
-	log.Printf("[WebSocket] Connecting to LeetCode for problem: %s", c.slug)
+	log.Printf("[WebSocket] Connecting to LeetCode [%s] for problem: %s", c.site, c.slug)
+
+	var origin string
+	if c.site == SiteCOM {
+		origin = "https://leetcode.com"
+	} else {
+		origin = "https://leetcode.cn"
+	}
 
 	headers := http.Header{
-		"Origin":          {"https://leetcode.cn"},
+		"Origin":          {origin},
 		"User-Agent":      {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
 		"Accept-Language": {"en-US,en;q=0.9"},
 	}
@@ -63,7 +92,7 @@ func (c *LeetCodeWSClient) Connect() error {
 	c.connected = true
 	c.mu.Unlock()
 
-	log.Printf("[WebSocket] Connected successfully to %s", c.slug)
+	log.Printf("[WebSocket] Connected successfully to [%s] %s", c.site, c.slug)
 
 	// Send subscription message to start receiving data
 	if err := c.sendSubscription(); err != nil {
@@ -95,7 +124,7 @@ func (c *LeetCodeWSClient) sendSubscription() error {
 
 // readMessages continuously reads messages from the WebSocket
 func (c *LeetCodeWSClient) readMessages() {
-	log.Printf("[WebSocket] Started reading messages for %s", c.slug)
+	log.Printf("[WebSocket] Started reading messages for [%s] %s", c.site, c.slug)
 	messageCount := 0
 
 	for {
@@ -116,13 +145,13 @@ func (c *LeetCodeWSClient) readMessages() {
 			if c.onError != nil {
 				c.onError(err)
 			}
-			log.Printf("[WebSocket] Error reading message for %s: %v (total messages received: %d)", c.slug, err, messageCount)
+			log.Printf("[WebSocket] Error reading message from [%s] %s: %v (total messages received: %d)", c.site, c.slug, err, messageCount)
 			return
 		}
 
 		messageCount++
 		if messageCount <= 3 {
-			log.Printf("[WebSocket] Received message #%d for %s: %s", messageCount, c.slug, string(message))
+			log.Printf("[WebSocket] Received message #%d from [%s] %s: %s", messageCount, c.site, c.slug, string(message))
 		}
 
 		if c.onMessage != nil {
@@ -193,7 +222,10 @@ func (c *LeetCodeWSClient) Reconnect(maxRetries int) {
 	log.Println("Max reconnection attempts reached")
 }
 
-// generateWSURL returns the WebSocket URL for the problem
+// generateWSURL returns the WebSocket URL for the problem based on site
 func (c *LeetCodeWSClient) generateWSURL() string {
+	if c.site == SiteCOM {
+		return "wss://collaboration-ws.leetcode.com/problems/" + c.slug
+	}
 	return "wss://collaboration-ws.leetcode.cn/problems/" + c.slug
 }

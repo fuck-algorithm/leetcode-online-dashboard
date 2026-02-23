@@ -144,6 +144,9 @@ func shouldSkipCache(path string) bool {
 		"/api/health",
 		"/api/admin",
 		"/api/export",
+		"/api/hot100",
+		"/api/hot100/problems",
+		"/api/problems",
 		"/ws",
 		"/mcp",
 	}

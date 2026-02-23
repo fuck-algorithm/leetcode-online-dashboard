@@ -7,12 +7,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 
 	"leetcode-dashboard/internal/database"
 	"leetcode-dashboard/internal/models"
 )
 
-// ExportData handles data export requests
+// ExportData handles data export requests - exports unified data (CN + COM)
 func ExportData(c *gin.Context) {
 	format := c.Query("format")
 	if format == "" {
@@ -22,6 +23,7 @@ func ExportData(c *gin.Context) {
 	problemID := c.Query("problem_id")
 	startDate := c.Query("start_date")
 	endDate := c.Query("end_date")
+	site := c.Query("site") // Optional: "cn", "com", or empty for unified
 
 	db := database.GetDB()
 	if db == nil {
@@ -29,8 +31,16 @@ func ExportData(c *gin.Context) {
 		return
 	}
 
-	// Build query
-	query := db.Model(&models.OnlineCount{})
+	// Build query based on site filter
+	var query interface{}
+	switch site {
+	case "cn":
+		query = db.Model(&models.OnlineCountCN{})
+	case "com":
+		query = db.Model(&models.OnlineCountCOM{})
+	default:
+		query = db.Model(&models.OnlineCountUnified{})
+	}
 
 	// Support both numeric frontend_id and slug for problem_id
 	if problemID != "" {
@@ -39,43 +49,107 @@ func ExportData(c *gin.Context) {
 			Error(c, http.StatusNotFound, "Problem not found")
 			return
 		}
-		query = query.Where("frontend_id = ?", frontendID)
+		query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("frontend_id = ?", frontendID)
 	}
 
 	if startDate != "" {
 		if t, err := time.Parse("2006-01-02", startDate); err == nil {
-			query = query.Where("timestamp >= ?", t)
+			query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("timestamp >= ?", t)
 		}
 	}
 
 	if endDate != "" {
 		if t, err := time.Parse("2006-01-02", endDate); err == nil {
-			query = query.Where("timestamp <= ?", t)
+			query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("timestamp <= ?", t)
 		}
 	}
 
-	// Fetch data
-	var counts []models.OnlineCount
-	if result := query.Find(&counts); result.Error != nil {
-		Error(c, http.StatusInternalServerError, result.Error.Error())
-		return
+	// Fetch data based on site
+	switch site {
+	case "cn":
+		var counts []models.OnlineCountCN
+		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+			Error(c, http.StatusInternalServerError, result.Error.Error())
+			return
+		}
+		exportSiteData(c, format, counts, site)
+	case "com":
+		var counts []models.OnlineCountCOM
+		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+			Error(c, http.StatusInternalServerError, result.Error.Error())
+			return
+		}
+		exportSiteData(c, format, counts, site)
+	default:
+		var counts []models.OnlineCountUnified
+		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+			Error(c, http.StatusInternalServerError, result.Error.Error())
+			return
+		}
+		exportUnifiedData(c, format, counts)
 	}
+}
 
-	// Export based on format
+// exportUnifiedData exports unified data as JSON or CSV
+func exportUnifiedData(c *gin.Context, format string, counts []models.OnlineCountUnified) {
 	switch format {
 	case "csv":
-		exportCSV(c, counts)
+		exportUnifiedCSV(c, counts)
 	case "json":
-		exportJSON(c, counts)
+		exportUnifiedJSON(c, counts)
 	default:
 		Error(c, http.StatusBadRequest, "Unsupported format. Use 'json' or 'csv'")
 	}
 }
 
-// exportJSON exports data as JSON (不包装为code/msg格式，直接返回数据)
-func exportJSON(c *gin.Context, counts []models.OnlineCount) {
+// exportSiteData exports site-specific data as JSON or CSV
+func exportSiteData(c *gin.Context, format string, counts interface{}, site string) {
+	switch format {
+	case "csv":
+		c.Header("Content-Type", "text/csv")
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_%s_%d.csv", site, time.Now().Unix()))
+		writer := csv.NewWriter(c.Writer)
+		defer writer.Flush()
+		writer.Write([]string{"ID", "FrontendID", "Count", "Timestamp"})
+		
+		switch data := counts.(type) {
+		case []models.OnlineCountCN:
+			for _, count := range data {
+				writer.Write([]string{
+					fmt.Sprintf("%d", count.ID),
+					count.FrontendID,
+					fmt.Sprintf("%d", count.Count),
+					count.Timestamp.Format(time.RFC3339),
+				})
+			}
+		case []models.OnlineCountCOM:
+			for _, count := range data {
+				writer.Write([]string{
+					fmt.Sprintf("%d", count.ID),
+					count.FrontendID,
+					fmt.Sprintf("%d", count.Count),
+					count.Timestamp.Format(time.RFC3339),
+				})
+			}
+		}
+	case "json":
+		c.Header("Content-Type", "application/json")
+		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_%s_%d.json", site, time.Now().Unix()))
+		c.JSON(http.StatusOK, gin.H{
+			"exported_at": time.Now(),
+			"site":        site,
+			"count":       len(counts.([]models.OnlineCountCN)),
+			"data":        counts,
+		})
+	default:
+		Error(c, http.StatusBadRequest, "Unsupported format")
+	}
+}
+
+// exportUnifiedJSON exports unified data as JSON
+func exportUnifiedJSON(c *gin.Context, counts []models.OnlineCountUnified) {
 	c.Header("Content-Type", "application/json")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_%d.json", time.Now().Unix()))
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_unified_%d.json", time.Now().Unix()))
 	c.JSON(http.StatusOK, gin.H{
 		"exported_at": time.Now(),
 		"count":       len(counts),
@@ -83,29 +157,31 @@ func exportJSON(c *gin.Context, counts []models.OnlineCount) {
 	})
 }
 
-// exportCSV exports data as CSV
-func exportCSV(c *gin.Context, counts []models.OnlineCount) {
+// exportUnifiedCSV exports unified data as CSV
+func exportUnifiedCSV(c *gin.Context, counts []models.OnlineCountUnified) {
 	c.Header("Content-Type", "text/csv")
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_%d.csv", time.Now().Unix()))
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_unified_%d.csv", time.Now().Unix()))
 
 	writer := csv.NewWriter(c.Writer)
 	defer writer.Flush()
 
-	// Write header
-	writer.Write([]string{"ID", "FrontendID", "Count", "Timestamp"})
+	// Write header with CN and COM columns
+	writer.Write([]string{"ID", "FrontendID", "CountCN", "CountCOM", "CountTotal", "Timestamp"})
 
 	// Write data
 	for _, count := range counts {
 		writer.Write([]string{
 			fmt.Sprintf("%d", count.ID),
 			count.FrontendID,
-			fmt.Sprintf("%d", count.Count),
+			fmt.Sprintf("%d", count.CountCN),
+			fmt.Sprintf("%d", count.CountCOM),
+			fmt.Sprintf("%d", count.CountTotal),
 			count.Timestamp.Format(time.RFC3339),
 		})
 	}
 }
 
-// GetExportStats returns export statistics
+// GetExportStats returns export statistics for all sites
 func GetExportStats(c *gin.Context) {
 	db := database.GetDB()
 	if db == nil {
@@ -113,19 +189,25 @@ func GetExportStats(c *gin.Context) {
 		return
 	}
 
-	var totalRecords int64
-	db.Model(&models.OnlineCount{}).Count(&totalRecords)
+	var cnRecords, comRecords, unifiedRecords int64
+	db.Model(&models.OnlineCountCN{}).Count(&cnRecords)
+	db.Model(&models.OnlineCountCOM{}).Count(&comRecords)
+	db.Model(&models.OnlineCountUnified{}).Count(&unifiedRecords)
 
 	var oldestRecord time.Time
-	db.Model(&models.OnlineCount{}).Select("MIN(timestamp)").Scan(&oldestRecord)
+	db.Model(&models.OnlineCountCN{}).Select("MIN(timestamp)").Scan(&oldestRecord)
 
 	var newestRecord time.Time
-	db.Model(&models.OnlineCount{}).Select("MAX(timestamp)").Scan(&newestRecord)
+	db.Model(&models.OnlineCountCN{}).Select("MAX(timestamp)").Scan(&newestRecord)
 
 	Success(c, gin.H{
-		"total_records":     totalRecords,
+		"cn_records":        cnRecords,
+		"com_records":       comRecords,
+		"unified_records":   unifiedRecords,
+		"total_records":     cnRecords + comRecords + unifiedRecords,
 		"oldest_record":     oldestRecord,
 		"newest_record":     newestRecord,
 		"available_formats": []string{"json", "csv"},
+		"available_sites":   []string{"cn", "com", "unified"},
 	})
 }

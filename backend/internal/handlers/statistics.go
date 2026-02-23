@@ -59,10 +59,10 @@ func GetStatistics(c *gin.Context) {
 	var topProblems []ProblemStat
 
 	for _, p := range problems {
-		var latestCount models.OnlineCount
+		var latestCount models.OnlineCountUnified
 		db.Where("frontend_id = ?", p.FrontendID).Order("timestamp DESC").First(&latestCount)
 
-		count := latestCount.Count
+		count := latestCount.CountTotal
 		totalOnline += count
 
 		if count > maxOnline {

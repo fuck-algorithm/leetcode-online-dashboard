@@ -7,15 +7,17 @@ import (
 
 // ProblemStatus 内存中的题目实时状态
 type ProblemStatus struct {
-	FrontendID  string    `json:"frontend_id"`
-	Slug        string    `json:"slug"`
-	Title       string    `json:"title"`
-	TitleCn     string    `json:"title_cn"`
-	Difficulty  string    `json:"difficulty"`
-	PaidOnly    bool      `json:"paid_only"`
-	TopicTags   []string  `json:"topic_tags"`
-	OnlineCount int       `json:"online_count"`
-	LastUpdated time.Time `json:"last_updated"`
+	FrontendID     string    `json:"frontend_id"`
+	Slug           string    `json:"slug"`
+	Title          string    `json:"title"`
+	TitleCn        string    `json:"title_cn"`
+	Difficulty     string    `json:"difficulty"`
+	PaidOnly       bool      `json:"paid_only"`
+	TopicTags      []string  `json:"topic_tags"`
+	OnlineCount    int       `json:"online_count"`
+	OnlineCountCN  int       `json:"online_count_cn"`
+	OnlineCountCOM int       `json:"online_count_com"`
+	LastUpdated    time.Time `json:"last_updated"`
 }
 
 // MemoryCache 内存缓存管理器

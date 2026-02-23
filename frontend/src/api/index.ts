@@ -25,12 +25,20 @@ export const fetchHot100 = async (): Promise<Problem[]> => {
   return response.data.data || response.data;
 };
 
-export const fetchOnlineCounts = async (problemId: string, limit: number = 100, startTime?: string, endTime?: string): Promise<OnlineCount[]> => {
+export const fetchOnlineCounts = async (
+  problemId: string, 
+  limit: number = 1000, 
+  startTime?: string, 
+  endTime?: string,
+  site?: 'cn' | 'com' | 'unified' | 'all'
+): Promise<OnlineCount[]> => {
   const params = new URLSearchParams();
   params.append('limit', String(limit));
   // 使用精确时间格式（包含小时分钟秒）
   if (startTime) params.append('startTime', startTime);
   if (endTime) params.append('endTime', endTime);
+  // 默认获取所有数据（CN/COM/Total）
+  params.append('site', site || 'all');
   
   const response = await api.get(`/hot100/online-counts/${problemId}?${params.toString()}`);
   return response.data.data || response.data;
@@ -71,7 +79,7 @@ export const exportData = async (format: 'json' | 'csv' = 'json', filters?: any)
 
 // 获取问题历史数据（用于图表）
 export const fetchProblemHistory = async (problemId: string, hours: number = 24): Promise<OnlineCount[]> => {
-  const response = await api.get(`/hot100/online-counts/${problemId}?hours=${hours}`);
+  const response = await api.get(`/hot100/online-counts/${problemId}?hours=${hours}&site=all`);
   return response.data.data || response.data;
 };
 

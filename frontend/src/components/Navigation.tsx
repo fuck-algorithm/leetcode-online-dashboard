@@ -10,6 +10,7 @@ import {
   CloudOutlined,
   ToolOutlined,
 } from '@ant-design/icons';
+import GitHubStarButton from './GitHubStarButton';
 
 const { Header } = Layout;
 
@@ -41,6 +42,9 @@ const Navigation: React.FC = () => {
         items={menuItems}
         style={{ flex: 1, minWidth: 0, background: 'transparent', borderBottom: 'none' }}
       />
+      <div style={{ padding: '0 24px', display: 'flex', alignItems: 'center' }}>
+        <GitHubStarButton owner="fuck-algorithm" repo="leetcode-online-dashboard" />
+      </div>
     </Header>
   );
 };

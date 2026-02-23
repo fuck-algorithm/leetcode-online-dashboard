@@ -130,17 +130,35 @@ func main() {
 	// MCP SSE server endpoints
 	mcpServer := handlers.NewMCPServer()
 	
-	// Use mcp-go's built-in SSE server with automatic path handling
+	// Create SSE server
 	sseServer := server.NewSSEServer(mcpServer)
+	sseHandler := sseServer.SSEHandler()
 	
-	// Mount SSE server at /mcp - it handles both GET and POST automatically
+	// Custom handler that supports both GET and HEAD for SSE
+	r.Any("/sse", func(c *gin.Context) {
+		if c.Request.Method == http.MethodHead {
+			c.Header("Content-Type", "text/event-stream")
+			c.Header("Cache-Control", "no-cache")
+			c.Header("Connection", "keep-alive")
+			c.Status(http.StatusOK)
+			return
+		}
+		sseHandler.ServeHTTP(c.Writer, c.Request)
+	})
+	
 	r.Any("/mcp/sse", func(c *gin.Context) {
-		sseServer.ServeHTTP(c.Writer, c.Request)
+		if c.Request.Method == http.MethodHead {
+			c.Header("Content-Type", "text/event-stream")
+			c.Header("Cache-Control", "no-cache")
+			c.Header("Connection", "keep-alive")
+			c.Status(http.StatusOK)
+			return
+		}
+		sseHandler.ServeHTTP(c.Writer, c.Request)
 	})
 	
-	r.Any("/mcp/message", func(c *gin.Context) {
-		sseServer.ServeHTTP(c.Writer, c.Request)
-	})
+	r.POST("/message", gin.WrapH(sseServer.MessageHandler()))
+	r.POST("/mcp/message", gin.WrapH(sseServer.MessageHandler()))
 	
 	// Legacy REST-based MCP endpoints (deprecated, kept for backward compatibility)
 	r.GET("/mcp", handlers.MCPManifest)

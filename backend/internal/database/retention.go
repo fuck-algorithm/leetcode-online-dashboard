@@ -65,46 +65,80 @@ func (p *DataRetentionPolicy) cleanupRoutine() {
 func (p *DataRetentionPolicy) Cleanup() {
 	cutoffTime := time.Now().AddDate(0, 0, -p.RetentionDays)
 
-	// Clean up old online counts
-	result := p.DB.Where("timestamp < ?", cutoffTime).Delete(&models.OnlineCount{})
+	// Clean up old online counts for CN site
+	result := p.DB.Where("timestamp < ?", cutoffTime).Delete(&models.OnlineCountCN{})
 	if result.Error != nil {
-		log.Printf("Error cleaning up old online counts: %v", result.Error)
+		log.Printf("Error cleaning up old CN online counts: %v", result.Error)
 	} else {
-		log.Printf("Cleaned up %d old online count records", result.RowsAffected)
+		log.Printf("Cleaned up %d old CN online count records", result.RowsAffected)
+	}
+
+	// Clean up old online counts for COM site
+	result = p.DB.Where("timestamp < ?", cutoffTime).Delete(&models.OnlineCountCOM{})
+	if result.Error != nil {
+		log.Printf("Error cleaning up old COM online counts: %v", result.Error)
+	} else {
+		log.Printf("Cleaned up %d old COM online count records", result.RowsAffected)
+	}
+
+	// Clean up old unified online counts
+	result = p.DB.Where("timestamp < ?", cutoffTime).Delete(&models.OnlineCountUnified{})
+	if result.Error != nil {
+		log.Printf("Error cleaning up old unified online counts: %v", result.Error)
+	} else {
+		log.Printf("Cleaned up %d old unified online count records", result.RowsAffected)
 	}
 }
 
 // CleanupByFrontendID removes all data for a specific problem
 func (p *DataRetentionPolicy) CleanupByFrontendID(frontendID string) error {
-	result := p.DB.Where("frontend_id = ?", frontendID).Delete(&models.OnlineCount{})
+	// Clean up CN site data
+	result := p.DB.Where("frontend_id = ?", frontendID).Delete(&models.OnlineCountCN{})
+	if result.Error != nil {
+		return result.Error
+	}
+	// Clean up COM site data
+	result = p.DB.Where("frontend_id = ?", frontendID).Delete(&models.OnlineCountCOM{})
+	if result.Error != nil {
+		return result.Error
+	}
+	// Clean up unified data
+	result = p.DB.Where("frontend_id = ?", frontendID).Delete(&models.OnlineCountUnified{})
 	return result.Error
 }
 
 // GetStorageStats returns storage statistics
 func (p *DataRetentionPolicy) GetStorageStats() map[string]interface{} {
-	var onlineCount int64
-	p.DB.Model(&models.OnlineCount{}).Count(&onlineCount)
+	var cnOnlineCount, comOnlineCount, unifiedOnlineCount int64
+	p.DB.Model(&models.OnlineCountCN{}).Count(&cnOnlineCount)
+	p.DB.Model(&models.OnlineCountCOM{}).Count(&comOnlineCount)
+	p.DB.Model(&models.OnlineCountUnified{}).Count(&unifiedOnlineCount)
 
 	var problemCount int64
 	p.DB.Model(&models.Problem{}).Count(&problemCount)
 
-	// Get oldest and newest records
-	var oldestRecord, newestRecord models.OnlineCount
+	// Get oldest and newest records from CN (should be similar for both sites)
+	var oldestRecordCN, newestRecordCN models.OnlineCountCN
 	var oldestTime, newestTime time.Time
 
-	if err := p.DB.Order("timestamp ASC").First(&oldestRecord).Error; err == nil {
-		oldestTime = oldestRecord.Timestamp
+	if err := p.DB.Order("timestamp ASC").First(&oldestRecordCN).Error; err == nil {
+		oldestTime = oldestRecordCN.Timestamp
 	}
-	if err := p.DB.Order("timestamp DESC").First(&newestRecord).Error; err == nil {
-		newestTime = newestRecord.Timestamp
+	if err := p.DB.Order("timestamp DESC").First(&newestRecordCN).Error; err == nil {
+		newestTime = newestRecordCN.Timestamp
 	}
 
+	totalRecords := cnOnlineCount + comOnlineCount + unifiedOnlineCount
+
 	return map[string]interface{}{
-		"online_count_records": onlineCount,
-		"problem_records":      problemCount,
-		"retention_days":       p.RetentionDays,
-		"oldest_record":        oldestTime,
-		"newest_record":        newestTime,
+		"online_count_cn_records":      cnOnlineCount,
+		"online_count_com_records":       comOnlineCount,
+		"online_count_unified_records": unifiedOnlineCount,
+		"online_count_total_records":   totalRecords,
+		"problem_records":              problemCount,
+		"retention_days":             p.RetentionDays,
+		"oldest_record":              oldestTime,
+		"newest_record":              newestTime,
 	}
 }
 

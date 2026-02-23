@@ -17,6 +17,9 @@ interface WSProblem {
   paid_only?: boolean;
   topic_tags?: string[];
   online_count: number;
+  online_count_cn: number;
+  online_count_com: number;
+  online_count_total: number;
   last_updated: number;
 }
 
@@ -30,6 +33,9 @@ const formatSlug = (slug: string): string => {
 const { Search } = Input;
 const { Option } = Select;
 
+type SortField = 'cn' | 'com' | 'total';
+type SortOrder = 'ascend' | 'descend';
+
 const Rankings: React.FC = () => {
   const [problems, setProblems] = useState<Problem[]>([]);
   const [filtered, setFiltered] = useState<Problem[]>([]);
@@ -38,6 +44,8 @@ const Rankings: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [difficultyFilter, setDifficultyFilter] = useState<string>('all');
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [sortField, setSortField] = useState<SortField>('total');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
   
   const navigate = useNavigate();
 
@@ -141,6 +149,9 @@ const Rankings: React.FC = () => {
             difficulty: p.difficulty || 'Medium',
             acceptance: p.acceptance || 0,
             online_count: p.online_count || 0,
+            online_count_cn: p.online_count_cn || 0,
+            online_count_com: p.online_count_com || 0,
+            online_count_total: p.online_count_total || p.online_count || 0,
             last_updated: p.last_updated || new Date().toISOString(),
             topic_tags: p.topic_tags || [],
           }));
@@ -182,6 +193,9 @@ const Rankings: React.FC = () => {
             difficulty: (p.difficulty as 'Easy' | 'Medium' | 'Hard') || 'Medium',
             acceptance: 0,
             online_count: p.online_count,
+            online_count_cn: p.online_count_cn || 0,
+            online_count_com: p.online_count_com || 0,
+            online_count_total: p.online_count_total || p.online_count || 0,
             last_updated: new Date(p.last_updated * 1000).toISOString(),
             topic_tags: p.topic_tags || [],
           }));
@@ -194,6 +208,9 @@ const Rankings: React.FC = () => {
             return {
               ...problem,
               online_count: update.online_count,
+              online_count_cn: update.online_count_cn || 0,
+              online_count_com: update.online_count_com || 0,
+              online_count_total: update.online_count_total || update.online_count || 0,
               last_updated: new Date(update.last_updated * 1000).toISOString(),
             };
           }
@@ -205,6 +222,37 @@ const Rankings: React.FC = () => {
       setInitialLoaded(true);
     }
   });
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'ascend' ? 'descend' : 'ascend');
+    } else {
+      setSortField(field);
+      setSortOrder('descend');
+    }
+  };
+
+  const sortProblems = (problems: Problem[]) => {
+    return [...problems].sort((a, b) => {
+      let aVal, bVal;
+      switch (sortField) {
+        case 'cn':
+          aVal = a.online_count_cn || 0;
+          bVal = b.online_count_cn || 0;
+          break;
+        case 'com':
+          aVal = a.online_count_com || 0;
+          bVal = b.online_count_com || 0;
+          break;
+        case 'total':
+        default:
+          aVal = a.online_count_total || a.online_count || 0;
+          bVal = b.online_count_total || b.online_count || 0;
+          break;
+      }
+      return sortOrder === 'ascend' ? aVal - bVal : bVal - aVal;
+    });
+  };
 
   const filteredProblems = useMemo(() => {
     let result = [...problems];
@@ -223,9 +271,10 @@ const Rankings: React.FC = () => {
         selectedTags.every(tag => p.topic_tags?.includes(tag))
       );
     }
-    result.sort((a, b) => b.online_count - a.online_count);
+    // Apply sorting
+    result = sortProblems(result);
     return result;
-  }, [problems, searchText, difficultyFilter, selectedTags]);
+  }, [problems, searchText, difficultyFilter, selectedTags, sortField, sortOrder]);
 
   useEffect(() => {
     setFiltered(filteredProblems);
@@ -252,6 +301,64 @@ const Rankings: React.FC = () => {
     return `ranking-row ranking-row-${record.id}`;
   }, []);
 
+  const renderSortableHeader = (title: string, field: SortField) => {
+    const isActive = sortField === field;
+    const isAscend = isActive && sortOrder === 'ascend';
+    const isDescend = isActive && sortOrder === 'descend';
+    
+    return (
+      <div 
+        onClick={() => handleSort(field)}
+        style={{ 
+          cursor: 'pointer', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          gap: '4px'
+        }}
+      >
+        <span>{title}</span>
+        <span style={{ fontSize: '10px', color: isActive ? '#1890ff' : '#bfbfbf' }}>
+          {isAscend ? '▲' : isDescend ? '▼' : '▲▼'}
+        </span>
+      </div>
+    );
+  };
+
+  const renderOnlineCountBadge = (count: number) => (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+      <div style={{ 
+        display: 'flex', 
+        alignItems: 'flex-end', 
+        gap: 2,
+        height: 16
+      }}>
+        {[1, 2, 3, 4].map((level) => {
+          const threshold = level * 25;
+          const isActive = count >= threshold;
+          const height = level * 3 + 5;
+          return (
+            <div
+              key={level}
+              style={{
+                width: 3,
+                height: height,
+                backgroundColor: isActive 
+                  ? count >= 75 ? '#ff4d4f' : count >= 50 ? '#ff7a45' : '#52c41a'
+                  : '#d9d9d9',
+                borderRadius: 1,
+                transition: 'all 0.3s ease'
+              }}
+            />
+          );
+        })}
+      </div>
+      <span className="lc-online-badge" style={{ marginLeft: 4 }}>
+        {count.toLocaleString()}
+      </span>
+    </div>
+  );
+
   const columns: any[] = useMemo(() => [
     {
       title: '排名',
@@ -267,7 +374,7 @@ const Rankings: React.FC = () => {
       title: '题目',
       dataIndex: 'title',
       key: 'title',
-      width: 400,
+      width: 350,
       ellipsis: true,
       render: (text: string, record: Problem) => (
         <Link 
@@ -350,7 +457,7 @@ const Rankings: React.FC = () => {
       title: '难度',
       dataIndex: 'difficulty',
       key: 'difficulty',
-      width: 90,
+      width: 80,
       align: 'center' as const,
       render: (diff: string) => (
         <span className={getDifficultyClass(diff)}>
@@ -360,18 +467,28 @@ const Rankings: React.FC = () => {
       ),
     },
     {
-      title: '在线人数',
-      dataIndex: 'online_count',
-      key: 'online_count',
-      width: 130,
+      title: () => renderSortableHeader('中文站', 'cn'),
+      dataIndex: 'online_count_cn',
+      key: 'online_count_cn',
+      width: 120,
       align: 'center' as const,
-      sorter: (a: Problem, b: Problem) => a.online_count - b.online_count,
-      defaultSortOrder: 'descend' as const,
-      render: (count: number) => (
-        <span className="lc-online-badge">
-          {count.toLocaleString()}
-        </span>
-      ),
+      render: (count: number) => renderOnlineCountBadge(count || 0),
+    },
+    {
+      title: () => renderSortableHeader('国际站', 'com'),
+      dataIndex: 'online_count_com',
+      key: 'online_count_com',
+      width: 120,
+      align: 'center' as const,
+      render: (count: number) => renderOnlineCountBadge(count || 0),
+    },
+    {
+      title: () => renderSortableHeader('汇总', 'total'),
+      dataIndex: 'online_count_total',
+      key: 'online_count_total',
+      width: 120,
+      align: 'center' as const,
+      render: (count: number, record: Problem) => renderOnlineCountBadge(count || record.online_count || 0),
     },
     {
       title: '操作',
@@ -389,7 +506,7 @@ const Rankings: React.FC = () => {
         </Button>
       ),
     },
-  ], [getRankStyle, selectedTags]);
+  ], [getRankStyle, selectedTags, sortField, sortOrder]);
 
   if (loading && !initialLoaded) {
     return (
@@ -452,7 +569,7 @@ const Rankings: React.FC = () => {
             dataSource={filtered}
             columns={columns}
             rowKey="id"
-            scroll={{ x: 800 }}
+            scroll={{ x: 900 }}
             pagination={false}
             size="small"
             rowClassName={rowClassName}

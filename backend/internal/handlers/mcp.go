@@ -123,15 +123,15 @@ func handleGetHot100OnlineCount(c *gin.Context) {
 			var problems []models.Problem
 			if result := db.Find(&problems); result.Error == nil {
 				for _, problem := range problems {
-					// Get latest online count
-					var latestCount models.OnlineCount
+					// Get latest unified online count
+					var latestCount models.OnlineCountUnified
 					err := db.Where("frontend_id = ?", problem.FrontendID).
 						Order("timestamp DESC").
 						First(&latestCount).Error
 
 					count := 0
 					if err == nil {
-						count = latestCount.Count
+						count = latestCount.CountTotal
 					}
 
 					// Parse tags
@@ -235,8 +235,8 @@ func handleGetProblemHistory(c *gin.Context, params map[string]interface{}) {
 		return
 	}
 
-	// Get online count history
-	var counts []models.OnlineCount
+	// Get unified online count history
+	var counts []models.OnlineCountUnified
 	if result := db.Where("frontend_id = ?", problem.FrontendID).
 		Order("timestamp DESC").
 		Limit(limit).
@@ -253,10 +253,12 @@ func handleGetProblemHistory(c *gin.Context, params map[string]interface{}) {
 	var result []map[string]interface{}
 	for _, count := range counts {
 		result = append(result, map[string]interface{}{
-			"id":         count.ID,
+			"id":          count.ID,
 			"frontend_id": count.FrontendID,
-			"count":      count.Count,
-			"timestamp":  count.Timestamp.Format(time.RFC3339),
+			"count_cn":    count.CountCN,
+			"count_com":   count.CountCOM,
+			"count_total": count.CountTotal,
+			"timestamp":   count.Timestamp.Format(time.RFC3339),
 		})
 	}
 
@@ -308,8 +310,8 @@ func handleGetProblemOnlineCount(c *gin.Context, params map[string]interface{}) 
 		return
 	}
 
-	// Get latest online count
-	var latestCount models.OnlineCount
+	// Get latest unified online count
+	var latestCount models.OnlineCountUnified
 	err = db.Where("frontend_id = ?", problem.FrontendID).
 		Order("timestamp DESC").
 		First(&latestCount).Error
@@ -317,7 +319,7 @@ func handleGetProblemOnlineCount(c *gin.Context, params map[string]interface{}) 
 	count := 0
 	lastUpdated := time.Now()
 	if err == nil {
-		count = latestCount.Count
+		count = latestCount.CountTotal
 		lastUpdated = latestCount.Timestamp
 	}
 

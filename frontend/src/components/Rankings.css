@@ -81,19 +81,22 @@
 .rankings-search.ant-input-search .ant-input-affix-wrapper {
   height: 40px !important;
   border-radius: 4px !important;
-  border: none !important;
+  border: 1px solid #d9d9d9 !important;
   outline: none !important;
   box-shadow: none !important;
   padding: 0 12px !important;
   background: #fff !important;
+  transition: all 0.3s ease;
 }
 
-.rankings-search.ant-input-search .ant-input-affix-wrapper:hover,
+.rankings-search.ant-input-search .ant-input-affix-wrapper:hover {
+  border-color: #1890ff !important;
+}
+
 .rankings-search.ant-input-search .ant-input-affix-wrapper:focus,
 .rankings-search.ant-input-search .ant-input-affix-wrapper-focused {
-  border: none !important;
-  outline: none !important;
-  box-shadow: none !important;
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2) !important;
 }
 
 .rankings-search.ant-input-search .ant-input-affix-wrapper .ant-input {
@@ -130,4 +133,97 @@
 
 .rankings-search .ant-input-clear-icon:hover {
   color: rgba(0, 0, 0, 0.45);
+}
+
+/* 扁平化样式优化 */
+.lc-card {
+  border: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+}
+
+.lc-card .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  background: transparent;
+  font-weight: 500;
+}
+
+.lc-card .ant-card-body {
+  padding: 16px;
+}
+
+/* 表格扁平化 */
+.lc-rankings-table .ant-table {
+  background: #fff;
+  border: none;
+}
+
+.lc-rankings-table .ant-table-thead > tr > th {
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  font-weight: 500;
+  color: #262626;
+}
+
+.lc-rankings-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.lc-rankings-table .ant-table-tbody > tr:hover > td {
+  background: #f5f7fa;
+}
+
+/* 前三名扁平化样式 */
+.ranking-row-1 {
+  background: #fffbe6 !important;
+}
+
+.ranking-row-2 {
+  background: #f6ffed !important;
+}
+
+.ranking-row-3 {
+  background: #e6f7ff !important;
+}
+
+/* 难度标签扁平化 */
+.lc-difficulty {
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+}
+
+.lc-difficulty-easy {
+  background: #f6ffed !important;
+  color: #52c41a !important;
+}
+
+.lc-difficulty-medium {
+  background: #fffbe6 !important;
+  color: #faad14 !important;
+}
+
+.lc-difficulty-hard {
+  background: #fff2f0 !important;
+  color: #ff4d4f !important;
+}
+
+.lc-difficulty-dot {
+  display: none;
+}
+
+/* 题目ID扁平化 */
+.lc-problem-title span:first-child {
+  background: #f0f0f0 !important;
+  color: #595959 !important;
+  font-weight: 500 !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
 }

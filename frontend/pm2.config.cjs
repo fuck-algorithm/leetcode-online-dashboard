@@ -2,15 +2,15 @@ module.exports = {
   apps: [
     {
       name: 'leetcode-dashboard-frontend',
-      script: 'npx',
-      args: ['vite', 'preview', '--host', '--port', '52107'],
+      script: 'npm',
+      args: ['run', 'dev'],
       cwd: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend',
       instances: 1,
       exec_mode: 'fork',
       watch: false,
-      max_memory_restart: '500M',
+      max_memory_restart: '1G',
       env: {
-        NODE_ENV: 'production',
+        NODE_ENV: 'development',
         PORT: 52107
       },
       log_file: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/pm2.log',
@@ -23,10 +23,7 @@ module.exports = {
       max_restarts: 10,
       min_uptime: '10s',
       kill_timeout: 5000,
-      listen_timeout: 10000,
-      // 健康检查
-      health_check_grace_period: 30000,
-      // 崩溃时自动重启
+      listen_timeout: 30000,
       exp_backoff_restart_delay: 100
     }
   ]

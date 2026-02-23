@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"leetcode-dashboard/internal/config"
 	"leetcode-dashboard/internal/database"
+	"leetcode-dashboard/internal/models"
 	"leetcode-dashboard/internal/redis"
 	"leetcode-dashboard/internal/websocket"
 	"log"
@@ -15,9 +16,20 @@ import (
 	"time"
 )
 
-// Crawler 爬虫管理器
+// ClientKey represents a unique key for a problem-site combination
+type ClientKey struct {
+	Slug string
+	Site websocket.SiteType
+}
+
+// String returns the string representation of the key
+func (k ClientKey) String() string {
+	return k.Slug + "-" + string(k.Site)
+}
+
+// Crawler 爬虫管理器 - 支持双站点 (leetcode.cn + leetcode.com)
 type Crawler struct {
-	clients   map[string]*websocket.LeetCodeWSClient
+	clients   map[ClientKey]*websocket.LeetCodeWSClient
 	problems  []string
 	mu        sync.RWMutex
 	stopChan  chan struct{}
@@ -25,10 +37,10 @@ type Crawler struct {
 	interval  time.Duration
 }
 
-// NewCrawler 创建新的爬虫实例
+// NewCrawler 创建新的爬虫实例 - 支持双站点
 func NewCrawler(problems []string, batchSize int, interval time.Duration) *Crawler {
 	return &Crawler{
-		clients:   make(map[string]*websocket.LeetCodeWSClient),
+		clients:   make(map[ClientKey]*websocket.LeetCodeWSClient),
 		problems:  problems,
 		stopChan:  make(chan struct{}),
 		batchSize: batchSize,
@@ -54,8 +66,8 @@ func (c *Crawler) Stop() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	for slug, client := range c.clients {
-		log.Printf("Closing connection for %s", slug)
+	for key, client := range c.clients {
+		log.Printf("Closing connection for %s [%s]", key.Slug, key.Site)
 		client.Close()
 	}
 }
@@ -86,7 +98,7 @@ func (c *Crawler) processBatches() {
 	}
 }
 
-// processBatch 处理单个批次
+// processBatch 处理单个批次 - 同时订阅CN和COM两个站点
 func (c *Crawler) processBatch(batchIndex, totalBatches int) {
 	start := batchIndex * c.batchSize
 	end := start + c.batchSize
@@ -95,17 +107,21 @@ func (c *Crawler) processBatch(batchIndex, totalBatches int) {
 	}
 
 	batch := c.problems[start:end]
-	log.Printf("Processing batch %d/%d (%d problems)", batchIndex+1, totalBatches, len(batch))
+	log.Printf("Processing batch %d/%d (%d problems) for both CN and COM sites", batchIndex+1, totalBatches, len(batch))
 
 	for _, slug := range batch {
-		go c.subscribeToProblem(slug)
+		// 同时订阅CN和COM两个站点
+		go c.subscribeToProblem(slug, websocket.SiteCN)
+		go c.subscribeToProblem(slug, websocket.SiteCOM)
 	}
 }
 
-// subscribeToProblem 订阅题目
-func (c *Crawler) subscribeToProblem(slug string) {
+// subscribeToProblem 订阅指定站点的题目
+func (c *Crawler) subscribeToProblem(slug string, site websocket.SiteType) {
+	key := ClientKey{Slug: slug, Site: site}
+
 	c.mu.RLock()
-	existing, ok := c.clients[slug]
+	existing, ok := c.clients[key]
 	c.mu.RUnlock()
 
 	// 如果已连接，跳过
@@ -114,37 +130,37 @@ func (c *Crawler) subscribeToProblem(slug string) {
 	}
 
 	// 创建新客户端
-	client := websocket.NewLeetCodeWSClient(slug,
+	client := websocket.NewLeetCodeWSClient(slug, site,
 		func(data []byte) {
-			c.handleMessage(slug, data)
+			c.handleMessage(slug, site, data)
 		},
 		func(err error) {
-			log.Printf("WebSocket error for %s: %v", slug, err)
+			log.Printf("WebSocket error for %s [%s]: %v", slug, site, err)
 			// 触发重连
 			go func() {
 				time.Sleep(5 * time.Second)
-				c.subscribeToProblem(slug)
+				c.subscribeToProblem(slug, site)
 			}()
 		},
 	)
 
 	if err := client.Connect(); err != nil {
-		log.Printf("Failed to connect to %s: %v", slug, err)
+		log.Printf("Failed to connect to %s [%s]: %v", slug, site, err)
 		return
 	}
 
 	c.mu.Lock()
-	c.clients[slug] = client
+	c.clients[key] = client
 	c.mu.Unlock()
 
-	log.Printf("Connected to %s", slug)
+	log.Printf("Connected to %s [%s]", slug, site)
 }
 
-// handleMessage 处理消息
-func (c *Crawler) handleMessage(slug string, data []byte) {
+// handleMessage 处理消息 - 区分站点
+func (c *Crawler) handleMessage(slug string, site websocket.SiteType, data []byte) {
 	var count int
 	if _, err := fmt.Sscanf(string(data), "%d", &count); err == nil {
-		c.saveOnlineCount(slug, count)
+		c.saveOnlineCount(slug, site, count)
 		return
 	}
 
@@ -159,34 +175,23 @@ func (c *Crawler) handleMessage(slug string, data []byte) {
 
 	if err := json.Unmarshal(data, &msg); err == nil {
 		if msg.Count > 0 {
-			c.saveOnlineCount(slug, msg.Count)
+			c.saveOnlineCount(slug, site, msg.Count)
 		} else if msg.Data.Count > 0 {
-			c.saveOnlineCount(slug, msg.Data.Count)
+			c.saveOnlineCount(slug, site, msg.Data.Count)
 		}
 		return
 	}
 
-	log.Printf("[%s] Unrecognized message format: %s", slug, string(data))
+	log.Printf("[%s-%s] Unrecognized message format: %s", slug, site, string(data))
 }
 
-// saveOnlineCount 保存在线人数到 Redis
-func (c *Crawler) saveOnlineCount(slug string, count int) {
+// saveOnlineCount 保存指定站点的在线人数到 Redis 和 MySQL
+func (c *Crawler) saveOnlineCount(slug string, site websocket.SiteType, count int) {
 	// 从数据库获取题目元数据
 	db := database.GetDB()
 	if db == nil {
-		// 如果数据库不可用，使用 Redis 中的缓存数据
-		existing, _ := redis.GetOnlineCount(slug)
-		if existing != nil {
-			existing.OnlineCount = count
-			existing.LastUpdated = time.Now()
-			if err := redis.UpdateOnlineCount(slug, existing); err != nil {
-				log.Printf("Failed to update Redis for %s: %v", slug, err)
-			} else {
-				log.Printf("[%s] Online count: %d (from cache)", slug, count)
-			}
-			// 发布更新
-			redis.PublishOnlineUpdate(slug, count)
-		}
+		// 如果数据库不可用，仅更新 Redis
+		c.updateRedisWithSite(slug, site, count, nil)
 		return
 	}
 
@@ -216,28 +221,81 @@ func (c *Crawler) saveOnlineCount(slug string, count int) {
 		json.Unmarshal([]byte(problem.Tags), &topicTags)
 	}
 
-	// 更新 Redis
+	// 更新 Redis (带站点信息)
+	c.updateRedisWithSite(slug, site, count, &redis.ProblemMetaInfo{
+		FrontendID: problem.FrontendID,
+		Title:      problem.Title,
+		TitleCn:    problem.TitleCn,
+		Difficulty: problem.Difficulty,
+		PaidOnly:   problem.PaidOnly,
+		TopicTags:  topicTags,
+	})
+
+	// 持久化到对应站点的MySQL表
+	c.persistToMySQL(problem.FrontendID, site, count)
+
+	log.Printf("[%s-%s] Online count: %d", slug, site, count)
+
+	// 发布更新通知 (带站点信息)
+	redis.PublishOnlineUpdateWithSite(slug, site, count)
+}
+
+// ProblemMetaInfo holds problem metadata for Redis update
+type ProblemMetaInfo redis.ProblemMetaInfo
+
+// updateRedisWithSite 更新带站点信息的Redis数据
+func (c *Crawler) updateRedisWithSite(slug string, site websocket.SiteType, count int, meta *redis.ProblemMetaInfo) {
+	// 更新站点特定的在线人数
 	status := &redis.ProblemOnlineStatus{
-		FrontendID:  problem.FrontendID,
-		Slug:        slug,
-		Title:       problem.Title,
-		TitleCn:     problem.TitleCn,
-		Difficulty:  problem.Difficulty,
-		PaidOnly:    problem.PaidOnly,
-		TopicTags:   topicTags,
+		Site:        string(site),
 		OnlineCount: count,
 		LastUpdated: time.Now(),
 	}
+	
+	if meta != nil {
+		status.FrontendID = meta.FrontendID
+		status.Slug = slug
+		status.Title = meta.Title
+		status.TitleCn = meta.TitleCn
+		status.Difficulty = meta.Difficulty
+		status.PaidOnly = meta.PaidOnly
+		status.TopicTags = meta.TopicTags
+	}
 
-	if err := redis.UpdateOnlineCount(slug, status); err != nil {
-		log.Printf("Failed to update Redis for %s: %v", slug, err)
+	if err := redis.UpdateOnlineCountWithSite(slug, site, status); err != nil {
+		log.Printf("Failed to update Redis for %s [%s]: %v", slug, site, err)
+	}
+}
+
+// persistToMySQL 持久化到对应站点的MySQL表
+func (c *Crawler) persistToMySQL(frontendID string, site websocket.SiteType, count int) {
+	db := database.GetDB()
+	if db == nil {
 		return
 	}
 
-	log.Printf("[%s] Online count: %d", slug, count)
+	now := time.Now()
 
-	// 发布更新通知
-	redis.PublishOnlineUpdate(slug, count)
+	switch site {
+	case websocket.SiteCN:
+		record := &models.OnlineCountCN{
+			FrontendID: frontendID,
+			Count:      count,
+			Timestamp:  now,
+		}
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist CN online count for %s: %v", frontendID, err)
+		}
+	case websocket.SiteCOM:
+		record := &models.OnlineCountCOM{
+			FrontendID: frontendID,
+			Count:      count,
+			Timestamp:  now,
+		}
+		if err := db.Create(record).Error; err != nil {
+			log.Printf("Failed to persist COM online count for %s: %v", frontendID, err)
+		}
+	}
 }
 
 // updateTotalOnline 定时更新总在线人数
@@ -255,22 +313,77 @@ func (c *Crawler) updateTotalOnline() {
 	}
 }
 
-// calculateTotalOnline 计算总在线人数
+// calculateTotalOnline 计算双站点总在线人数并持久化
 func (c *Crawler) calculateTotalOnline() {
-	statuses, err := redis.GetAllOnlineCounts()
+	// 获取CN和COM的在线人数
+	cnTotal, comTotal, unifiedTotal, err := redis.GetTotalOnlineBySite()
 	if err != nil {
-		log.Printf("Failed to get all online counts: %v", err)
+		log.Printf("Failed to get online counts by site: %v", err)
 		return
 	}
 
-	total := 0
-	for _, s := range statuses {
-		total += s.OnlineCount
+	// 更新Redis中的汇总数据
+	if err := redis.UpdateTotalOnlineBySite(cnTotal, comTotal, unifiedTotal); err != nil {
+		log.Printf("Failed to update total online by site: %v", err)
 	}
 
-	if err := redis.UpdateTotalOnline(total); err != nil {
-		log.Printf("Failed to update total online: %v", err)
+	// 持久化到MySQL聚合表
+	c.persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal)
+}
+
+// persistTotalOnlineToMySQL 持久化总在线人数到MySQL聚合表
+func (c *Crawler) persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal int) {
+	db := database.GetDB()
+	if db == nil {
+		return
 	}
+
+	now := time.Now()
+	minuteBucket := now.Truncate(time.Minute)
+	hourBucket := now.Truncate(time.Hour)
+	dayBucket := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+
+	// 保存CN站点聚合数据
+	cnAggregate := &models.TotalOnlineAggregateCN{
+		Timestamp:  minuteBucket,
+		Total:      cnTotal,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+	if err := db.Where("timestamp = ?", minuteBucket).FirstOrCreate(&models.TotalOnlineAggregateCN{}, cnAggregate).Error; err != nil {
+		// 更新现有记录
+		db.Model(&models.TotalOnlineAggregateCN{}).Where("timestamp = ?", minuteBucket).Update("total", cnTotal)
+	}
+
+	// 保存COM站点聚合数据
+	comAggregate := &models.TotalOnlineAggregateCOM{
+		Timestamp:  minuteBucket,
+		Total:      comTotal,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+	if err := db.Where("timestamp = ?", minuteBucket).FirstOrCreate(&models.TotalOnlineAggregateCOM{}, comAggregate).Error; err != nil {
+		db.Model(&models.TotalOnlineAggregateCOM{}).Where("timestamp = ?", minuteBucket).Update("total", comTotal)
+	}
+
+	// 保存Unified汇总数据
+	unifiedAggregate := &models.TotalOnlineAggregateUnified{
+		Timestamp:  minuteBucket,
+		TotalCN:    cnTotal,
+		TotalCOM:   comTotal,
+		Total:      unifiedTotal,
+		HourBucket: hourBucket,
+		DayBucket:  dayBucket,
+	}
+	if err := db.Where("timestamp = ?", minuteBucket).FirstOrCreate(&models.TotalOnlineAggregateUnified{}, unifiedAggregate).Error; err != nil {
+		db.Model(&models.TotalOnlineAggregateUnified{}).Where("timestamp = ?", minuteBucket).Updates(map[string]interface{}{
+			"total_cn":  cnTotal,
+			"total_com": comTotal,
+			"total":     unifiedTotal,
+		})
+	}
+
+	log.Printf("Total online - CN: %d, COM: %d, Unified: %d", cnTotal, comTotal, unifiedTotal)
 }
 
 func main() {

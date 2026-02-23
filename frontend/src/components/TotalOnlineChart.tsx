@@ -9,11 +9,12 @@ import {
   AreaChart
 } from 'recharts';
 import { Spin, Empty } from 'antd';
-import { LineChartOutlined } from '@ant-design/icons';
 
 interface DataPoint {
   timestamp: string;
   total: number;
+  cn: number;
+  com: number;
 }
 
 interface TotalOnlineChartProps {
@@ -64,7 +65,9 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
             hour: '2-digit',
             minute: '2-digit'
           }),
-          total: point.total,
+          total: point.total || (point.cn || 0) + (point.com || 0),
+          cn: point.cn || 0,
+          com: point.com || 0,
           rawTimestamp: new Date(point.timestamp)
         }));
         setData(chartData);
@@ -91,6 +94,7 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
   // Custom tooltip for the chart
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
       return (
         <div style={{
           background: '#fff',
@@ -102,8 +106,14 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
           <p style={{ margin: '0 0 8px', fontWeight: 600, color: '#262626' }}>
             {label}
           </p>
+          <p style={{ margin: '0 0 4px', color: '#ff4d4f', fontWeight: 600 }}>
+            🇨🇳 中文站: {data.cn?.toLocaleString() || 0} 人
+          </p>
+          <p style={{ margin: '0 0 4px', color: '#1890ff', fontWeight: 600 }}>
+            🇺🇸 国际站: {data.com?.toLocaleString() || 0} 人
+          </p>
           <p style={{ margin: 0, color: '#FFA116', fontWeight: 700, fontSize: 16 }}>
-            {payload[0].value.toLocaleString()} 人
+            🌐 汇总: {data.total?.toLocaleString() || 0} 人
           </p>
         </div>
       );
@@ -136,10 +146,16 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
   }
 
   // Calculate statistics - 过滤掉0值（服务重启时可能产生的无效数据）
-  const maxOnline = Math.max(...data.map(d => d.total));
+  const maxTotal = Math.max(...data.map(d => d.total));
+  const maxCN = Math.max(...data.map(d => d.cn));
+  const maxCOM = Math.max(...data.map(d => d.com));
   const nonZeroData = data.filter(d => d.total > 0);
-  const minOnline = nonZeroData.length > 0 ? Math.min(...nonZeroData.map(d => d.total)) : 0;
-  const avgOnline = Math.round(data.reduce((sum, d) => sum + d.total, 0) / data.length);
+  const minTotal = nonZeroData.length > 0 ? Math.min(...nonZeroData.map(d => d.total)) : 0;
+  const minCN = nonZeroData.length > 0 ? Math.min(...nonZeroData.map(d => d.cn)) : 0;
+  const minCOM = nonZeroData.length > 0 ? Math.min(...nonZeroData.map(d => d.com)) : 0;
+  const avgTotal = Math.round(data.reduce((sum, d) => sum + d.total, 0) / data.length);
+  const avgCN = Math.round(data.reduce((sum, d) => sum + d.cn, 0) / data.length);
+  const avgCOM = Math.round(data.reduce((sum, d) => sum + d.com, 0) / data.length);
 
   return (
     <div>
@@ -150,14 +166,53 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
         gap: 16, 
         marginBottom: 24 
       }}>
+        {/* 最高在线 - 中文站 */}
+        <div style={{
+          background: '#ff4d4f',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇨🇳 中文站最高</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{maxCN.toLocaleString()}</div>
+        </div>
+        <div style={{
+          background: '#1890ff',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇺🇸 国际站最高</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{maxCOM.toLocaleString()}</div>
+        </div>
         <div style={{
           background: '#FFA116',
           padding: 16,
           borderRadius: 0,
           color: '#fff'
         }}>
-          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>最高在线</div>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{maxOnline.toLocaleString()}</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🌐 汇总最高</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{maxTotal.toLocaleString()}</div>
+        </div>
+
+        {/* 平均在线 */}
+        <div style={{
+          background: '#ff7875',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇨🇳 中文站平均</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{avgCN.toLocaleString()}</div>
+        </div>
+        <div style={{
+          background: '#69c0ff',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇺🇸 国际站平均</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{avgCOM.toLocaleString()}</div>
         </div>
         <div style={{
           background: '#FFB84D',
@@ -165,8 +220,28 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
           borderRadius: 0,
           color: '#fff'
         }}>
-          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>平均在线</div>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{avgOnline.toLocaleString()}</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🌐 汇总平均</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{avgTotal.toLocaleString()}</div>
+        </div>
+
+        {/* 最低在线 */}
+        <div style={{
+          background: '#ffa39e',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇨🇳 中文站最低</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{minCN.toLocaleString()}</div>
+        </div>
+        <div style={{
+          background: '#91d5ff',
+          padding: 16,
+          borderRadius: 0,
+          color: '#fff'
+        }}>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🇺🇸 国际站最低</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{minCOM.toLocaleString()}</div>
         </div>
         <div style={{
           background: '#FF8C00',
@@ -174,8 +249,8 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
           borderRadius: 0,
           color: '#fff'
         }}>
-          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>最低在线</div>
-          <div style={{ fontSize: 24, fontWeight: 700 }}>{minOnline.toLocaleString()}</div>
+          <div style={{ fontSize: 12, opacity: 0.9, marginBottom: 4 }}>🌐 汇总最低</div>
+          <div style={{ fontSize: 20, fontWeight: 700 }}>{minTotal.toLocaleString()}</div>
         </div>
       </div>
 
@@ -192,6 +267,14 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
             }}
           >
             <defs>
+              <linearGradient id="colorCN" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#ff4d4f" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#ff4d4f" stopOpacity={0}/>
+              </linearGradient>
+              <linearGradient id="colorCOM" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#1890ff" stopOpacity={0.3}/>
+                <stop offset="95%" stopColor="#1890ff" stopOpacity={0}/>
+              </linearGradient>
               <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#FFA116" stopOpacity={0.3}/>
                 <stop offset="95%" stopColor="#FFA116" stopOpacity={0}/>
@@ -216,7 +299,28 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
             <Tooltip content={<CustomTooltip />} />
             <Area
               type="monotone"
+              dataKey="cn"
+              name="中文站"
+              stroke="#ff4d4f"
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorCN)"
+              animationDuration={1000}
+            />
+            <Area
+              type="monotone"
+              dataKey="com"
+              name="国际站"
+              stroke="#1890ff"
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorCOM)"
+              animationDuration={1000}
+            />
+            <Area
+              type="monotone"
               dataKey="total"
+              name="汇总"
               stroke="#FFA116"
               strokeWidth={3}
               fillOpacity={1}
@@ -233,12 +337,22 @@ const TotalOnlineChart: React.FC<TotalOnlineChartProps> = ({
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'center',
-        gap: 8,
+        gap: 24,
         fontSize: 13,
         color: '#8c8c8c'
       }}>
-        <LineChartOutlined style={{ color: '#FFA116' }} />
-        <span>最近24小时总在线人数趋势（每分钟更新）</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 12, height: 3, background: '#ff4d4f' }} />
+          <span>🇨🇳 中文站</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 12, height: 3, background: '#1890ff' }} />
+          <span>🇺🇸 国际站</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 12, height: 4, background: '#FFA116' }} />
+          <span>🌐 汇总</span>
+        </div>
       </div>
     </div>
   );

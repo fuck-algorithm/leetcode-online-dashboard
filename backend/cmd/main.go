@@ -127,19 +127,22 @@ func main() {
 		}
 	}
 
-	// MCP SSE server endpoints
+	// MCP SSE server endpoints - using mcp-go server.SSEServer
 	mcpServer := handlers.NewMCPServer()
+	
+	// Create SSE server with proper configuration
 	sseServer := server.NewSSEServer(mcpServer,
+		server.WithBaseURL("http://localhost:52106"),
 		server.WithStaticBasePath("/mcp"),
 		server.WithKeepAliveInterval(30*time.Second),
 	)
 	
-	// SSE endpoint for MCP client connections
+	// Single endpoint handles both SSE (GET) and Messages (POST)
+	// mcp-go server automatically routes based on request method
 	r.GET("/mcp/sse", func(c *gin.Context) {
 		sseServer.ServeHTTP(c.Writer, c.Request)
 	})
 	
-	// Message endpoint for MCP client-to-server communication
 	r.POST("/mcp/message", func(c *gin.Context) {
 		sseServer.ServeHTTP(c.Writer, c.Request)
 	})

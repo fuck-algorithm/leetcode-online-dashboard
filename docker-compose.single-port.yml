@@ -1,0 +1,125 @@
+version: '3.8'
+
+# ============================================
+# LeetCode Dashboard - Single Port 80 Architecture
+# ============================================
+# Nginx 反向代理架构：
+# - 80端口: Nginx (前端 + API代理)
+# - / -> 前端静态文件
+# - /api/* -> 后端服务
+# - /sse/* -> 后端SSE
+# ============================================
+
+x-common-variables: &common-variables
+  TZ: Asia/Shanghai
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+x-backend-env: &backend-env
+  <<: *common-variables
+  PORT: 8080
+  DB_HOST: host.docker.internal
+  DB_PORT: 3306
+  DB_USER: leetcode
+  DB_PASSWORD: leetcode123
+  DB_NAME: leetcode_dashboard
+  REDIS_HOST: host.docker.internal
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: leetcode123
+  REDIS_DB: 0
+  BATCH_SIZE: ${BATCH_SIZE:-10}
+  INTERVAL_SEC: ${INTERVAL_SEC:-30}
+  GIN_MODE: release
+
+services:
+  # ============================================
+  # Backend API - 后端API服务 (内部8080，不暴露)
+  # ============================================
+  backend:
+    image: leetcode-dashboard-backend:latest
+    container_name: leetcode-backend
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.5'
+          memory: 256M
+
+  # ============================================
+  # Crawler - 数据爬取服务 (内部，不暴露端口)
+  # ============================================
+  crawler:
+    image: leetcode-dashboard-crawler:latest
+    container_name: leetcode-crawler
+    restart: unless-stopped
+    environment:
+      <<: *backend-env
+    volumes:
+      - ${DATA_DIR:-./data}:/data
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "pgrep", "leetcode-crawler"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+
+  # ============================================
+  # Nginx Gateway - 统一入口 (唯一暴露80端口)
+  # ============================================
+  nginx:
+    image: leetcode-dashboard-nginx:latest
+    container_name: leetcode-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
+
+networks:
+  dashboard-network:
+    driver: bridge

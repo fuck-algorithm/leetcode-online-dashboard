@@ -1,210 +1,25 @@
-import React, { useState } from 'react';
-import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip, Input, message } from 'antd';
-import { CloudOutlined, CodeOutlined, ThunderboltOutlined, CheckCircleOutlined, DatabaseOutlined, CopyOutlined, PlayCircleOutlined } from '@ant-design/icons';
+import React, { useState, useEffect } from 'react';
+import { Card, Typography, Space, Tag, Divider, Alert, Steps, Button, Tooltip } from 'antd';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { CloudOutlined, CodeOutlined, CheckCircleOutlined, DatabaseOutlined, CopyOutlined, ThunderboltOutlined } from '@ant-design/icons';
 
 const { Title, Paragraph, Text } = Typography;
 const { Step } = Steps;
 
-// MCP Tool Tester Component
-const MCPToolTester: React.FC = () => {
-  const [selectedTool, setSelectedTool] = useState<string>('get_hot100_online_count');
-  const [problemId, setProblemId] = useState<string>('1');
-  const [limit, setLimit] = useState<number>(10);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState<string>('');
-
-  const tools = [
-    { key: 'get_hot100_online_count', name: '获取Hot100在线人数', desc: '获取所有Hot 100题目的实时在线人数' },
-    { key: 'get_problem_online_count', name: '获取单题在线人数', desc: '根据题目ID获取单个题目的在线人数' },
-    { key: 'get_problem_history', name: '获取题目历史数据', desc: '获取题目的历史在线人数记录' },
-  ];
-
-  const handleTest = async () => {
-    setLoading(true);
-    setError('');
-    setResult(null);
-
-    try {
-      const params: any = {};
-      if (selectedTool === 'get_problem_online_count' || selectedTool === 'get_problem_history') {
-        params.problem_id = problemId;
-      }
-      if (selectedTool === 'get_problem_history') {
-        params.limit = limit;
-      }
-
-      // Use legacy REST endpoint for testing (SSE transport requires MCP client)
-      const response = await fetch('/mcp/tool', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: selectedTool,
-          parameters: params
-        })
-      });
-
-      const data = await response.json();
-      setResult(data);
-      
-      if (data.code === 200) {
-        message.success('测试成功！');
-      } else {
-        setError(data.msg || '请求失败');
-        message.error(data.msg || '请求失败');
-      }
-    } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : '网络请求失败';
-      setError(errorMsg);
-      message.error(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <Space direction="vertical" style={{ width: '100%' }} size="middle">
-      <Alert
-        message="实时测试 MCP 工具"
-        description="选择工具并输入参数，直接测试 MCP 服务器是否正常工作"
-        type="info"
-        showIcon
-      />
-      
-      <div>
-        <Text strong>选择工具：</Text>
-        <div style={{ marginTop: 8 }}>
-          {tools.map(tool => (
-            <Tag
-              key={tool.key}
-              color={selectedTool === tool.key ? 'blue' : 'default'}
-              style={{ cursor: 'pointer', marginBottom: 8, padding: '4px 12px' }}
-              onClick={() => setSelectedTool(tool.key)}
-            >
-              {tool.name}
-            </Tag>
-          ))}
-        </div>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          {tools.find(t => t.key === selectedTool)?.desc}
-        </Text>
-      </div>
-
-      {(selectedTool === 'get_problem_online_count' || selectedTool === 'get_problem_history') && (
-        <div>
-          <Text strong>题目ID：</Text>
-          <Input
-            placeholder="输入题目ID (如: 1 或 two-sum)"
-            value={problemId}
-            onChange={(e) => setProblemId(e.target.value)}
-            style={{ width: '100%', marginTop: 8 }}
-          />
-          <Text type="secondary" style={{ fontSize: 12 }}>支持数字ID或英文slug</Text>
-        </div>
-      )}
-
-      {selectedTool === 'get_problem_history' && (
-        <div>
-          <Text strong>返回记录数：</Text>
-          <Input
-            type="number"
-            placeholder="默认10条"
-            value={limit}
-            onChange={(e) => setLimit(parseInt(e.target.value) || 10)}
-            style={{ width: '100%', marginTop: 8 }}
-          />
-        </div>
-      )}
-
-      <Button
-        type="primary"
-        icon={<PlayCircleOutlined />}
-        onClick={handleTest}
-        loading={loading}
-        block
-      >
-        执行测试
-      </Button>
-
-      {error && (
-        <Alert
-          message="错误"
-          description={error}
-          type="error"
-          showIcon
-        />
-      )}
-
-      {result && (
-        <div>
-          <Divider style={{ margin: '16px 0' }} />
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-            <Text strong>响应结果：</Text>
-            <Tag color={result.code === 200 ? 'success' : 'error'}>
-              Code: {result.code}
-            </Tag>
-          </div>
-          <JsonBlock data={result.data || result} />
-        </div>
-      )}
-    </Space>
-  );
-};
-const JsonBlock: React.FC<{ data: any }> = ({ data }) => {
-  const jsonStr = JSON.stringify(data, null, 2);
-  return (
-    <pre style={{ 
-      background: '#1e1e1e', 
-      color: '#d4d4d4',
-      padding: 16, 
-      borderRadius: 8, 
-      fontFamily: 'Consolas, Monaco, "Courier New", monospace', 
-      fontSize: 13,
-      overflow: 'auto',
-      maxHeight: 400,
-      lineHeight: 1.6,
-      margin: 0,
-      position: 'relative'
-    }}>
-      <div style={{ 
-        position: 'absolute', 
-        top: 8, 
-        right: 8, 
-        color: '#6a9955', 
-        fontSize: 11,
-        background: '#2d2d2d',
-        padding: '2px 8px',
-        borderRadius: 4
-      }}>json</div>
-      <code style={{ color: '#d4d4d4' }}>
-        {jsonStr.split('\n').map((line, i) => (
-          <div key={i} style={{ display: 'flex' }}>
-            <span style={{ 
-              color: '#858585', 
-              minWidth: 30, 
-              textAlign: 'right', 
-              marginRight: 12,
-              userSelect: 'none'
-            }}>{i + 1}</span>
-            <span style={{ color: '#d4d4d4' }} dangerouslySetInnerHTML={{
-              __html: line
-                .replace(/"([^"]+)":/g, '<span style="color:#9cdcfe">"$1"</span>:')
-                .replace(/: "([^"]*)"/g, ': <span style="color:#ce9178">"$1"</span>')
-                .replace(/: (\d+)/g, ': <span style="color:#b5cea8">$1</span>')
-                .replace(/: (true|false|null)/g, ': <span style="color:#569cd6">$1</span>')
-            }} />
-          </div>
-        ))}
-      </code>
-    </pre>
-  );
-};
-
 const MCP: React.FC = () => {
-  // 注意：后端服务默认运行在 52106 端口
-  // 如果前端页面通过其他端口访问，需要手动修改配置中的端口号
-  const defaultBackendPort = '52106';
-  const serverUrl = `http://localhost:${defaultBackendPort}`;
+  const [serverUrl, setServerUrl] = useState<string>('');
+
+  useEffect(() => {
+    // 动态获取后端服务地址
+    const currentHost = window.location.hostname;
+    const currentPort = window.location.port;
+    // 如果前端和后端使用相同域名，直接使用当前域名；否则使用默认端口
+    const backendUrl = currentPort 
+      ? `http://${currentHost}:${currentPort === '80' ? '52106' : (parseInt(currentPort) + 1).toString()}`
+      : `http://${currentHost}:52106`;
+    setServerUrl(backendUrl);
+  }, []);
 
   // SSE transport configuration (Cherry Studio, Claude Desktop, Cursor)
   const sseConfig = JSON.stringify({
@@ -327,35 +142,24 @@ const MCP: React.FC = () => {
                   
                   <Card title="Cherry Studio / Claude Desktop / Cursor (SSE Transport)">
                     <div style={{ position: 'relative' }}>
-                      <pre style={{ 
-                        background: '#1e1e1e', 
-                        color: '#d4d4d4',
-                        padding: 16, 
-                        borderRadius: 8, 
-                        fontFamily: 'Consolas, Monaco, monospace', 
-                        fontSize: 12,
-                        overflow: 'auto',
-                        maxHeight: 300,
-                        margin: 0,
-                        position: 'relative'
-                      }}>
-                        <div style={{ 
-                          position: 'absolute', 
-                          top: 8, 
-                          right: 8, 
-                          color: '#6a9955', 
-                          fontSize: 11,
-                          background: '#2d2d2d',
-                          padding: '2px 8px',
-                          borderRadius: 4
-                        }}>json</div>
-                        <code style={{ color: '#d4d4d4' }}>{sseConfig}</code>
-                      </pre>
+                      <SyntaxHighlighter
+                        language="json"
+                        style={vscDarkPlus}
+                        customStyle={{
+                          margin: 0,
+                          borderRadius: 8,
+                          fontSize: 12,
+                          maxHeight: 300,
+                          padding: 16,
+                        }}
+                      >
+                        {sseConfig}
+                      </SyntaxHighlighter>
                       <Tooltip title="复制配置">
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
-                          style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
+                          style={{ position: 'absolute', top: 8, right: 8, color: '#fff', background: 'rgba(0,0,0,0.5)' }}
                           onClick={() => navigator.clipboard.writeText(sseConfig)}
                         />
                       </Tooltip>
@@ -364,35 +168,24 @@ const MCP: React.FC = () => {
                   
                   <Card title="Streamable HTTP Transport (新标准)">
                     <div style={{ position: 'relative' }}>
-                      <pre style={{ 
-                        background: '#1e1e1e', 
-                        color: '#d4d4d4',
-                        padding: 16, 
-                        borderRadius: 8, 
-                        fontFamily: 'Consolas, Monaco, monospace', 
-                        fontSize: 12,
-                        overflow: 'auto',
-                        maxHeight: 300,
-                        margin: 0,
-                        position: 'relative'
-                      }}>
-                        <div style={{ 
-                          position: 'absolute', 
-                          top: 8, 
-                          right: 8, 
-                          color: '#6a9955', 
-                          fontSize: 11,
-                          background: '#2d2d2d',
-                          padding: '2px 8px',
-                          borderRadius: 4
-                        }}>json</div>
-                        <code style={{ color: '#d4d4d4' }}>{streamableHttpConfig}</code>
-                      </pre>
+                      <SyntaxHighlighter
+                        language="json"
+                        style={vscDarkPlus}
+                        customStyle={{
+                          margin: 0,
+                          borderRadius: 8,
+                          fontSize: 12,
+                          maxHeight: 300,
+                          padding: 16,
+                        }}
+                      >
+                        {streamableHttpConfig}
+                      </SyntaxHighlighter>
                       <Tooltip title="复制配置">
                         <Button
                           type="text"
                           icon={<CopyOutlined />}
-                          style={{ position: 'absolute', top: 8, right: 60, color: '#d4d4d4' }}
+                          style={{ position: 'absolute', top: 8, right: 8, color: '#fff', background: 'rgba(0,0,0,0.5)' }}
                           onClick={() => navigator.clipboard.writeText(streamableHttpConfig)}
                         />
                       </Tooltip>
@@ -443,7 +236,19 @@ const MCP: React.FC = () => {
                   <Text>{tool.returns}</Text>
                   <Divider style={{ margin: '12px 0' }} />
                   <Text strong>响应示例：</Text>
-                  <JsonBlock data={tool.responseExample} />
+                  <SyntaxHighlighter
+                    language="json"
+                    style={vscDarkPlus}
+                    customStyle={{
+                      margin: 0,
+                      borderRadius: 8,
+                      fontSize: 12,
+                      maxHeight: 300,
+                      padding: 16,
+                    }}
+                  >
+                    {JSON.stringify(tool.responseExample, null, 2)}
+                  </SyntaxHighlighter>
                 </Space>
               </Card>
             ))}
@@ -480,10 +285,6 @@ const MCP: React.FC = () => {
             type="success"
             showIcon
           />
-        </Card>
-
-        <Card title={<><PlayCircleOutlined /> 在线测试工具</>}>
-          <MCPToolTester />
         </Card>
 
         <Card title={<><CheckCircleOutlined /> 支持的客户端</>}>

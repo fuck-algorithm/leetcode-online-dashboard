@@ -17,7 +17,11 @@ x-common-variables: &common-variables
 x-backend-env: &backend-env
   <<: *common-variables
   PORT: 8080
-  DB_PATH: /data/leetcode.db
+  DB_HOST: mysql
+  DB_PORT: 3306
+  DB_USER: root
+  DB_PASSWORD: leetcode123
+  DB_NAME: leetcode_dashboard
   REDIS_HOST: redis
   REDIS_PORT: 6379
   REDIS_DB: 0
@@ -26,6 +30,38 @@ x-backend-env: &backend-env
   GIN_MODE: release
 
 services:
+  # ============================================
+  # MySQL - 数据库服务
+  # ============================================
+  mysql:
+    image: mysql:8.0
+    container_name: leetcode-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: leetcode123
+      MYSQL_DATABASE: leetcode_dashboard
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - dashboard-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pleetcode123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   # ============================================
   # Redis - 缓存服务
   # ============================================
@@ -67,6 +103,8 @@ services:
     volumes:
       - ${DATA_DIR:-./data}:/data
     depends_on:
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -103,6 +141,8 @@ services:
     volumes:
       - ${DATA_DIR:-./data}:/data
     depends_on:
+      mysql:
+        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -162,6 +202,8 @@ services:
         max-file: "3"
 
 volumes:
+  mysql-data:
+    driver: local
   redis-data:
     driver: local
 

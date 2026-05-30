@@ -66,23 +66,42 @@ func (c *LeetCodeWSClient) Connect() error {
 	log.Printf("[WebSocket] Connecting to LeetCode [%s] for problem: %s", c.site, c.slug)
 
 	var origin string
+	var referer string
 	if c.site == SiteCOM {
 		origin = "https://leetcode.com"
+		referer = "https://leetcode.com/problems/" + c.slug + "/"
 	} else {
 		origin = "https://leetcode.cn"
+		referer = "https://leetcode.cn/problems/" + c.slug + "/"
 	}
 
 	headers := http.Header{
 		"Origin":          {origin},
-		"User-Agent":      {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
-		"Accept-Language": {"en-US,en;q=0.9"},
+		"Referer":         {referer},
+		"User-Agent":      {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"},
+		"Accept-Language": {"en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7"},
+		"Accept":          {"*/*"},
+		"Cache-Control":   {"no-cache"},
+		"Pragma":          {"no-cache"},
 	}
 
-	conn, resp, err := websocket.DefaultDialer.Dial(c.url, headers)
+	// 创建自定义的 dialer，配置代理和 TLS
+	dialer := websocket.DefaultDialer
+	dialer.HandshakeTimeout = 30 * time.Second
+	dialer.EnableCompression = true
+	
+	// 配置代理支持 - 读取 HTTP_PROXY/HTTPS_PROXY 环境变量
+	if c.site == SiteCOM {
+		dialer.Proxy = http.ProxyFromEnvironment
+		log.Printf("[WebSocket] Using proxy from environment for %s [%s]", c.slug, c.site)
+	}
+
+	conn, resp, err := dialer.Dial(c.url, headers)
 	if err != nil {
-		log.Printf("[WebSocket] Failed to connect to %s: %v", c.slug, err)
+		log.Printf("[WebSocket] Failed to connect to %s [%s]: %v", c.slug, c.site, err)
 		if resp != nil {
 			log.Printf("[WebSocket] Response status: %d", resp.StatusCode)
+			log.Printf("[WebSocket] Response headers: %v", resp.Header)
 		}
 		return err
 	}

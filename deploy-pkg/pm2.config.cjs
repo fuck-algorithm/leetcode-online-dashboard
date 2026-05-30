@@ -9,6 +9,7 @@ module.exports = {
       exec_mode: 'fork',
       watch: false,
       max_memory_restart: '500M',
+      max_size: '50M',
       env: {
         NODE_ENV: 'production',
         PORT: 52107

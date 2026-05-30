@@ -60,6 +60,8 @@ func registerTools(s *server.MCPServer) {
 			mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
 		),
 	)
+	s.AddTool(problemCountTool, handleGetProblemOnlineCountMCP)
+
 	// Tool: get_hot100_problems
 	hot100ProblemsTool := mcp.NewTool(
 		"get_hot100_problems",

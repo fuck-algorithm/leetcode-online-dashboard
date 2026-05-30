@@ -55,3 +55,9 @@ vendor/
 tmp/
 temp/
 *.tmp
+
+# Log files and archives
+*.log
+nohup.out
+*.tar.gz
+crawler.log

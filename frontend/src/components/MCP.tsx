@@ -11,13 +11,10 @@ const MCP: React.FC = () => {
   const [serverUrl, setServerUrl] = useState<string>('');
 
   useEffect(() => {
-    // 动态获取后端服务地址
-    const currentHost = window.location.hostname;
-    const currentPort = window.location.port;
-    // 如果前端和后端使用相同域名，直接使用当前域名；否则使用默认端口
-    const backendUrl = currentPort 
-      ? `http://${currentHost}:${currentPort === '80' ? '52106' : (parseInt(currentPort) + 1).toString()}`
-      : `http://${currentHost}:52106`;
+    // 开发环境后端在 52106；Docker 部署时 nginx 已把 /mcp、/sse 反代到后端，用同源地址即可
+    const backendUrl = import.meta.env.DEV
+      ? `http://${window.location.hostname}:52106`
+      : window.location.origin;
     setServerUrl(backendUrl);
   }, []);
 
@@ -26,7 +23,7 @@ const MCP: React.FC = () => {
     "mcpServers": {
       "leetcode-dashboard": {
         "type": "sse",
-        "url": serverUrl + "/mcp"
+        "url": serverUrl + "/mcp/sse"
       }
     }
   }, null, 2);
@@ -42,6 +39,26 @@ const MCP: React.FC = () => {
   }, null, 2);
 
   const tools = [
+    {
+      name: 'get_hot100_problems',
+      description: '获取LeetCode Hot 100题目完整列表（含题目信息与在线人数）',
+      parameters: [],
+      returns: '包含100道题目信息与在线人数的数组',
+      responseExample: {
+        frontend_id: "1",
+        slug: "two-sum",
+        title: "Two Sum",
+        title_cn: "两数之和",
+        difficulty: "EASY",
+        paid_only: false,
+        topic_tags: ["数组", "哈希表"],
+        online_count: 334,
+        online_count_cn: 334,
+        online_count_com: 0,
+        online_count_total: 334,
+        last_updated: "2026-10-30T01:00:00+08:00"
+      }
+    },
     {
       name: 'get_hot100_online_count',
       description: '获取LeetCode Hot 100题目的最新实时在线人数',
@@ -126,13 +143,13 @@ const MCP: React.FC = () => {
                   <Text>在您的 MCP 客户端（如 Claude Desktop、Cursor 等）中添加以下配置：</Text>
                   
                   <Alert
-                    message="重要提示"
+                    message="端点速查"
                     description={
                       <span>
-                        本服务使用 <strong>SSE Transport</strong> 协议。<br/>
-                        MCP 端点：<code>{serverUrl}/mcp</code><br/>
-                        SSE 连接：<code>{serverUrl}/mcp/sse</code><br/>
-                        消息端点：<code>{serverUrl}/mcp/message</code>
+                        <strong>Streamable HTTP</strong>（推荐，新客户端）：<code>{serverUrl}/mcp</code><br/>
+                        <strong>SSE</strong>（旧客户端）：<code>{serverUrl}/mcp/sse</code>，消息端点 <code>{serverUrl}/mcp/message</code><br/>
+                        <strong>工具清单 JSON</strong>：<code>{serverUrl}/mcp/manifest</code><br/>
+                        <strong>旧式 SSE 别名</strong>：<code>{serverUrl}/sse</code>
                       </span>
                     }
                     type="info"

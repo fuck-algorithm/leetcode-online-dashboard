@@ -35,11 +35,14 @@ func main() {
 
 	// Initialize Redis for cross-process data exchange
 	redisCfg := &redis.Config{
-		Host:     getEnv("REDIS_HOST", "localhost"),
-		Port:     getEnv("REDIS_PORT", "6379"),
-		Password: getEnv("REDIS_PASSWORD", ""),
-		DB:       0,
+		Host:      cfg.RedisHost,
+		Port:      cfg.RedisPort,
+		Password:  cfg.RedisPassword,
+		DB:        cfg.RedisDB,
+		KeyPrefix: cfg.RedisKeyPrefix,
+		PoolSize:  cfg.RedisPoolSize,
 	}
+	redisReady := false
 	if err := redis.Init(redisCfg); err != nil {
 		log.Printf("Warning: Failed to initialize Redis: %v", err)
 		log.Println("Continuing without Redis, using memory cache only")
@@ -47,6 +50,7 @@ func main() {
 		// Enable Redis cache adapter for cross-process data exchange
 		cache.GetRedisCache().EnableRedis()
 		cache.GetRedisCache().SubscribeUpdates()
+		redisReady = true
 		log.Println("Redis enabled for cross-process data exchange")
 	}
 	defer redis.Close()
@@ -74,31 +78,40 @@ func main() {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
-	
-	// Apply API response caching (5 minute TTL)
-	r.Use(middleware.CacheMiddleware(5 * time.Minute))
-	
-	// Apply rate limiting middleware (100 requests per minute)
-	r.Use(middleware.RateLimitMiddleware(100, time.Minute))
+
+	// API response caching: Redis-backed when available, in-memory fallback.
+	// TTL 可配（默认 30s），因为本服务数据约每 30 秒更新一轮。
+	if redisReady {
+		r.Use(middleware.RedisCacheMiddleware(redis.GetClient(), time.Duration(cfg.APICacheTTLSec)*time.Second))
+	} else {
+		r.Use(middleware.CacheMiddleware(time.Duration(cfg.APICacheTTLSec) * time.Second))
+	}
+
+	// Rate limiting: Redis-backed sliding window when available, in-memory fallback.
+	if redisReady {
+		r.Use(middleware.RedisRateLimitMiddleware(redis.GetClient(), cfg.RateLimitPerMin, time.Minute))
+	} else {
+		r.Use(middleware.RateLimitMiddleware(cfg.RateLimitPerMin, time.Minute))
+	}
 
 	// API routes
 	api := r.Group("/api")
 	{
 		api.GET("/health", handlers.HealthCheck)
-		
+
 		// Hot 100 API group - all data is within Hot 100 context
 		hot100 := api.Group("/hot100")
 		{
-			hot100.GET("", handlers.GetHot100)              // List all Hot 100
-			hot100.GET("/problems", handlers.GetProblems)   // Get problem details
-			hot100.GET("/online-counts/:id", handlers.GetOnlineCounts)           // History for specific problem
+			hot100.GET("", handlers.GetHot100)                                  // List all Hot 100
+			hot100.GET("/problems", handlers.GetProblems)                       // Get problem details
+			hot100.GET("/online-counts/:id", handlers.GetOnlineCounts)          // History for specific problem
 			hot100.GET("/online-counts/latest", handlers.GetLatestOnlineCounts) // Latest counts
-			hot100.GET("/statistics", handlers.GetStatistics)      // Statistics
-			hot100.GET("/peaks", handlers.GetPeakOnlineTimes)        // Peak times
-			hot100.GET("/export", handlers.ExportData)               // Export data
-			hot100.GET("/export/stats", handlers.GetExportStats)     // Export stats
+			hot100.GET("/statistics", handlers.GetStatistics)                   // Statistics
+			hot100.GET("/peaks", handlers.GetPeakOnlineTimes)                   // Peak times
+			hot100.GET("/export", handlers.ExportData)                          // Export data
+			hot100.GET("/export/stats", handlers.GetExportStats)                // Export stats
 		}
-		
+
 		// Keep old endpoints for backward compatibility (deprecated)
 		api.GET("/problems", handlers.GetProblems)
 		api.GET("/online-counts/:id", handlers.GetOnlineCounts)
@@ -107,10 +120,10 @@ func main() {
 		api.GET("/peaks", handlers.GetPeakOnlineTimes)
 		api.GET("/export", handlers.ExportData)
 		api.GET("/export/stats", handlers.GetExportStats)
-		api.GET("/history", handlers.GetOnlineCountsByQuery) // History page endpoint
-		api.GET("/total-online-history", handlers.GetTotalOnlineCountHistory) // Total online count history for charts
+		api.GET("/history", handlers.GetOnlineCountsByQuery)                      // History page endpoint
+		api.GET("/total-online-history", handlers.GetTotalOnlineCountHistory)     // Total online count history for charts
 		api.GET("/total-online-aggregate", handlers.GetTotalOnlineCountAggregate) // Aggregate data with custom time range and granularity
-		
+
 		// Add data retention stats endpoint
 		adminHandler := handlers.NewAdminHandler()
 		admin := api.Group("/admin")
@@ -127,15 +140,21 @@ func main() {
 		}
 	}
 
-	// MCP SSE server endpoints
+	// ===== MCP 传输端点 =====
+	// 现代客户端（Claude Desktop / Cursor / Cherry Studio）优先走
+	// Streamable HTTP（/mcp），旧式 SSE 客户端继续用 /mcp/sse、/sse。
 	mcpServer := handlers.NewMCPServer()
-	
-	// Create SSE server
 	sseServer := server.NewSSEServer(mcpServer)
+	streamableServer := server.NewStreamableHTTPServer(mcpServer)
 	sseHandler := sseServer.SSEHandler()
-	
-	// Custom handler that supports both GET and HEAD for SSE
-	r.Any("/sse", func(c *gin.Context) {
+
+	// Streamable HTTP：POST 调用 JSON-RPC，GET 监听服务端通知
+	r.Any("/mcp", func(c *gin.Context) {
+		streamableServer.ServeHTTP(c.Writer, c.Request)
+	})
+
+	// SSE transport（HEAD 用于健康探测）
+	serveSSE := func(c *gin.Context) {
 		if c.Request.Method == http.MethodHead {
 			c.Header("Content-Type", "text/event-stream")
 			c.Header("Cache-Control", "no-cache")
@@ -144,24 +163,16 @@ func main() {
 			return
 		}
 		sseHandler.ServeHTTP(c.Writer, c.Request)
-	})
-	
-	r.Any("/mcp/sse", func(c *gin.Context) {
-		if c.Request.Method == http.MethodHead {
-			c.Header("Content-Type", "text/event-stream")
-			c.Header("Cache-Control", "no-cache")
-			c.Header("Connection", "keep-alive")
-			c.Status(http.StatusOK)
-			return
-		}
-		sseHandler.ServeHTTP(c.Writer, c.Request)
-	})
-	
+	}
+	r.Any("/sse", serveSSE)
+	r.Any("/mcp/sse", serveSSE)
 	r.POST("/message", gin.WrapH(sseServer.MessageHandler()))
 	r.POST("/mcp/message", gin.WrapH(sseServer.MessageHandler()))
-	
+
+	// MCP 工具清单（JSON，供人类阅读或 IDE 自动补全）
+	r.GET("/mcp/manifest", handlers.MCPManifest)
+
 	// Legacy REST-based MCP endpoints (deprecated, kept for backward compatibility)
-	r.GET("/mcp", handlers.MCPManifest)
 	r.POST("/mcp/tool", handlers.MCPHandler)
 
 	// WebSocket endpoint for real-time updates (frontend clients)

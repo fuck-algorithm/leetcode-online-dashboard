@@ -33,12 +33,12 @@ func (a *Aggregator) CalculateTotalOnline() {
 		log.Printf("Failed to update total online by site: %v", err)
 	}
 
-	// Persist to MySQL
-	a.persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal)
+	// Persist to PostgreSQL
+	a.persistTotalOnlineToPostgres(cnTotal, comTotal, unifiedTotal)
 }
 
-// persistTotalOnlineToMySQL persists aggregate data to MySQL
-func (a *Aggregator) persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal int) {
+// persistTotalOnlineToPostgres persists aggregate data to PostgreSQL
+func (a *Aggregator) persistTotalOnlineToPostgres(cnTotal, comTotal, unifiedTotal int) {
 	db := database.GetDB()
 	if db == nil {
 		return

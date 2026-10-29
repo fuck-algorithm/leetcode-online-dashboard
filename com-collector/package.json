@@ -1,0 +1,17 @@
+{
+  "name": "leetcode-com-collector",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Collect LeetCode.com online counts through a real browser session and publish them to Redis.",
+  "main": "collector.js",
+  "scripts": {
+    "start": "node collector.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "playwright": "1.63.0",
+    "redis": "^6.3.0"
+  }
+}

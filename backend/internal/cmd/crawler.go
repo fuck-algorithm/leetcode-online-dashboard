@@ -38,10 +38,11 @@ func runCrawler(cmd *cobra.Command, args []string) {
 
 	// Initialize Redis
 	redisCfg := &redis.Config{
-		Host:     getEnv("REDIS_HOST", "localhost"),
-		Port:     getEnv("REDIS_PORT", "6379"),
-		Password: getEnv("REDIS_PASSWORD", ""),
-		DB:       0,
+		Host:      cfg.RedisHost,
+		Port:      cfg.RedisPort,
+		Password:  cfg.RedisPassword,
+		DB:        cfg.RedisDB,
+		KeyPrefix: cfg.RedisKeyPrefix,
 	}
 	if err := redis.Init(redisCfg); err != nil {
 		log.Fatalf("Failed to initialize Redis: %v", err)

@@ -2,9 +2,13 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
+	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 // ProblemInfo holds basic problem information from JSON
@@ -20,20 +24,34 @@ type ProblemInfo struct {
 
 // Config holds all configuration
 type Config struct {
-	DBHost       string
-	DBPort       string
-	DBUser       string
-	DBPassword   string
-	DBName       string
-	ServerPort   string
-	BatchSize    int
-	IntervalSec  int
-	Problems     []string      // slugs only for backward compatibility
-	ProblemData  []ProblemInfo // full problem data with FrontendID
+	DBHost          string
+	DBPort          string
+	DBUser          string
+	DBPassword      string
+	DBName          string
+	DBSSLMode       string
+	DBTimeZone      string
+	RedisHost       string
+	RedisPort       string
+	RedisPassword   string
+	RedisDB         int
+	RedisKeyPrefix  string
+	RedisPoolSize   int
+	ServerPort      string
+	BatchSize       int
+	IntervalSec     int
+	CrawlCOM        bool
+	APICacheTTLSec  int
+	RateLimitPerMin int
+	Problems        []string      // slugs only for backward compatibility
+	ProblemData     []ProblemInfo // full problem data with FrontendID
 }
 
-// Load loads configuration from environment variables
+// Load loads configuration from environment variables.
+// A .env file in the working directory or one of its parents is loaded first;
+// real environment variables always take precedence.
 func Load() *Config {
+	loadEnvFile()
 	problemData := loadProblemDataFromJSON()
 	problems := make([]string, len(problemData))
 	for i, p := range problemData {
@@ -41,19 +59,43 @@ func Load() *Config {
 	}
 
 	cfg := &Config{
-		DBHost:      getEnv("DB_HOST", "localhost"),
-		DBPort:      getEnv("DB_PORT", "3306"),
-		DBUser:      getEnv("DB_USER", "root"),
-		DBPassword:  getEnv("DB_PASSWORD", ""),
-		DBName:      getEnv("DB_NAME", "leetcode_dashboard"),
-		ServerPort:  getEnv("PORT", "52106"),
-		BatchSize:   getEnvInt("BATCH_SIZE", 10),
-		IntervalSec: getEnvInt("INTERVAL_SEC", 30),
-		Problems:    problems,
-		ProblemData: problemData,
+		DBHost:         getEnv("DB_HOST", "localhost"),
+		DBPort:         getEnv("DB_PORT", "5432"),
+		DBUser:         getEnv("DB_USER", "postgres"),
+		DBPassword:     getEnv("DB_PASSWORD", ""),
+		DBName:         getEnv("DB_NAME", "leetcode_dashboard"),
+		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
+		DBTimeZone:     getEnv("DB_TIMEZONE", "Asia/Shanghai"),
+		RedisHost:      getEnv("REDIS_HOST", "localhost"),
+		RedisPort:      getEnv("REDIS_PORT", "6379"),
+		RedisPassword:  getEnv("REDIS_PASSWORD", ""),
+		RedisDB:        getEnvInt("REDIS_DB", 0),
+		RedisKeyPrefix:  getEnv("REDIS_KEY_PREFIX", ""),
+		RedisPoolSize:   getEnvInt("REDIS_POOL_SIZE", 20),
+		ServerPort:      getEnv("PORT", "52106"),
+		BatchSize:       getEnvInt("BATCH_SIZE", 10),
+		IntervalSec:     getEnvInt("INTERVAL_SEC", 30),
+		CrawlCOM:        getEnvBool("CRAWL_COM", false),
+		APICacheTTLSec:  getEnvInt("API_CACHE_TTL_SECONDS", 30),
+		RateLimitPerMin: getEnvInt("RATE_LIMIT_PER_MINUTE", 300),
+		Problems:        problems,
+		ProblemData:     problemData,
 	}
 
 	return cfg
+}
+
+// loadEnvFile loads the first .env found while walking up from the working
+// directory. Existing environment variables are not overridden.
+func loadEnvFile() {
+	for _, path := range []string{".env", "../.env", "../../.env"} {
+		if _, err := os.Stat(path); err == nil {
+			if err := godotenv.Load(path); err != nil {
+				log.Printf("Warning: failed to load %s: %v", path, err)
+			}
+			return
+		}
+	}
 }
 
 func getEnv(key, defaultValue string) string {
@@ -66,6 +108,15 @@ func getEnv(key, defaultValue string) string {
 func getEnvInt(key string, defaultValue int) int {
 	if value := os.Getenv(key); value != "" {
 		if parsed, err := strconv.Atoi(value); err == nil {
+			return parsed
+		}
+	}
+	return defaultValue
+}
+
+func getEnvBool(key string, defaultValue bool) bool {
+	if value := os.Getenv(key); value != "" {
+		if parsed, err := strconv.ParseBool(value); err == nil {
 			return parsed
 		}
 	}
@@ -121,7 +172,13 @@ func convertToProblemInfo(slugs []string) []ProblemInfo {
 	return result
 }
 
-// DSN returns MySQL connection string
+// DSN returns the PostgreSQL connection string (libpq keyword/value format).
 func (c *Config) DSN() string {
-	return c.DBUser + ":" + c.DBPassword + "@tcp(" + c.DBHost + ":" + c.DBPort + ")/" + c.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
+	// Escape backslashes and single quotes for libpq's quoted value syntax.
+	password := strings.ReplaceAll(c.DBPassword, `\`, `\\`)
+	password = strings.ReplaceAll(password, `'`, `\'`)
+	return fmt.Sprintf(
+		"host=%s port=%s user=%s password='%s' dbname=%s sslmode=%s TimeZone=%s",
+		c.DBHost, c.DBPort, c.DBUser, password, c.DBName, c.DBSSLMode, c.DBTimeZone,
+	)
 }

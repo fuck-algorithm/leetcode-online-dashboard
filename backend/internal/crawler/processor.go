@@ -96,8 +96,8 @@ func (p *MessageProcessor) saveOnlineCount(slug string, site websocket.SiteType,
 		TopicTags:  topicTags,
 	})
 
-	// Persist to MySQL
-	p.persistToMySQL(problem.FrontendID, site, count)
+	// Persist to PostgreSQL
+	p.persistToPostgres(problem.FrontendID, site, count)
 
 	log.Printf("[%s-%s] Online count: %d", slug, site, count)
 
@@ -128,8 +128,8 @@ func (p *MessageProcessor) updateRedis(slug string, site websocket.SiteType, cou
 	}
 }
 
-// persistToMySQL persists data to MySQL
-func (p *MessageProcessor) persistToMySQL(frontendID string, site websocket.SiteType, count int) {
+// persistToPostgres persists data to PostgreSQL
+func (p *MessageProcessor) persistToPostgres(frontendID string, site websocket.SiteType, count int) {
 	db := database.GetDB()
 	if db == nil {
 		return

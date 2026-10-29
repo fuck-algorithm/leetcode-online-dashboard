@@ -17,78 +17,26 @@ x-common-variables: &common-variables
 x-backend-env: &backend-env
   <<: *common-variables
   PORT: 8080
-  DB_HOST: mysql
-  DB_PORT: 3306
-  DB_USER: root
-  DB_PASSWORD: leetcode123
-  DB_NAME: leetcode_dashboard
-  REDIS_HOST: redis
-  REDIS_PORT: 6379
-  REDIS_DB: 0
+  # K8s PostgreSQL（database namespace）：集群外走 local-server-001 NodePort，
+  # 集群内可改为 postgres.database.svc.cluster.local:5432
+  DB_HOST: ${DB_HOST:-local-server-001}
+  DB_PORT: ${DB_PORT:-30432}
+  DB_USER: ${DB_USER:-leetcode_dashboard}
+  DB_PASSWORD: ${DB_PASSWORD:-change-me}
+  DB_NAME: ${DB_NAME:-leetcode_dashboard}
+  DB_SSLMODE: ${DB_SSLMODE:-disable}
+  DB_TIMEZONE: ${DB_TIMEZONE:-Asia/Shanghai}
+  # K8s Redis（database namespace）：集群外 local-server-001:30379
+  REDIS_HOST: ${REDIS_HOST:-local-server-001}
+  REDIS_PORT: ${REDIS_PORT:-30379}
+  REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-leetcode-dashboard}
   BATCH_SIZE: ${BATCH_SIZE:-10}
   INTERVAL_SEC: ${INTERVAL_SEC:-30}
   GIN_MODE: release
 
 services:
-  # ============================================
-  # MySQL - 数据库服务
-  # ============================================
-  mysql:
-    image: mysql:8.0
-    container_name: leetcode-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: leetcode123
-      MYSQL_DATABASE: leetcode_dashboard
-      MYSQL_CHARSET: utf8mb4
-      MYSQL_COLLATION: utf8mb4_unicode_ci
-      TZ: Asia/Shanghai
-    volumes:
-      - mysql-data:/var/lib/mysql
-    networks:
-      - dashboard-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pleetcode123"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-
-  # ============================================
-  # Redis - 缓存服务
-  # ============================================
-  redis:
-    image: redis:7-alpine
-    container_name: leetcode-redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redis-data:/data
-      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
-    networks:
-      - dashboard-network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 128M
-
   # ============================================
   # Backend API - 后端API服务
   # ============================================
@@ -102,11 +50,8 @@ services:
       <<: *backend-env
     volumes:
       - ${DATA_DIR:-./data}:/data
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    extra_hosts:
+      - "${DB_HOST:-local-server-001}:host-gateway"
     networks:
       - dashboard-network
     healthcheck:
@@ -140,11 +85,8 @@ services:
       <<: *backend-env
     volumes:
       - ${DATA_DIR:-./data}:/data
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+    extra_hosts:
+      - "${DB_HOST:-local-server-001}:host-gateway"
     networks:
       - dashboard-network
     healthcheck:
@@ -200,12 +142,6 @@ services:
       options:
         max-size: "100m"
         max-file: "3"
-
-volumes:
-  mysql-data:
-    driver: local
-  redis-data:
-    driver: local
 
 networks:
   dashboard-network:

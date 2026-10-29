@@ -5,6 +5,14 @@
 
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Load database/Redis endpoints (K8s PostgreSQL + Redis) and other settings.
+if [ -f "$PROJECT_ROOT/.env" ]; then
+    set -a
+    # shellcheck disable=SC1091
+    . "$PROJECT_ROOT/.env"
+    set +a
+fi
+
 # Configuration
 CRAWLER_LOG="$PROJECT_ROOT/backend/crawler.log"
 BACKEND_LOG="$PROJECT_ROOT/backend/backend.log"

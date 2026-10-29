@@ -61,3 +61,12 @@ temp/
 nohup.out
 *.tar.gz
 crawler.log
+
+# 局域网服务入口（内网地址，勿提交）
+server-url.txt
+
+# 本地环境变量（含数据库凭据，勿提交）
+.env
+
+# 部署机真实口令
+deploy/**/.env

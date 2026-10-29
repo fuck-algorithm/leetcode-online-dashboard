@@ -42,10 +42,11 @@ func runServer(cmd *cobra.Command, args []string) {
 
 	// Initialize Redis
 	redisCfg := &redis.Config{
-		Host:     getEnv("REDIS_HOST", "localhost"),
-		Port:     getEnv("REDIS_PORT", "6379"),
-		Password: getEnv("REDIS_PASSWORD", ""),
-		DB:       0,
+		Host:      cfg.RedisHost,
+		Port:      cfg.RedisPort,
+		Password:  cfg.RedisPassword,
+		DB:        cfg.RedisDB,
+		KeyPrefix: cfg.RedisKeyPrefix,
 	}
 	if err := redis.Init(redisCfg); err != nil {
 		log.Printf("Warning: Failed to initialize Redis: %v", err)
@@ -117,7 +118,7 @@ func setupRoutes(r *gin.Engine, hub *internalWS.Hub) {
 	api := r.Group("/api")
 	{
 		api.GET("/health", handlers.HealthCheck)
-		
+
 		hot100 := api.Group("/hot100")
 		{
 			hot100.GET("", handlers.GetHot100)
@@ -129,7 +130,7 @@ func setupRoutes(r *gin.Engine, hub *internalWS.Hub) {
 			hot100.GET("/export", handlers.ExportData)
 			hot100.GET("/export/stats", handlers.GetExportStats)
 		}
-		
+
 		// Backward compatibility routes
 		api.GET("/problems", handlers.GetProblems)
 		api.GET("/online-counts/:id", handlers.GetOnlineCounts)

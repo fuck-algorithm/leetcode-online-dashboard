@@ -1,0 +1,152 @@
+# LeetCode Dashboard - 单机 Docker 部署（leetcode-001: 103.236.93.62）
+#
+# 拓扑：nginx(frontend) 暴露 80 → backend:8080，backend/crawler → postgres + redis。
+# 数据卷全部 bind mount 到宿主机物理磁盘 /opt/leetcode-dashboard/data，
+# 容器重建不会丢数据。
+#
+# 使用：
+#   cd /opt/leetcode-dashboard && docker compose up -d
+# 镜像由本地用 docker save 上传后 docker load，不依赖私有镜像仓库。
+
+name: leetcode-dashboard
+
+x-backend-env: &backend-env
+  TZ: Asia/Shanghai
+  PORT: "8080"
+  DB_HOST: postgres
+  DB_PORT: "5432"
+  DB_USER: ${POSTGRES_USER:-leetcode_dashboard}
+  DB_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+  DB_NAME: ${POSTGRES_DB:-leetcode_dashboard}
+  DB_SSLMODE: disable
+  DB_TIMEZONE: Asia/Shanghai
+  REDIS_HOST: redis
+  REDIS_PORT: "6379"
+  REDIS_PASSWORD: ""
+  REDIS_DB: "0"
+  REDIS_KEY_PREFIX: "leetcode-dashboard:"
+  REDIS_POOL_SIZE: "20"
+  # 国际站直连会被 Cloudflare 拦截；浏览器采集器不在本机部署
+  CRAWL_COM: "false"
+  # API 响应缓存 TTL：数据约 30s 一轮，缓存 30s 可撑住大并发读
+  API_CACHE_TTL_SECONDS: "30"
+  # Redis 滑动窗口限流：单 IP 每分钟回源请求数
+  RATE_LIMIT_PER_MINUTE: "300"
+  GIN_MODE: release
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: leetcode-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-leetcode_dashboard}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-leetcode_dashboard}
+      TZ: Asia/Shanghai
+    volumes:
+      # 库文件直接落在宿主机磁盘上，容器删除/重建不影响数据
+      - /opt/leetcode-dashboard/data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-leetcode_dashboard} -d ${POSTGRES_DB:-leetcode_dashboard}"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    networks:
+      - internal
+    mem_limit: 768m
+    logging: *default-logging
+
+  redis:
+    image: redis:7-alpine
+    container_name: leetcode-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--save", "60", "1000"]
+    ports:
+      # 仅本机回环，供 SSH 隧道/本地采集器写入 COM 数据；不对外暴露
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /opt/leetcode-dashboard/data/redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+    networks:
+      - internal
+    mem_limit: 256m
+    logging: *default-logging
+
+  backend:
+    image: ${BACKEND_IMAGE:-leetcode-dashboard-backend:latest}
+    container_name: leetcode-backend
+    restart: unless-stopped
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    mem_limit: 512m
+    logging: *default-logging
+
+  crawler:
+    image: ${CRAWLER_IMAGE:-leetcode-dashboard-crawler:latest}
+    container_name: leetcode-crawler
+    restart: unless-stopped
+    environment: *backend-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "pgrep", "leetcode-crawler"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    mem_limit: 384m
+    logging: *default-logging
+
+  frontend:
+    image: ${FRONTEND_IMAGE:-leetcode-dashboard-frontend:latest}
+    container_name: leetcode-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - internal
+    healthcheck:
+      # 必须用 127.0.0.1：nginx 只监听 IPv4，容器内 localhost 会先解析到 ::1 导致误报 unhealthy
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    mem_limit: 128m
+    logging: *default-logging
+
+networks:
+  internal:
+    driver: bridge

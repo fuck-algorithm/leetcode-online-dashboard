@@ -116,9 +116,15 @@ services:
     restart: unless-stopped
     environment:
       - PORT=52106
-      - DB_PATH=/data/leetcode.db
+      - DB_HOST=127.0.0.1
+      - DB_PORT=30432
+      - DB_USER=leetcode_dashboard
+      - DB_PASSWORD=change-me
+      - DB_NAME=leetcode_dashboard
+      - DB_SSLMODE=disable
+      - DB_TIMEZONE=Asia/Shanghai
       - REDIS_HOST=127.0.0.1
-      - REDIS_PORT=6379
+      - REDIS_PORT=30379
       - REDIS_DB=0
       - BATCH_SIZE=10
       - INTERVAL_SEC=30
@@ -143,9 +149,15 @@ services:
     network_mode: host
     restart: unless-stopped
     environment:
-      - DB_PATH=/data/leetcode.db
+      - DB_HOST=127.0.0.1
+      - DB_PORT=30432
+      - DB_USER=leetcode_dashboard
+      - DB_PASSWORD=change-me
+      - DB_NAME=leetcode_dashboard
+      - DB_SSLMODE=disable
+      - DB_TIMEZONE=Asia/Shanghai
       - REDIS_HOST=127.0.0.1
-      - REDIS_PORT=6379
+      - REDIS_PORT=30379
       - REDIS_DB=0
       - BATCH_SIZE=10
       - INTERVAL_SEC=30

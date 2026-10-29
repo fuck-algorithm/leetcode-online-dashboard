@@ -59,6 +59,18 @@ LOG_LEVEL=info
 BATCH_SIZE=10
 INTERVAL_SEC=30
 TZ=Asia/Shanghai
+# K8s PostgreSQL（集群外 NodePort）
+DB_HOST=local-server-001
+DB_PORT=30432
+DB_USER=leetcode_dashboard
+DB_PASSWORD=change-me
+DB_NAME=leetcode_dashboard
+DB_SSLMODE=disable
+DB_TIMEZONE=Asia/Shanghai
+
+# K8s Redis（集群外 NodePort）
+REDIS_HOST=local-server-001
+REDIS_PORT=30379
 EOF
 fi
 log_success "Environment file created"
@@ -161,8 +173,8 @@ echo "  Frontend:    http://YOUR_SERVER_IP:52107"
 echo "  Health:      http://YOUR_SERVER_IP:52106/api/health"
 echo ""
 echo "  Security:"
-echo "    - Redis: Only accessible from localhost (127.0.0.1)"
-echo "    - MySQL: Using SQLite (container-only, no exposed port)"
+echo "    - Redis: K8s redis.database (local-server-001:30379)"
+echo "    - PostgreSQL: K8s postgres.database (local-server-001:30432)"
 echo ""
 echo "  To check logs:"
 echo "    cd /opt/leetcode-dashboard && docker-compose -f docker-compose.prod.yml logs -f"

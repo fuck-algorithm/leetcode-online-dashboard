@@ -1,17 +1,27 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Input, Select, Space, Skeleton, Button, Table } from 'antd';
+import { Card, Input, Select, Space, Skeleton, Button, Table, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { TrophyOutlined } from '@ant-design/icons';
+import { TrophyOutlined, FireOutlined, LineChartOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { Problem } from '../../types';
 import { fetchHot100 } from '../../api';
 import { getFromIndexedDB, STORAGE_KEYS } from '../../utils/indexedDB';
 import { WSProblem, SortField, SortOrder, formatSlug } from './types';
 import { useColumns } from './useColumns';
+import LastUpdated from './LastUpdated';
 import '../Rankings.css';
 
 const { Search } = Input;
 const { Option } = Select;
+
+/** API 返回 ISO 时间串，WebSocket 返回秒级时间戳，这里统一成毫秒取最大值 */
+function newestTimestamp(items: Array<{ last_updated?: string | number }>): number {
+  return items.reduce((max, item) => {
+    const raw = item.last_updated;
+    const ts = typeof raw === 'number' ? raw * 1000 : Date.parse(String(raw ?? ''));
+    return Number.isFinite(ts) && ts > max ? ts : max;
+  }, 0);
+}
 
 const Rankings: React.FC = () => {
   const [problems, setProblems] = useState<Problem[]>([]);
@@ -23,7 +33,9 @@ const Rankings: React.FC = () => {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortField, setSortField] = useState<SortField>('total');
   const [sortOrder, setSortOrder] = useState<SortOrder>('descend');
-  
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<number | null>(null);
+  const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
+
   const navigate = useNavigate();
   const tableWrapperRef = React.useRef<HTMLDivElement>(null);
 
@@ -35,7 +47,7 @@ const Rankings: React.FC = () => {
         const savedSortOrder = await getFromIndexedDB<SortOrder>(STORAGE_KEYS.RANKINGS_SORT_ORDER);
         if (savedSortField) setSortField(savedSortField);
         if (savedSortOrder) setSortOrder(savedSortOrder);
-        
+
         const problemsData = await fetchHot100();
         if (problemsData && problemsData.length > 0) {
           const formattedProblems = problemsData.map((p: any) => ({
@@ -53,6 +65,8 @@ const Rankings: React.FC = () => {
             topic_tags: p.topic_tags || [],
           }));
           setProblems(formattedProblems);
+          const newest = newestTimestamp(formattedProblems);
+          if (newest > 0) setLastUpdatedAt(newest);
           setLoading(false);
           setInitialLoaded(true);
         }
@@ -70,12 +84,16 @@ const Rankings: React.FC = () => {
   useWebSocket((data) => {
     if (data.type === 'batch_update' && data.problems) {
       const wsProblems: WSProblem[] = data.problems;
+      const newest = newestTimestamp(wsProblems);
+      setLastUpdatedAt(prev => Math.max(prev ?? 0, newest || Date.now()));
+
       const updates = new Map<string, WSProblem>();
+      const changed = new Set<string>();
       wsProblems.forEach(p => {
         const id = String(p.id || p.frontend_id || '');
         updates.set(id, p);
       });
-      
+
       setProblems(prevProblems => {
         if (prevProblems.length === 0) {
           return wsProblems.map(p => ({
@@ -93,23 +111,30 @@ const Rankings: React.FC = () => {
             topic_tags: p.topic_tags || [],
           }));
         }
-        
+
         return prevProblems.map(problem => {
           const update = updates.get(String(problem.id));
           if (update) {
+            const oldTotal = problem.online_count_total || problem.online_count || 0;
+            const newTotal = update.online_count_total || update.online_count || 0;
+            if (oldTotal !== newTotal) changed.add(String(problem.id));
             return {
               ...problem,
               online_count: update.online_count,
               online_count_cn: update.online_count_cn || 0,
               online_count_com: update.online_count_com || 0,
-              online_count_total: update.online_count_total || update.online_count || 0,
+              online_count_total: newTotal,
               last_updated: new Date(update.last_updated * 1000).toISOString(),
             };
           }
           return problem;
         });
       });
-      
+
+      if (changed.size > 0) {
+        setFlashIds(changed);
+        window.setTimeout(() => setFlashIds(new Set()), 900);
+      }
       setLoading(false);
       setInitialLoaded(true);
     }
@@ -140,7 +165,7 @@ const Rankings: React.FC = () => {
   const filteredProblems = useMemo(() => {
     let result = [...problems];
     if (searchText) {
-      result = result.filter(p => 
+      result = result.filter(p =>
         p.title.toLowerCase().includes(searchText.toLowerCase()) ||
         p.slug.toLowerCase().includes(searchText.toLowerCase())
       );
@@ -149,7 +174,7 @@ const Rankings: React.FC = () => {
       result = result.filter(p => p.difficulty?.toLowerCase() === difficultyFilter.toLowerCase());
     }
     if (selectedTags.length > 0) {
-      result = result.filter(p => 
+      result = result.filter(p =>
         selectedTags.every(tag => p.topic_tags?.includes(tag))
       );
     }
@@ -161,8 +186,8 @@ const Rankings: React.FC = () => {
   }, [filteredProblems]);
 
   const handleTagClick = useCallback((tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) 
+    setSelectedTags(prev =>
+      prev.includes(tag)
         ? prev.filter(t => t !== tag)
         : [...prev, tag]
     );
@@ -178,11 +203,17 @@ const Rankings: React.FC = () => {
     sortOrder,
     onTagClick: handleTagClick,
     onNavigate: handleNavigate,
+    flashIds,
   });
 
   const rowClassName = useCallback((record: Problem) => {
-    return `ranking-row ranking-row-${record.id}`;
-  }, []);
+    const base = `ranking-row ranking-row-${record.id}`;
+    return flashIds.has(String(record.id)) ? `${base} ranking-row--flash` : base;
+  }, [flashIds]);
+
+  const topProblem = filteredProblems[0];
+  const totalOnline = problems.reduce((s, p) => s + (p.online_count_total || p.online_count || 0), 0);
+  const avgOnline = problems.length ? Math.round(totalOnline / problems.length) : 0;
 
   if (loading && !initialLoaded) {
     return (
@@ -193,14 +224,58 @@ const Rankings: React.FC = () => {
   }
 
   return (
-    <div>
-      <Card 
-        className="lc-card"
-        title={<span><TrophyOutlined /> 题目排行榜</span>}
+    <div className="rankings-page">
+      {/* 顶部 KPI 卡片 */}
+      <div className="rankings-kpi">
+        <div className="rankings-kpi__item">
+          <div className="rankings-kpi__icon rankings-kpi__icon--trophy"><TrophyOutlined /></div>
+          <div className="rankings-kpi__body">
+            <div className="rankings-kpi__label">监控题目</div>
+            <div className="rankings-kpi__value">{problems.length}</div>
+          </div>
+        </div>
+        <div className="rankings-kpi__item">
+          <div className="rankings-kpi__icon rankings-kpi__icon--fire"><FireOutlined /></div>
+          <div className="rankings-kpi__body">
+            <div className="rankings-kpi__label">当前总在线</div>
+            <div className="rankings-kpi__value">{totalOnline.toLocaleString()}</div>
+          </div>
+        </div>
+        <div className="rankings-kpi__item">
+          <div className="rankings-kpi__icon rankings-kpi__icon--chart"><LineChartOutlined /></div>
+          <div className="rankings-kpi__body">
+            <div className="rankings-kpi__label">平均每题</div>
+            <div className="rankings-kpi__value">{avgOnline}</div>
+          </div>
+        </div>
+        <div className="rankings-kpi__item">
+          <div className="rankings-kpi__icon rankings-kpi__icon--clock"><ClockCircleOutlined /></div>
+          <div className="rankings-kpi__body">
+            <div className="rankings-kpi__label">数据更新</div>
+            <div className="rankings-kpi__value rankings-kpi__value--small">
+              <LastUpdated timestamp={lastUpdatedAt} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <Card
+        className="lc-card rankings-card"
+        title={
+          <span className="rankings-title">
+            <span><TrophyOutlined /> 题目排行榜</span>
+            {topProblem && (
+              <Tag color="gold" style={{ marginLeft: 8 }}>
+                🔥 最热：{topProblem.title}（{topProblem.online_count_total || topProblem.online_count} 人）
+              </Tag>
+            )}
+            <LastUpdated timestamp={lastUpdatedAt} />
+          </span>
+        }
         extra={
           <Space>
             {selectedTags.length > 0 && (
-              <span style={{ 
+              <span style={{
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '6px',
@@ -256,8 +331,8 @@ const Rankings: React.FC = () => {
               className="rankings-search"
               style={{ width: 320 }}
             />
-            <Select 
-              defaultValue="all" 
+            <Select
+              defaultValue="all"
               style={{ width: 100, background: 'var(--lc-bg-hover)', border: '1px solid var(--lc-border)', borderRadius: '6px' }}
               onChange={setDifficultyFilter}
             >
@@ -270,7 +345,7 @@ const Rankings: React.FC = () => {
         }
       >
         <div ref={tableWrapperRef}>
-          <Table 
+          <Table
             className="lc-table lc-rankings-table"
             dataSource={filtered}
             columns={columns}

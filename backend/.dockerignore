@@ -1,0 +1,7 @@
+data/dashboard.db
+data/hot-100.html
+bin/
+dashboard-backend
+leetcode-crawler
+leetcode-dashboard
+*.log

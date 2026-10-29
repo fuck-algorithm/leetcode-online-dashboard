@@ -1,9 +1,9 @@
 version: '3.8'
 
 # ============================================
-# LeetCode Dashboard - Docker Compose (Physical MySQL/Redis)
+# LeetCode Dashboard - Docker Compose (Physical K8s PostgreSQL/Redis)
 # ============================================
-# 使用 bridge 网络，通过 host.docker.internal 访问物理机数据库
+# 使用 bridge 网络，通过 host.docker.internal 访问K8s PostgreSQL/Redis
 # ============================================
 
 x-common-variables: &common-variables
@@ -14,14 +14,17 @@ x-backend-env: &backend-env
   <<: *common-variables
   PORT: 8080
   DB_HOST: host.docker.internal
-  DB_PORT: 3306
-  DB_USER: leetcode
-  DB_PASSWORD: leetcode123
+  DB_PORT: 30432
+  DB_USER: leetcode_dashboard
+  DB_PASSWORD: change-me
+  DB_SSLMODE: disable
+  DB_TIMEZONE: Asia/Shanghai
   DB_NAME: leetcode_dashboard
   REDIS_HOST: host.docker.internal
-  REDIS_PORT: 6379
-  REDIS_PASSWORD: leetcode123
-  REDIS_DB: 0
+  REDIS_PORT: 30379
+  REDIS_PASSWORD: 
+  REDIS_DB: ${REDIS_DB:-0}
+  REDIS_KEY_PREFIX: ${REDIS_KEY_PREFIX:-leetcode-dashboard}
   BATCH_SIZE: ${BATCH_SIZE:-10}
   INTERVAL_SEC: ${INTERVAL_SEC:-30}
   GIN_MODE: release

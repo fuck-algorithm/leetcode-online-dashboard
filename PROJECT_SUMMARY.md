@@ -1,7 +1,26 @@
 # LeetCode Hot 100 Dashboard - Project Completion Summary
 
 ## Overview
-A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem online user counts using Go + Gin + SQLite backend and TypeScript + React + Ant Design frontend.
+A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem online user counts using Go + Gin + PostgreSQL backend and TypeScript + React + Ant Design frontend.
+
+> ⚠️ 下方任务清单为早期规划模板，许多已标 PENDING 的能力（Docker、限流、缓存、
+> 数据导出、峰值检测等）**实际已实现**。最新准确状态以
+> [`README.md`](README.md)、[`deploy/leetcode-001/README.md`](deploy/leetcode-001/README.md)
+> 与线上站点为准。
+
+## 已上线能力（与线上一致）
+
+- **MCP 服务**：Streamable HTTP `/mcp`（标准传输，`Mcp-Session-Id` 会话）、
+  旧式 SSE `/mcp/sse`、工具清单 `/mcp/manifest`；4 个只读工具
+  （`get_hot100_problems` / `get_hot100_online_count` / `get_problem_online_count`
+  / `get_problem_history`），全部标注 `readOnlyHint`，可被 Claude Desktop、
+  Cursor、Cherry Studio 等直接接入。
+- **Redis 高并发**：响应缓存（`X-Cache: HIT`，TTL 与采集节奏一致）+ Lua 滑动窗口
+  限流（单 IP 每分钟回源 300 次，缓存命中不耗配额，429 JSON 响应）+ 连接池；
+  Redis 故障时自动降级内存缓存/限流。
+- **部署**：单机 Docker Compose（deploy/leetcode-001），`docker save/load` 免私服，
+  数据卷 bind mount；公网入口 `https://leetcode.zhaixingren.cn`（反向 SSH 隧道 +
+  traefik）。
 
 ## 101 Subtasks Breakdown
 
@@ -15,7 +34,7 @@ A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem onli
 ### Phase 2: Backend Development (19 tasks) ✅ COMPLETED
 6. ✅ Set up Go project structure and dependencies
 7. ✅ Initialize Go module and install Gin framework
-8. ✅ Install SQLite driver for Go
+8. ✅ Install PostgreSQL driver for Go (GORM)
 9. ✅ Install WebSocket client library for Go
 10. ✅ Create database models (Problem, OnlineCount, Hot100)
 11. ✅ Implement database connection and migration logic
@@ -160,7 +179,7 @@ A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem onli
 ### Backend
 - WebSocket client for LeetCode real-time data
 - Background worker with batch processing
-- SQLite database with GORM ORM
+- PostgreSQL database with GORM ORM
 - RESTful API with 5 endpoints
 - Graceful shutdown & error recovery
 - Configuration via environment variables
@@ -178,7 +197,7 @@ A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem onli
 ### Data Flow
 1. Backend connects to LeetCode WebSocket endpoints
 2. Background worker collects online counts in batches
-3. Data stored in SQLite with timestamps
+3. Data stored in PostgreSQL with timestamps
 4. Frontend fetches data via REST API
 5. Dashboard displays real-time statistics
 
@@ -259,9 +278,9 @@ A comprehensive real-time dashboard for monitoring LeetCode Hot 100 problem onli
 
 ## Technical Stack
 
-- **Backend**: Go 1.21+, Gin, GORM, SQLite, Gorilla WebSocket
+- **Backend**: Go 1.21+, Gin, GORM, PostgreSQL, Gorilla WebSocket
 - **Frontend**: React 18, TypeScript, Vite, Ant Design, Axios, Recharts
-- **Database**: SQLite3 with WAL mode
+- **Database**: PostgreSQL 15 (K8s `database` namespace)
 - **Protocol**: WebSocket over WSS
 - **Architecture**: REST API + Background Worker
 

@@ -31,8 +31,9 @@ export class WebSocketClient {
   private isConnected = false;
 
   connect() {
-    const host = window.location.hostname;
-    const wsUrl = `ws://${host}:52106/ws`;
+    // Same-origin: Vite proxies /ws in dev, nginx proxies it to the backend in Docker.
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = `${protocol}//${window.location.host}/ws`;
     
     try {
       this.ws = new WebSocket(wsUrl);

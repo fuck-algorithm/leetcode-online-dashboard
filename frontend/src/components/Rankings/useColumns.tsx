@@ -12,6 +12,7 @@ interface UseColumnsProps {
   sortOrder: SortOrder;
   onTagClick: (tag: string) => void;
   onNavigate: (problemId: string) => void;
+  flashIds?: Set<string>;
 }
 
 export const useColumns = ({ 
@@ -19,7 +20,8 @@ export const useColumns = ({
   sortField, 
   sortOrder, 
   onTagClick,
-  onNavigate 
+  onNavigate,
+  flashIds
 }: UseColumnsProps) => {
   const renderSortableHeader = (title: string, field: SortField) => {
     const isActive = sortField === field;
@@ -157,7 +159,7 @@ export const useColumns = ({
           }}
         >
           <span style={{ fontSize: '14px' }}>🇨🇳</span>
-          <OnlineCountBadge count={count || 0} />
+          <OnlineCountBadge count={count || 0} flash={flashIds?.has(String(record.id))} />
         </div>
       ),
     },
@@ -182,7 +184,7 @@ export const useColumns = ({
           }}
         >
           <span style={{ fontSize: '14px' }}>🇺🇸</span>
-          <OnlineCountBadge count={count || 0} />
+          <OnlineCountBadge count={count || 0} flash={flashIds?.has(String(record.id))} />
         </div>
       ),
     },
@@ -210,5 +212,5 @@ export const useColumns = ({
         </Button>
       ),
     },
-  ], [selectedTags, sortField, sortOrder, onTagClick, onNavigate]);
+  ], [selectedTags, sortField, sortOrder, onTagClick, onNavigate, flashIds]);
 };

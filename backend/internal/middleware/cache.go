@@ -138,17 +138,18 @@ func CacheMiddleware(ttl time.Duration) gin.HandlerFunc {
 	}
 }
 
-// shouldSkipCache 检查是否跳过缓存
+// shouldSkipCache 检查是否跳过缓存。
+// 高频数据接口（/api/hot100、/api/problems、/api/statistics 等）都应走
+// Redis 缓存以承受较大并发；只跳过健康检查、管理/导出与流式端点。
 func shouldSkipCache(path string) bool {
 	skipPaths := []string{
 		"/api/health",
 		"/api/admin",
 		"/api/export",
-		"/api/hot100",
-		"/api/hot100/problems",
-		"/api/problems",
 		"/ws",
 		"/mcp",
+		"/sse",
+		"/message",
 	}
 
 	for _, skip := range skipPaths {

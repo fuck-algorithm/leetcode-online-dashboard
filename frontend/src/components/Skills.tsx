@@ -406,10 +406,10 @@ monitorProblem('two-sum', 60000);`,
             <div>
               <Text strong>历史记录结构 (OnlineCount)：</Text>
               <JsonBlock data={{
-                "id": 1,
-                "frontend_id": "1",
-                "count": 1234,
-                "timestamp": "2026-02-21T00:15:15Z"
+                "count": 1423,
+                "count_cn": 336,
+                "count_com": 1087,
+                "timestamp": "2026-10-30T01:53:26+08:00"
               }} />
             </div>
           </Space>
@@ -427,7 +427,7 @@ monitorProblem('two-sum', 60000);`,
             </ul>
             <Alert
               message="提示"
-              description="所有数据每30秒自动更新，API 调用无频率限制，但请合理使用服务器资源。"
+              description="所有数据每30秒自动更新并进入 Redis 缓存（响应头 X-Cache: HIT），高频读取无需等待回源；为保护后端，每个 IP 每分钟限流 300 次回源请求（缓存命中不消耗配额），超出返回 429。"
               type="warning"
               showIcon
             />

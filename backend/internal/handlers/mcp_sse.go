@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"leetcode-dashboard/internal/cache"
+	"leetcode-dashboard/internal/config"
 	"leetcode-dashboard/internal/database"
 	"leetcode-dashboard/internal/models"
+	"leetcode-dashboard/internal/redis"
 	"time"
 
 	"github.com/mark3labs/mcp-go/mcp"
@@ -28,108 +30,218 @@ func NewMCPServer() *server.MCPServer {
 	return s
 }
 
+// readOnlyToolOptions marks a tool as a pure read-only query so AI clients
+// (Claude Desktop, Cursor, …) treat it as safe to call without extra
+// confirmation. mcp-go defaults to destructive=true for all tools.
+func readOnlyToolOptions() []mcp.ToolOption {
+	return []mcp.ToolOption{
+		mcp.WithReadOnlyHintAnnotation(true),
+		mcp.WithDestructiveHintAnnotation(false),
+		mcp.WithIdempotentHintAnnotation(true),
+	}
+}
+
 func registerTools(s *server.MCPServer) {
 	// Tool: get_hot100_online_count
 	hot100Tool := mcp.NewTool(
 		"get_hot100_online_count",
-		mcp.WithDescription("获取LeetCode Hot 100题目的最新实时在线人数"),
+		append([]mcp.ToolOption{
+			mcp.WithDescription("获取LeetCode Hot 100题目的最新实时在线人数"),
+		}, readOnlyToolOptions()...)...,
 	)
 	s.AddTool(hot100Tool, handleGetHot100OnlineCountMCP)
 
 	// Tool: get_problem_history
 	historyTool := mcp.NewTool(
 		"get_problem_history",
-		mcp.WithDescription("根据题目号获取历史在线人数数据"),
-		mcp.WithString("problem_id",
-			mcp.Required(),
-			mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
-		),
-		mcp.WithNumber("limit",
-			mcp.Description("返回记录数，默认100"),
-			mcp.DefaultNumber(100),
-		),
+		append([]mcp.ToolOption{
+			mcp.WithDescription("根据题目号获取历史在线人数数据"),
+			mcp.WithString("problem_id",
+				mcp.Required(),
+				mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
+			),
+			mcp.WithNumber("limit",
+				mcp.Description("返回记录数，默认100"),
+				mcp.DefaultNumber(100),
+			),
+		}, readOnlyToolOptions()...)...,
 	)
 	s.AddTool(historyTool, handleGetProblemHistoryMCP)
 
 	// Tool: get_problem_online_count
 	problemCountTool := mcp.NewTool(
 		"get_problem_online_count",
-		mcp.WithDescription("获取单个题目的最新在线人数"),
-		mcp.WithString("problem_id",
-			mcp.Required(),
-			mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
-		),
+		append([]mcp.ToolOption{
+			mcp.WithDescription("获取单个题目的最新在线人数"),
+			mcp.WithString("problem_id",
+				mcp.Required(),
+				mcp.Description("题目号，支持数字(如\"1\")或英文slug(如\"two-sum\")"),
+			),
+		}, readOnlyToolOptions()...)...,
 	)
 	s.AddTool(problemCountTool, handleGetProblemOnlineCountMCP)
 
 	// Tool: get_hot100_problems
 	hot100ProblemsTool := mcp.NewTool(
 		"get_hot100_problems",
-		mcp.WithDescription("获取LeetCode Hot 100题目列表（包含题目信息和在线人数）"),
+		append([]mcp.ToolOption{
+			mcp.WithDescription("获取LeetCode Hot 100题目列表（包含题目信息和在线人数）"),
+		}, readOnlyToolOptions()...)...,
 	)
 	s.AddTool(hot100ProblemsTool, handleGetHot100ProblemsMCP)
 }
 
-// handleGetHot100OnlineCountMCP handles the get_hot100_online_count tool
-func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	// Get all problems from cache (like HTTP API - prefer Redis)
-	var statuses []*cache.ProblemStatus
-	
-	// Try Redis cache first (same as HTTP API)
-	redisCache := cache.GetRedisCache()
-	if redisCache.IsEnabled() {
-		statuses = redisCache.GetAll()
-	} else {
-		statuses = cache.GetCache().GetAll()
+// loadMCPHot100Statuses 获取 Hot100 题目状态列表，与 HTTP /api/hot100 同源：
+// 批量读 Redis 双站点键（online:cn:/online:com:），Redis 无数据时回源数据库，
+// 保证 MCP 工具返回真实在线人数（含 CN/COM/Total）。
+func loadMCPHot100Statuses() []*cache.ProblemStatus {
+	cfg := config.Load()
+	db := database.GetDB()
+
+	// 与 HTTP API 一致：批量读取 CN 和 COM 数据（2 次调用替代 N 次单键查询）
+	cnData, _ := redis.BatchGetOnlineCountsBySite(cfg.Problems, "cn")
+	comData, _ := redis.BatchGetOnlineCountsBySite(cfg.Problems, "com")
+
+	// Redis 完全不可用时，回源数据库
+	if len(cnData) == 0 && len(comData) == 0 && db != nil {
+		return loadMCPHot100StatusesFromDB()
 	}
 
-	// If cache is empty, load from database
-	if len(statuses) == 0 {
-		db := database.GetDB()
-		if db != nil {
-			var problems []models.Problem
-			if result := db.Find(&problems); result.Error == nil {
-				for _, problem := range problems {
-					// Get latest unified online count
-					var latestCount models.OnlineCountUnified
-					err := db.Where("frontend_id = ?", problem.FrontendID).
-						Order("timestamp DESC").
-						First(&latestCount).Error
+	statuses := make([]*cache.ProblemStatus, 0, len(cfg.Problems))
+	for _, slug := range cfg.Problems {
+		cn := cnData[slug]
+		com := comData[slug]
 
-					countCN := 0
-					countCOM := 0
-					countTotal := 0
-					lastUpdated := time.Now()
-					if err == nil {
-						countCN = latestCount.CountCN
-						countCOM = latestCount.CountCOM
-						countTotal = latestCount.CountTotal
-						lastUpdated = latestCount.Timestamp
-					}
+		countCN, countCOM := 0, 0
+		lastUpdated := time.Now()
+		var s *cache.ProblemStatus
 
-					// Parse tags
-					var topicTags []string
-					if problem.Tags != "" {
-						json.Unmarshal([]byte(problem.Tags), &topicTags)
-					}
+		if cn != nil {
+			countCN = cn.OnlineCount
+			s = &cache.ProblemStatus{
+				FrontendID: cn.FrontendID,
+				Slug:       cn.Slug,
+				Title:      cn.Title,
+				TitleCn:    cn.TitleCn,
+				Difficulty: cn.Difficulty,
+				PaidOnly:   cn.PaidOnly,
+				TopicTags:  cn.TopicTags,
+			}
+			lastUpdated = cn.LastUpdated
+		}
+		if com != nil {
+			countCOM = com.OnlineCount
+			if s == nil {
+				s = &cache.ProblemStatus{
+					FrontendID: com.FrontendID,
+					Slug:       com.Slug,
+					Title:      com.Title,
+					TitleCn:    com.TitleCn,
+					Difficulty: com.Difficulty,
+					PaidOnly:   com.PaidOnly,
+					TopicTags:  com.TopicTags,
+				}
+			}
+			if com.LastUpdated.After(lastUpdated) {
+				lastUpdated = com.LastUpdated
+			}
+		}
 
-					statuses = append(statuses, &cache.ProblemStatus{
-						FrontendID:     problem.FrontendID,
-						Slug:           problem.Slug,
-						Title:          problem.Title,
-						TitleCn:        problem.TitleCn,
-						Difficulty:     problem.Difficulty,
-						PaidOnly:       problem.PaidOnly,
-						TopicTags:      topicTags,
-						OnlineCount:    countTotal,
-						OnlineCountCN:  countCN,
-						OnlineCountCOM: countCOM,
-						LastUpdated:    lastUpdated,
-					})
+		// Redis 中单个题目缺失时，从数据库兜底
+		if s == nil && db != nil {
+			var problem models.Problem
+			if err := db.Where("slug = ?", slug).First(&problem).Error; err == nil {
+				s = &cache.ProblemStatus{
+					FrontendID: problem.FrontendID,
+					Slug:       problem.Slug,
+					Title:      problem.Title,
+					TitleCn:    problem.TitleCn,
+					Difficulty: problem.Difficulty,
+					PaidOnly:   problem.PaidOnly,
+				}
+				if problem.Tags != "" {
+					json.Unmarshal([]byte(problem.Tags), &s.TopicTags)
+				}
+				var latestCount models.OnlineCountUnified
+				if err := db.Where("frontend_id = ?", problem.FrontendID).
+					Order("timestamp DESC").
+					First(&latestCount).Error; err == nil {
+					countCN = latestCount.CountCN
+					countCOM = latestCount.CountCOM
+					lastUpdated = latestCount.Timestamp
 				}
 			}
 		}
+
+		if s != nil {
+			s.OnlineCount = countCN + countCOM
+			s.OnlineCountCN = countCN
+			s.OnlineCountCOM = countCOM
+			s.LastUpdated = lastUpdated
+			statuses = append(statuses, s)
+		}
 	}
+	return statuses
+}
+
+// loadMCPHot100StatusesFromDB 数据库兜底：逐题查最新 OnlineCountUnified
+func loadMCPHot100StatusesFromDB() []*cache.ProblemStatus {
+	db := database.GetDB()
+	var problems []models.Problem
+	if result := db.Find(&problems); result.Error != nil {
+		return nil
+	}
+
+	// 按 slug 建索引，保持 Hot100 顺序输出
+	bySlug := make(map[string]models.Problem, len(problems))
+	for _, p := range problems {
+		bySlug[p.Slug] = p
+	}
+
+	cfg := config.Load()
+	statuses := make([]*cache.ProblemStatus, 0, len(cfg.Problems))
+	for _, slug := range cfg.Problems {
+		problem, ok := bySlug[slug]
+		if !ok {
+			continue
+		}
+
+		topicTags := []string{}
+		if problem.Tags != "" {
+			json.Unmarshal([]byte(problem.Tags), &topicTags)
+		}
+
+		countCN, countCOM := 0, 0
+		lastUpdated := time.Now()
+		var latestCount models.OnlineCountUnified
+		if err := db.Where("frontend_id = ?", problem.FrontendID).
+			Order("timestamp DESC").
+			First(&latestCount).Error; err == nil {
+			countCN = latestCount.CountCN
+			countCOM = latestCount.CountCOM
+			lastUpdated = latestCount.Timestamp
+		}
+
+		statuses = append(statuses, &cache.ProblemStatus{
+			FrontendID:     problem.FrontendID,
+			Slug:           problem.Slug,
+			Title:          problem.Title,
+			TitleCn:        problem.TitleCn,
+			Difficulty:     problem.Difficulty,
+			PaidOnly:       problem.PaidOnly,
+			TopicTags:      topicTags,
+			OnlineCount:    countCN + countCOM,
+			OnlineCountCN:  countCN,
+			OnlineCountCOM: countCOM,
+			LastUpdated:    lastUpdated,
+		})
+	}
+	return statuses
+}
+
+// handleGetHot100OnlineCountMCP handles the get_hot100_online_count tool
+func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	statuses := loadMCPHot100Statuses()
 
 	// Format response with all three counts
 	// Load all problem tags from database to supplement missing topic_tags from cache
@@ -164,18 +276,18 @@ func handleGetHot100OnlineCountMCP(ctx context.Context, req mcp.CallToolRequest)
 		}
 
 		result = append(result, map[string]interface{}{
-			"frontend_id":       s.FrontendID,
-			"slug":              s.Slug,
-			"title":             s.Title,
-			"title_cn":          s.TitleCn,
-			"difficulty":        s.Difficulty,
-			"paid_only":         s.PaidOnly,
-			"topic_tags":        topicTags,
-			"online_count":      s.OnlineCount,
-			"online_count_cn":   s.OnlineCountCN,
-			"online_count_com":  s.OnlineCountCOM,
+			"frontend_id":        s.FrontendID,
+			"slug":               s.Slug,
+			"title":              s.Title,
+			"title_cn":           s.TitleCn,
+			"difficulty":         s.Difficulty,
+			"paid_only":          s.PaidOnly,
+			"topic_tags":         topicTags,
+			"online_count":       s.OnlineCount,
+			"online_count_cn":    s.OnlineCountCN,
+			"online_count_com":   s.OnlineCountCOM,
 			"online_count_total": s.OnlineCountCN + s.OnlineCountCOM,
-			"last_updated":      s.LastUpdated.Format(time.RFC3339),
+			"last_updated":       s.LastUpdated.Format(time.RFC3339),
 		})
 	}
 
@@ -317,47 +429,10 @@ func handleGetProblemOnlineCountMCP(ctx context.Context, req mcp.CallToolRequest
 
 	return mcp.NewToolResultText(string(resultJSON)), nil
 }
+
 // handleGetHot100ProblemsMCP handles the get_hot100_problems tool
 func handleGetHot100ProblemsMCP(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	// Get all problems from cache (prefer Redis like HTTP API)
-	var statuses []*cache.ProblemStatus
-	
-	// Try Redis cache first
-	redisCache := cache.GetRedisCache()
-	if redisCache.IsEnabled() {
-		statuses = redisCache.GetAll()
-	} else {
-		statuses = cache.GetCache().GetAll()
-	}
-
-	// If cache is empty, load from database
-	if len(statuses) == 0 {
-		db := database.GetDB()
-		if db != nil {
-			var problems []models.Problem
-			if result := db.Find(&problems); result.Error == nil {
-				for _, problem := range problems {
-					// Parse tags
-					topicTags := []string{}
-					if problem.Tags != "" {
-						json.Unmarshal([]byte(problem.Tags), &topicTags)
-					}
-
-					statuses = append(statuses, &cache.ProblemStatus{
-						FrontendID:  problem.FrontendID,
-						Slug:        problem.Slug,
-						Title:       problem.Title,
-						TitleCn:     problem.TitleCn,
-						Difficulty:  problem.Difficulty,
-						PaidOnly:    problem.PaidOnly,
-						TopicTags:   topicTags,
-						OnlineCount: 0,
-						LastUpdated: time.Now(),
-					})
-				}
-			}
-		}
-	}
+	statuses := loadMCPHot100Statuses()
 
 	// Load all problem tags from database to supplement missing topic_tags from cache
 	db := database.GetDB()
@@ -392,18 +467,18 @@ func handleGetHot100ProblemsMCP(ctx context.Context, req mcp.CallToolRequest) (*
 		}
 
 		result = append(result, map[string]interface{}{
-			"frontend_id":       s.FrontendID,
-			"slug":              s.Slug,
-			"title":             s.Title,
-			"title_cn":          s.TitleCn,
-			"difficulty":        s.Difficulty,
-			"paid_only":         s.PaidOnly,
-			"topic_tags":        topicTags,
-			"online_count":      s.OnlineCount,
-			"online_count_cn":   s.OnlineCountCN,
-			"online_count_com":  s.OnlineCountCOM,
+			"frontend_id":        s.FrontendID,
+			"slug":               s.Slug,
+			"title":              s.Title,
+			"title_cn":           s.TitleCn,
+			"difficulty":         s.Difficulty,
+			"paid_only":          s.PaidOnly,
+			"topic_tags":         topicTags,
+			"online_count":       s.OnlineCount,
+			"online_count_cn":    s.OnlineCountCN,
+			"online_count_com":   s.OnlineCountCOM,
 			"online_count_total": s.OnlineCountCN + s.OnlineCountCOM,
-			"last_updated":      s.LastUpdated.Format(time.RFC3339),
+			"last_updated":       s.LastUpdated.Format(time.RFC3339),
 		})
 	}
 

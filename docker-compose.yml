@@ -10,12 +10,24 @@ services:
       - "8080:8080"
     environment:
       - PORT=8080
-      - DB_PATH=/data/dashboard.db
+      - DB_HOST=${DB_HOST:-local-server-001}
+      - DB_PORT=${DB_PORT:-30432}
+      - DB_USER=${DB_USER:-leetcode_dashboard}
+      - DB_PASSWORD=${DB_PASSWORD:-change-me}
+      - DB_NAME=${DB_NAME:-leetcode_dashboard}
+      - DB_SSLMODE=${DB_SSLMODE:-disable}
+      - DB_TIMEZONE=${DB_TIMEZONE:-Asia/Shanghai}
+      - REDIS_HOST=${REDIS_HOST:-local-server-001}
+      - REDIS_PORT=${REDIS_PORT:-30379}
+      - REDIS_DB=${REDIS_DB:-0}
+      - REDIS_KEY_PREFIX=${REDIS_KEY_PREFIX:-leetcode-dashboard}
       - BATCH_SIZE=10
       - INTERVAL_SEC=30
       - GIN_MODE=release
     volumes:
       - ./data:/data
+    extra_hosts:
+      - "${DB_HOST:-local-server-001}:host-gateway"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/api/health"]

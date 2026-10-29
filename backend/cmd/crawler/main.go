@@ -35,16 +35,18 @@ type Crawler struct {
 	stopChan  chan struct{}
 	batchSize int
 	interval  time.Duration
+	crawlCOM  bool
 }
 
 // NewCrawler 创建新的爬虫实例 - 支持双站点
-func NewCrawler(problems []string, batchSize int, interval time.Duration) *Crawler {
+func NewCrawler(problems []string, batchSize int, interval time.Duration, crawlCOM bool) *Crawler {
 	return &Crawler{
 		clients:   make(map[ClientKey]*websocket.LeetCodeWSClient),
 		problems:  problems,
 		stopChan:  make(chan struct{}),
 		batchSize: batchSize,
 		interval:  interval,
+		crawlCOM:  crawlCOM,
 	}
 }
 
@@ -107,12 +109,17 @@ func (c *Crawler) processBatch(batchIndex, totalBatches int) {
 	}
 
 	batch := c.problems[start:end]
-	log.Printf("Processing batch %d/%d (%d problems) for both CN and COM sites", batchIndex+1, totalBatches, len(batch))
+	if c.crawlCOM {
+		log.Printf("Processing batch %d/%d (%d problems) for both CN and COM sites", batchIndex+1, totalBatches, len(batch))
+	} else {
+		log.Printf("Processing batch %d/%d (%d problems) for CN site (COM handled by browser collector)", batchIndex+1, totalBatches, len(batch))
+	}
 
 	for _, slug := range batch {
-		// 同时订阅CN和COM两个站点
 		go c.subscribeToProblem(slug, websocket.SiteCN)
-		go c.subscribeToProblem(slug, websocket.SiteCOM)
+		if c.crawlCOM {
+			go c.subscribeToProblem(slug, websocket.SiteCOM)
+		}
 	}
 }
 
@@ -185,7 +192,7 @@ func (c *Crawler) handleMessage(slug string, site websocket.SiteType, data []byt
 	log.Printf("[%s-%s] Unrecognized message format: %s", slug, site, string(data))
 }
 
-// saveOnlineCount 保存指定站点的在线人数到 Redis 和 MySQL
+// saveOnlineCount 保存指定站点的在线人数到 Redis 和 PostgreSQL
 func (c *Crawler) saveOnlineCount(slug string, site websocket.SiteType, count int) {
 	// 从数据库获取题目元数据
 	db := database.GetDB()
@@ -231,8 +238,8 @@ func (c *Crawler) saveOnlineCount(slug string, site websocket.SiteType, count in
 		TopicTags:  topicTags,
 	})
 
-	// 持久化到对应站点的MySQL表
-	c.persistToMySQL(problem.FrontendID, site, count)
+	// 持久化到对应站点的PostgreSQL表
+	c.persistToPostgres(problem.FrontendID, site, count)
 
 	log.Printf("[%s-%s] Online count: %d", slug, site, count)
 
@@ -251,7 +258,7 @@ func (c *Crawler) updateRedisWithSite(slug string, site websocket.SiteType, coun
 		OnlineCount: count,
 		LastUpdated: time.Now(),
 	}
-	
+
 	if meta != nil {
 		status.FrontendID = meta.FrontendID
 		status.Slug = slug
@@ -267,8 +274,8 @@ func (c *Crawler) updateRedisWithSite(slug string, site websocket.SiteType, coun
 	}
 }
 
-// persistToMySQL 持久化到对应站点的MySQL表
-func (c *Crawler) persistToMySQL(frontendID string, site websocket.SiteType, count int) {
+// persistToPostgres 持久化到对应站点的PostgreSQL表
+func (c *Crawler) persistToPostgres(frontendID string, site websocket.SiteType, count int) {
 	db := database.GetDB()
 	if db == nil {
 		return
@@ -327,12 +334,12 @@ func (c *Crawler) calculateTotalOnline() {
 		log.Printf("Failed to update total online by site: %v", err)
 	}
 
-	// 持久化到MySQL聚合表
-	c.persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal)
+	// 持久化到PostgreSQL聚合表
+	c.persistTotalOnlineToPostgres(cnTotal, comTotal, unifiedTotal)
 }
 
-// persistTotalOnlineToMySQL 持久化总在线人数到MySQL聚合表
-func (c *Crawler) persistTotalOnlineToMySQL(cnTotal, comTotal, unifiedTotal int) {
+// persistTotalOnlineToPostgres 持久化总在线人数到PostgreSQL聚合表
+func (c *Crawler) persistTotalOnlineToPostgres(cnTotal, comTotal, unifiedTotal int) {
 	db := database.GetDB()
 	if db == nil {
 		return
@@ -400,10 +407,11 @@ func main() {
 
 	// 初始化 Redis
 	redisCfg := &redis.Config{
-		Host:     getEnv("REDIS_HOST", "localhost"),
-		Port:     getEnv("REDIS_PORT", "6379"),
-		Password: getEnv("REDIS_PASSWORD", ""),
-		DB:       0,
+		Host:      cfg.RedisHost,
+		Port:      cfg.RedisPort,
+		Password:  cfg.RedisPassword,
+		DB:        cfg.RedisDB,
+		KeyPrefix: cfg.RedisKeyPrefix,
 	}
 
 	if err := redis.Init(redisCfg); err != nil {
@@ -412,7 +420,7 @@ func main() {
 	defer redis.Close()
 
 	// 创建并启动爬虫
-	crawler := NewCrawler(cfg.Problems, cfg.BatchSize, time.Duration(cfg.IntervalSec)*time.Second)
+	crawler := NewCrawler(cfg.Problems, cfg.BatchSize, time.Duration(cfg.IntervalSec)*time.Second, cfg.CrawlCOM)
 	crawler.Start()
 
 	log.Printf("Crawler started for %d problems", len(cfg.Problems))

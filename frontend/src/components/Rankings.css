@@ -227,3 +227,210 @@
   border-radius: 4px !important;
   box-shadow: none !important;
 }
+
+/* 排行榜标题 + 数据最后更新时间 */
+.rankings-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.rankings-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--lc-text-muted, #8c8c8c);
+  white-space: nowrap;
+}
+
+.rankings-updated__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--lc-online, #4a9c6d);
+  box-shadow: 0 0 0 3px rgba(74, 156, 109, 0.15);
+}
+
+.rankings-updated--fresh .rankings-updated__dot {
+  animation: rankings-updated-pulse 2s ease-in-out infinite;
+}
+
+.rankings-updated--delayed {
+  color: #d48806;
+}
+
+.rankings-updated--delayed .rankings-updated__dot {
+  background: #faad14;
+  box-shadow: 0 0 0 3px rgba(250, 173, 20, 0.18);
+}
+
+.rankings-updated--stale {
+  color: #cf1322;
+}
+
+.rankings-updated--stale .rankings-updated__dot {
+  background: #ff4d4f;
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.18);
+}
+
+@keyframes rankings-updated-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+@media (max-width: 576px) {
+  .rankings-title {
+    gap: 6px;
+  }
+
+  .rankings-updated {
+    font-size: 11px;
+  }
+}
+
+/* ===== 强化版实时变化动画 ===== */
+@keyframes rankings-row-flash {
+  0%   { background-color: rgba(212, 160, 23, 0.0); box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+  15%  { background-color: rgba(212, 160, 23, 0.22); box-shadow: 0 0 0 4px rgba(212, 160, 23, 0.25); }
+  100% { background-color: rgba(212, 160, 23, 0.0); box-shadow: 0 0 0 0 rgba(212, 160, 23, 0); }
+}
+
+.ranking-row--flash {
+  animation: rankings-row-flash 0.9s ease-out;
+}
+
+@keyframes online-badge-flash {
+  0%   { transform: scale(1); filter: brightness(1); }
+  25%  { transform: scale(1.35); filter: brightness(1.4); }
+  60%  { transform: scale(1.1); filter: brightness(1.15); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+.lc-online-badge--flash,
+.lc-online-badge--bump {
+  animation: online-badge-flash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* KPI 卡片 */
+.rankings-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.rankings-kpi {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.rankings-kpi__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--lc-bg-card, #fff);
+  border: 1px solid var(--lc-border, #d0ccc0);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rankings-kpi__item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.rankings-kpi__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.rankings-kpi__icon--trophy { background: linear-gradient(135deg, #d4a017, #e5b025); }
+.rankings-kpi__icon--fire { background: linear-gradient(135deg, #ff4d4f, #ff7a45); }
+.rankings-kpi__icon--chart { background: linear-gradient(135deg, #1890ff, #40a9ff); }
+.rankings-kpi__icon--clock { background: linear-gradient(135deg, #52c41a, #73d13d); }
+
+.rankings-kpi__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.rankings-kpi__label {
+  font-size: 12px;
+  color: var(--lc-text-muted, #6b6b6b);
+  margin-bottom: 2px;
+}
+
+.rankings-kpi__value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--lc-text-primary, #2c2c2c);
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.rankings-kpi__value--small {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rankings-card {
+  overflow: hidden;
+}
+
+.rankings-card .ant-card-head {
+  background: linear-gradient(180deg, #fff, #fafafa);
+}
+
+/* LastUpdated 强化 */
+.rankings-updated {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(74, 156, 109, 0.08);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--lc-online, #4a9c6d);
+  white-space: nowrap;
+}
+
+.rankings-updated--delayed {
+  background: rgba(250, 173, 20, 0.1);
+  color: #d48806;
+}
+
+.rankings-updated--stale {
+  background: rgba(255, 77, 79, 0.1);
+  color: #cf1322;
+}
+
+.rankings-updated--waiting {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--lc-text-muted, #6b6b6b);
+}
+
+@media (max-width: 768px) {
+  .rankings-kpi {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 576px) {
+  .rankings-kpi {
+    grid-template-columns: 1fr;
+  }
+}

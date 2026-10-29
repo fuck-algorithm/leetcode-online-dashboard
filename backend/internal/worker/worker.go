@@ -45,7 +45,7 @@ func (w *Worker) Start() {
 	go w.broadcastWorker()
 }
 
-// persistenceWorker handles minute-level persistence from cache to MySQL
+// persistenceWorker handles minute-level persistence from cache to PostgreSQL
 func (w *Worker) persistenceWorker() {
 	minuteTicker := time.NewTicker(time.Minute)
 	defer minuteTicker.Stop()

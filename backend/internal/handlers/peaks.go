@@ -37,19 +37,21 @@ func GetPeakOnlineTimes(c *gin.Context) {
 	}
 
 	err := db.Raw(`
-		SELECT 
-			p.frontend_id as frontend_id,
-			p.slug as problem_slug,
-			p.title as problem_title,
-			MAX(oc.count) as peak_count,
-			(SELECT timestamp FROM online_counts oc2 
-			 WHERE oc2.frontend_id = p.frontend_id AND oc2.count = MAX(oc.count) 
-			 ORDER BY timestamp DESC LIMIT 1) as peak_time
+		SELECT
+			p.frontend_id AS frontend_id,
+			p.slug AS problem_slug,
+			p.title AS problem_title,
+			oc.peak_count,
+			oc.timestamp AS peak_time
 		FROM problems p
-		JOIN online_counts oc ON p.frontend_id = oc.frontend_id
-		WHERE oc.timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-		GROUP BY p.frontend_id, p.slug, p.title
-		ORDER BY peak_count DESC
+		JOIN (
+			SELECT DISTINCT ON (frontend_id)
+				frontend_id, count_total AS peak_count, timestamp
+			FROM online_counts_unified
+			WHERE timestamp >= NOW() - INTERVAL '7 days'
+			ORDER BY frontend_id, count_total DESC, timestamp DESC
+		) oc ON p.frontend_id = oc.frontend_id
+		ORDER BY oc.peak_count DESC
 		LIMIT 20
 	`).Scan(&results).Error
 
@@ -101,13 +103,13 @@ func GetProblemPeakHistory(c *gin.Context) {
 	}
 
 	err = db.Raw(`
-		SELECT 
-			DATE(timestamp) as date,
-			MAX(count) as peak_count,
-			AVG(count) as avg_count
-		FROM online_counts
-		WHERE frontend_id = ? AND timestamp >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-		GROUP BY DATE(timestamp)
+		SELECT
+			timestamp::date AS date,
+			MAX(count_total) AS peak_count,
+			AVG(count_total) AS avg_count
+		FROM online_counts_unified
+		WHERE frontend_id = ? AND timestamp >= NOW() - INTERVAL '30 days'
+		GROUP BY timestamp::date
 		ORDER BY date DESC
 	`, frontendID).Scan(&dailyPeaks).Error
 
@@ -145,19 +147,19 @@ func DetectAnomalies(c *gin.Context) {
 		WITH stats AS (
 			SELECT 
 				frontend_id,
-				AVG(count) as avg_count,
-				STDDEV(count) as std_dev
-			FROM online_counts
-			WHERE timestamp >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+				AVG(count_total) as avg_count,
+				STDDEV(count_total) as std_dev
+			FROM online_counts_unified
+			WHERE timestamp >= NOW() - INTERVAL '7 days'
 			GROUP BY frontend_id
 		),
 		latest AS (
 			SELECT 
 				frontend_id,
-				count,
+				count_total AS count,
 				timestamp,
 				ROW_NUMBER() OVER (PARTITION BY frontend_id ORDER BY timestamp DESC) as rn
-			FROM online_counts
+			FROM online_counts_unified
 		)
 		SELECT 
 			l.frontend_id,

@@ -105,6 +105,15 @@ func MCPManifest(c *gin.Context) {
 					"required": []string{"problem_id"},
 				},
 			},
+			{
+				"name":        "get_hot100_problems",
+				"description": "获取LeetCode Hot 100题目列表（包含题目信息和在线人数）",
+				"parameters": map[string]interface{}{
+					"type":       "object",
+					"properties": map[string]interface{}{},
+					"required":   []string{},
+				},
+			},
 		},
 	}
 

@@ -83,6 +83,19 @@ INTERVAL_SEC=30
 
 # 时区
 TZ=Asia/Shanghai
+# K8s PostgreSQL（集群外 NodePort）
+DB_HOST=local-server-001
+DB_PORT=30432
+DB_USER=leetcode_dashboard
+DB_PASSWORD=change-me
+DB_NAME=leetcode_dashboard
+DB_SSLMODE=disable
+DB_TIMEZONE=Asia/Shanghai
+
+# K8s Redis（集群外 NodePort）
+REDIS_HOST=local-server-001
+REDIS_PORT=30379
+
 EOF
         log_success ".env file created"
     fi
@@ -214,7 +227,7 @@ show_security_info() {
     echo ""
     log_info "Security Configuration:"
     echo "  - Redis:    Only accessible from localhost (127.0.0.1)"
-    echo "  - MySQL:    Not exposed (using SQLite in container)"
+    echo "  - PostgreSQL: K8s postgres.database (local-server-001:30432)"
     echo "  - Backend:  Exposed on port 52106"
     echo "  - Frontend: Exposed on port 52107"
     echo ""

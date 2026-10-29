@@ -51,9 +51,14 @@ func (h *AdminHandler) GetSystemStatus(c *gin.Context) {
 			"num_gc":       m.NumGC,
 		},
 		Environment: map[string]string{
-			"gin_mode":  os.Getenv("GIN_MODE"),
-			"db_path":   os.Getenv("DB_PATH"),
-			"port":      os.Getenv("PORT"),
+			"gin_mode":   os.Getenv("GIN_MODE"),
+			"db_driver":  "postgres",
+			"db_host":    os.Getenv("DB_HOST"),
+			"db_port":    os.Getenv("DB_PORT"),
+			"db_name":    os.Getenv("DB_NAME"),
+			"redis_host": os.Getenv("REDIS_HOST"),
+			"redis_port": os.Getenv("REDIS_PORT"),
+			"port":       os.Getenv("PORT"),
 			"batch_size": os.Getenv("BATCH_SIZE"),
 		},
 	}

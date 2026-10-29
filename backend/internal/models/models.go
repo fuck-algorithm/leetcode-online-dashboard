@@ -91,10 +91,10 @@ type ProblemWithOnlineCount struct {
 // TotalOnlineAggregateCN stores pre-aggregated total online count from leetcode.cn
 type TotalOnlineAggregateCN struct {
 	ID         uint      `json:"id" gorm:"primaryKey"`
-	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_cn_ts;index:idx_cn_hour;index:idx_cn_day"`
+	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_cn_agg_ts;index:idx_cn_agg_hour;index:idx_cn_agg_day"`
 	Total      int       `json:"total"`
-	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_cn_hour"`
-	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_cn_day"`
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_cn_agg_hour"`
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_cn_agg_day"`
 }
 
 // TableName specifies the table name for TotalOnlineAggregateCN
@@ -105,10 +105,10 @@ func (TotalOnlineAggregateCN) TableName() string {
 // TotalOnlineAggregateCOM stores pre-aggregated total online count from leetcode.com
 type TotalOnlineAggregateCOM struct {
 	ID         uint      `json:"id" gorm:"primaryKey"`
-	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_com_ts;index:idx_com_hour;index:idx_com_day"`
+	Timestamp  time.Time `json:"timestamp" gorm:"uniqueIndex:idx_com_agg_ts;index:idx_com_agg_hour;index:idx_com_agg_day"`
 	Total      int       `json:"total"`
-	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_com_hour"`
-	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_com_day"`
+	HourBucket time.Time `json:"hour_bucket" gorm:"index:idx_com_agg_hour"`
+	DayBucket  time.Time `json:"day_bucket" gorm:"index:idx_com_agg_day"`
 }
 
 // TableName specifies the table name for TotalOnlineAggregateCOM

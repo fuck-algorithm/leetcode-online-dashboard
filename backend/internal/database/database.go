@@ -5,8 +5,9 @@ import (
 	"leetcode-dashboard/internal/config"
 	"leetcode-dashboard/internal/models"
 	"log"
+	"time"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -16,12 +17,21 @@ var DB *gorm.DB
 // Init initializes the database connection
 func Init(dsn string, problemData []config.ProblemInfo) error {
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
 		Logger: logger.Default.LogMode(logger.Info),
 	})
 	if err != nil {
 		return err
 	}
+
+	// Remote PostgreSQL (K8s NodePort) needs a bounded, long-lived pool.
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return err
+	}
+	sqlDB.SetMaxOpenConns(20)
+	sqlDB.SetMaxIdleConns(5)
+	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	// Auto migrate models - 双站点架构
 	err = DB.AutoMigrate(

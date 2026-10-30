@@ -78,6 +78,11 @@ fi
 for img in "$BACKEND_IMAGE" "$CRAWLER_IMAGE" "$FRONTEND_IMAGE"; do
   docker image inspect "$img" >/dev/null 2>&1 || { echo "缺少镜像 $img（先去掉 --skip-build 构建）" >&2; exit 1; }
 done
+if [ "$WITH_BASE" = "1" ]; then
+  for img in $BASE_IMAGES; do
+    docker image inspect "$img" >/dev/null 2>&1 || { echo "缺少基础镜像 $img（--with-base 需要本地先拉取）" >&2; exit 1; }
+  done
+fi
 
 # ---- 2. 同步 compose 与 .env ----
 info "==> 同步 compose 与 .env 到 ${REMOTE}:${REMOTE_DIR}/"

@@ -238,7 +238,8 @@ HTTP is served from a second host: a reverse SSH tunnel from `leetcode-001` to
 ./leetcode-001.sh logs backend     # follow logs
 ./leetcode-001.sh tunnel           # http://127.0.0.1:18100 via SSH tunnel
 
-deploy/leetcode-001/build-and-upload.sh   # build 3 images, stream them over SSH, restart
+deploy/leetcode-001/deploy-online.sh      # one-shot deploy: build → upload → up → verify public URL
+deploy/leetcode-001/deploy-online.sh --skip-build  # redeploy with existing local images
 ```
 
 Images are transferred with `docker save | gzip | ssh 'gunzip | docker load'`

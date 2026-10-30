@@ -15,6 +15,14 @@ leetcode-001 url                # 打印公网地址并做健康检查
 leetcode-001 tunnel             # 本地 18100 → 远端 frontend:8080
 ```
 
+**一键部署**（构建 → 同步配置 → 上传镜像 → 拉起 → 公网健康检查，一条命令）：
+
+```bash
+deploy/leetcode-001/deploy-online.sh                # 全量：构建 + 部署 + 验证
+deploy/leetcode-001/deploy-online.sh --skip-build   # 日常：用本地现有镜像重部署
+deploy/leetcode-001/deploy-online.sh --with-base    # 首次/换机：连同 postgres/redis 基础镜像一起传
+```
+
 > 这是 NAT 共享公网 IP 的机器：服务商只把 `26934` 转发到本机 22 端口，
 > 其余公网端口（80/8090…）属于同 IP 的其他租户。因此公网入口不在这台机器上，
 > 而是借 `aigchub-001`（8.130.35.126，k3s + traefik）做反向隧道。
@@ -69,11 +77,17 @@ backend / crawler → postgres:5432、redis:6379（仅 compose 内网）
 3. 服务器上 `docker compose up -d`。
 
 服务器访问不了 Docker Hub / GitHub，但基础镜像已随第一次部署一起导入
-（`postgres:16-alpine`、`redis:7-alpine`），后续更新只传业务镜像即可：
+（`postgres:16-alpine`、`redis:7-alpine`），后续更新只传业务镜像即可。
+
+日常发布直接跑一键脚本（等价于上面三步 + 公网验证）：
 
 ```bash
-deploy/leetcode-001/build-and-upload.sh
+deploy/leetcode-001/deploy-online.sh          # 构建 + 上传 + 部署 + 健康检查
+deploy/leetcode-001/deploy-online.sh --skip-build  # 代码没改、只想用现有镜像重部署
 ```
+
+> 旧的 `build-and-upload.sh` 是一键脚本出现前的构建上传脚本（不含配置同步与
+> 健康检查），与 `deploy-online.sh` 的核心步骤等价，可继续使用但不再推荐。
 
 以后如果有多台机器 / CI 频繁发布，再考虑私有 registry（本机已有 `192.168.1.83:5000`，
 但它不在公网，服务器拉不到）。
@@ -81,20 +95,16 @@ deploy/leetcode-001/build-and-upload.sh
 ## 首次部署 / 重建步骤
 
 ```bash
-# 1. 本地构建 + 上传（含基础镜像，仅首次）
-docker save leetcode-dashboard-backend:latest leetcode-dashboard-crawler:latest \
-  leetcode-dashboard-frontend:latest postgres:16-alpine redis:7-alpine \
-  | gzip -1 | ssh leetcode-001 'gunzip | docker load'
-
-# 2. 同步 compose 与口令
-scp deploy/leetcode-001/docker-compose.yml deploy/leetcode-001/.env \
-  leetcode-001:/opt/leetcode-dashboard/
-
-# 3. 启动
-ssh leetcode-001 'cd /opt/leetcode-dashboard && docker compose up -d'
+# 一条命令完成：构建 3 个业务镜像 + 同步 compose/.env + 上传（含 postgres/redis 基础镜像）+
+# 拉起服务 + 等待 healthy + 公网健康检查（首页 /api/health / hot100 新鲜度 / MCP 握手 / 隧道）
+deploy/leetcode-001/deploy-online.sh --with-base
 ```
 
-验证：
+> `--with-base` 只在首次或换机器时需要：基础镜像（`postgres:16-alpine`、
+> `redis:7-alpine`）已随首次部署导入服务器，日常更新传业务镜像即可，不用带它。
+> 部署失败时脚本打印失败项并返回非 0；全绿则返回 0。
+
+手动验证（脚本已自动做，此处供排查）：
 
 ```bash
 curl -s https://leetcode.zhaixingren.cn/api/health   # 公网

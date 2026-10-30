@@ -31,58 +31,53 @@ func ExportData(c *gin.Context) {
 		return
 	}
 
-	// Build query based on site filter
-	var query interface{}
-	switch site {
-	case "cn":
-		query = db.Model(&models.OnlineCountCN{})
-	case "com":
-		query = db.Model(&models.OnlineCountCOM{})
-	default:
-		query = db.Model(&models.OnlineCountUnified{})
-	}
-
 	// Support both numeric frontend_id and slug for problem_id
+	var frontendID string
 	if problemID != "" {
-		frontendID, err := resolveProblemID(db, problemID)
+		id, err := resolveProblemID(db, problemID)
 		if err != nil {
 			Error(c, http.StatusNotFound, "Problem not found")
 			return
 		}
-		query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("frontend_id = ?", frontendID)
+		frontendID = id
 	}
 
-	if startDate != "" {
+	// applyFilters appends the optional WHERE clauses to the base query.
+	// GORM v2 *gorm.DB.Where returns *gorm.DB, so keep everything typed
+	// instead of boxing into interface{} (an interface assertion on the
+	// method set would panic at runtime).
+	applyFilters := func(q *gorm.DB) *gorm.DB {
+		if frontendID != "" {
+			q = q.Where("frontend_id = ?", frontendID)
+		}
 		if t, err := time.Parse("2006-01-02", startDate); err == nil {
-			query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("timestamp >= ?", t)
+			q = q.Where("timestamp >= ?", t)
 		}
-	}
-
-	if endDate != "" {
 		if t, err := time.Parse("2006-01-02", endDate); err == nil {
-			query = query.(interface{ Where(interface{}, ...interface{}) interface{} }).Where("timestamp <= ?", t)
+			q = q.Where("timestamp <= ?", t)
 		}
+		return q
 	}
 
 	// Fetch data based on site
 	switch site {
 	case "cn":
 		var counts []models.OnlineCountCN
-		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+		if result := applyFilters(db.Model(&models.OnlineCountCN{})).Find(&counts); result.Error != nil {
 			Error(c, http.StatusInternalServerError, result.Error.Error())
 			return
 		}
 		exportSiteData(c, format, counts, site)
 	case "com":
 		var counts []models.OnlineCountCOM
-		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+		if result := applyFilters(db.Model(&models.OnlineCountCOM{})).Find(&counts); result.Error != nil {
 			Error(c, http.StatusInternalServerError, result.Error.Error())
 			return
 		}
 		exportSiteData(c, format, counts, site)
 	default:
 		var counts []models.OnlineCountUnified
-		if result := query.(*gorm.DB).Find(&counts); result.Error != nil {
+		if result := applyFilters(db.Model(&models.OnlineCountUnified{})).Find(&counts); result.Error != nil {
 			Error(c, http.StatusInternalServerError, result.Error.Error())
 			return
 		}
@@ -135,10 +130,17 @@ func exportSiteData(c *gin.Context, format string, counts interface{}, site stri
 	case "json":
 		c.Header("Content-Type", "application/json")
 		c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=export_%s_%d.json", site, time.Now().Unix()))
+		n := 0
+		switch data := counts.(type) {
+		case []models.OnlineCountCN:
+			n = len(data)
+		case []models.OnlineCountCOM:
+			n = len(data)
+		}
 		c.JSON(http.StatusOK, gin.H{
 			"exported_at": time.Now(),
 			"site":        site,
-			"count":       len(counts.([]models.OnlineCountCN)),
+			"count":       n,
 			"data":        counts,
 		})
 	default:

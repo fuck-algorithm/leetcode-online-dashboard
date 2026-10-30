@@ -30,7 +30,7 @@ function App() {
               <Route path="/history" element={<History />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/api-docs" element={<API />} />
-              <Route path="/mcp" element={<MCP />} />
+              <Route path="/mcp-docs" element={<MCP />} />
               <Route path="/skills" element={<Skills />} />
             </Routes>
           </Content>

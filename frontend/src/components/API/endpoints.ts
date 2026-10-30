@@ -52,15 +52,18 @@ export const getEndpoints = (): APIEndpoint[] => [
       "msg": "success",
       "data": [
         {
-          "id": 1,
           "frontend_id": "1",
           "slug": "two-sum",
-          "title": "两数之和",
+          "title": "Two Sum",
+          "title_cn": "两数之和",
           "difficulty": "EASY",
           "paid_only": false,
           "topic_tags": ["数组", "哈希表"],
-          "online_count": 334,
-          "last_updated": "2026-02-21T00:15:15Z"
+          "online_count": 491,
+          "online_count_cn": 491,
+          "online_count_com": 0,
+          "online_count_total": 491,
+          "last_updated": "2026-10-30T23:45:02+08:00"
         }
       ]
     }
@@ -75,17 +78,22 @@ export const getEndpoints = (): APIEndpoint[] => [
     responseExample: {
       "code": 200,
       "msg": "success",
-      "data": {
-        "problems": [
-          {
-            "frontend_id": "1",
-            "slug": "two-sum",
-            "title": "两数之和",
-            "difficulty": "EASY",
-            "online_count": 296
-          }
-        ]
-      }
+      "data": [
+        {
+          "frontend_id": "1",
+          "slug": "two-sum",
+          "title": "Two Sum",
+          "title_cn": "两数之和",
+          "difficulty": "EASY",
+          "paid_only": false,
+          "topic_tags": ["数组", "哈希表"],
+          "online_count": 491,
+          "online_count_cn": 491,
+          "online_count_com": 0,
+          "online_count_total": 491,
+          "last_updated": "2026-10-30T23:45:02+08:00"
+        }
+      ]
     }
   },
   {
@@ -104,8 +112,8 @@ export const getEndpoints = (): APIEndpoint[] => [
       "code": 200,
       "msg": "success",
       "data": [
-        { "frontend_id": "1", "slug": "two-sum", "count": 296, "timestamp": "2026-02-21T00:15:15Z" },
-        { "frontend_id": "49", "slug": "group-anagrams", "count": 121, "timestamp": "2026-02-21T00:15:15Z" }
+        { "id": 293951, "frontend_id": "98", "count_cn": 46, "count_com": 0, "count_total": 46, "timestamp": "2026-10-30T23:44:26+08:00" },
+        { "id": 293952, "frontend_id": "438", "count_cn": 141, "count_com": 0, "count_total": 141, "timestamp": "2026-10-30T23:44:26+08:00" }
       ]
     }
   },
@@ -152,8 +160,8 @@ export const getEndpoints = (): APIEndpoint[] => [
       "code": 200,
       "msg": "success",
       "data": [
-        { "id": 1, "frontend_id": "1", "count": 334, "timestamp": "2026-02-21T00:15:15Z" },
-        { "id": 2, "frontend_id": "1", "count": 328, "timestamp": "2026-02-21T00:14:15Z" }
+        { "count": 493, "count_cn": 493, "count_com": 0, "timestamp": "2026-10-30T23:46:16+08:00" },
+        { "count": 1087, "count_cn": 1087, "count_com": 1087, "timestamp": "2026-10-30T01:57:26+08:00" }
       ]
     },
     errorExamples: [
@@ -180,7 +188,8 @@ export const getEndpoints = (): APIEndpoint[] => [
       { field: 'min_online', type: 'number', description: '单题最低在线人数' },
       { field: 'difficulties', type: 'object', description: '各难度题目数量分布' },
       { field: 'online_by_range', type: 'object', description: '在线人数区间分布' },
-      { field: 'top_problems', type: 'array', description: '热门题目排行（前10）' }
+      { field: 'top_problems', type: 'array', description: '热门题目排行（前10）' },
+      { field: 'last_updated', type: 'string', description: '最新数据更新时间' }
     ],
     responseExample: {
       "code": 200,
@@ -298,14 +307,11 @@ export const getEndpoints = (): APIEndpoint[] => [
       },
     ],
     responseExample: {
-      "code": 200,
-      "msg": "success",
-      "data": {
-        "count": 26300,
-        "data": [
-          { "id": 1, "frontend_id": "11", "count": 79, "timestamp": "2026-02-19T23:25:09Z" }
-        ]
-      }
+      "exported_at": "2026-10-30T23:40:26+08:00",
+      "count": 293550,
+      "data": [
+        { "id": 1, "frontend_id": "234", "count_cn": 91, "count_com": 0, "count_total": 91, "timestamp": "2026-10-28T22:41:09+08:00" }
+      ]
     }
   },
   {
@@ -319,10 +325,14 @@ export const getEndpoints = (): APIEndpoint[] => [
       "code": 200,
       "msg": "success",
       "data": {
-        "total_records": 26300,
-        "oldest_record": "2026-02-19T23:25:09Z",
-        "newest_record": "2026-02-21T00:14:54Z",
-        "available_formats": ["json", "csv"]
+        "cn_records": 1465155,
+        "com_records": 146282,
+        "unified_records": 293550,
+        "total_records": 1904987,
+        "oldest_record": "2026-10-28T22:40:09+08:00",
+        "newest_record": "2026-10-30T23:40:55+08:00",
+        "available_formats": ["json", "csv"],
+        "available_sites": ["cn", "com", "unified"]
       }
     }
   },

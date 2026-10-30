@@ -24,7 +24,7 @@ const Navigation: React.FC = () => {
     { key: '/statistics', icon: <BarChartOutlined />, label: <Link to="/statistics">统计分析</Link> },
     { key: '/history', icon: <HistoryOutlined />, label: <Link to="/history">历史数据</Link> },
     { key: '/api-docs', icon: <ApiOutlined />, label: <Link to="/api-docs">API</Link> },
-    { key: '/mcp', icon: <CloudOutlined />, label: <Link to="/mcp">MCP</Link> },
+    { key: '/mcp-docs', icon: <CloudOutlined />, label: <Link to="/mcp-docs">MCP</Link> },
     { key: '/skills', icon: <ToolOutlined />, label: <Link to="/skills">Skills</Link> },
   ];
 

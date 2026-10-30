@@ -64,13 +64,22 @@ const MCP: React.FC = () => {
       description: '获取LeetCode Hot 100题目的最新实时在线人数',
       parameters: [],
       returns: '包含100道题目在线人数的数组',
-      responseExample: {
-        code: 200,
-        msg: "success",
-        data: [
-          { frontend_id: "1", slug: "two-sum", title: "两数之和", difficulty: "EASY", online_count: 334, last_updated: "2026-02-21T00:15:15Z" }
-        ]
-      }
+      responseExample: [
+        {
+          frontend_id: "1",
+          slug: "two-sum",
+          title: "Two Sum",
+          title_cn: "两数之和",
+          difficulty: "EASY",
+          paid_only: false,
+          topic_tags: ["数组", "哈希表"],
+          online_count: 476,
+          online_count_cn: 476,
+          online_count_com: 0,
+          online_count_total: 476,
+          last_updated: "2026-10-30T23:56:08+08:00"
+        }
+      ]
     },
     {
       name: 'get_problem_history',
@@ -80,14 +89,10 @@ const MCP: React.FC = () => {
         { name: 'limit', type: 'number', description: '返回记录数，默认100', optional: true },
       ],
       returns: '历史在线人数记录数组',
-      responseExample: {
-        code: 200,
-        msg: "success",
-        data: [
-          { id: 1, frontend_id: "1", count: 334, timestamp: "2026-02-21T00:15:15Z" },
-          { id: 2, frontend_id: "1", count: 328, timestamp: "2026-02-21T00:14:15Z" }
-        ]
-      }
+      responseExample: [
+        { id: 295140, frontend_id: "1", count_cn: 475, count_com: 0, count_total: 475, timestamp: "2026-10-30T23:55:26+08:00" },
+        { id: 295040, frontend_id: "1", count_cn: 476, count_com: 0, count_total: 476, timestamp: "2026-10-30T23:54:26+08:00" }
+      ]
     },
     {
       name: 'get_problem_online_count',
@@ -97,9 +102,18 @@ const MCP: React.FC = () => {
       ],
       returns: '题目在线人数详情',
       responseExample: {
-        code: 200,
-        msg: "success",
-        data: { frontend_id: "1", slug: "two-sum", title: "两数之和", difficulty: "EASY", online_count: 334, last_updated: "2026-02-21T00:15:15Z" }
+        frontend_id: "1",
+        slug: "two-sum",
+        title: "Two Sum",
+        title_cn: "两数之和",
+        difficulty: "EASY",
+        paid_only: false,
+        topic_tags: ["数组", "哈希表"],
+        online_count: 475,
+        online_count_cn: 475,
+        online_count_com: 0,
+        online_count_total: 475,
+        last_updated: "2026-10-30T23:55:26+08:00"
       }
     },
   ];

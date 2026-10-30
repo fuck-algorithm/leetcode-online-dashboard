@@ -7,45 +7,22 @@ export const useChartData = (
   historyData: OnlineCount[],
   timeRange: [dayjs.Dayjs, dayjs.Dayjs]
 ): ChartDataPoint[] => {
+  // 后端已按时间范围过滤并按桶聚合（date_bin 等间隔，点数 ≤ ~730），
+  // 这里只需 O(N) 单遍映射成图表点，无需再做逐分钟网格 + 最近点匹配（原实现 O(N×M)）。
   return useMemo(() => {
     if (historyData.length === 0) return [];
-    
-    const result = [];
-    const [start, end] = timeRange;
-    const startTime = start.startOf('minute');
-    const endTime = end.endOf('minute');
-    
-    const totalMinutes = endTime.diff(startTime, 'minute');
-    const interval = totalMinutes > 7 * 24 * 60 ? 60 : totalMinutes > 2 * 24 * 60 ? 10 : 1;
-    const matchWindow = Math.max(2, interval);
-    
-    for (let t = startTime; t.isBefore(endTime) || t.isSame(endTime); t = t.add(interval, 'minute')) {
-      const currentTime = t.valueOf();
-      let countCN = 0, countCOM = 0, countTotal = 0;
-      let minDiff = Infinity;
-      
-      for (const item of historyData) {
-        const itemTime = dayjs(item.timestamp).valueOf();
-        const diffMinutes = Math.abs(itemTime - currentTime) / (1000 * 60);
-        
-        if (diffMinutes <= matchWindow && diffMinutes < minDiff) {
-          countCN = item.count_cn || 0;
-          countCOM = item.count_com || 0;
-          countTotal = item.count_total || countCN + countCOM;
-          minDiff = diffMinutes;
-        }
-      }
-      
-      result.push({
-        time: t.format('MM-DD HH:mm'),
+
+    return historyData.map(item => {
+      const countCN = item.count_cn || 0;
+      const countCOM = item.count_com || 0;
+      return {
+        time: dayjs(item.timestamp).format('MM-DD HH:mm'),
         countCN,
         countCOM,
-        countTotal,
-        fullTime: t.toISOString(),
-      });
-    }
-    
-    return result;
+        countTotal: item.count_total || countCN + countCOM,
+        fullTime: item.timestamp,
+      };
+    });
   }, [historyData, timeRange]);
 };
 
@@ -86,37 +63,46 @@ export const useHourAverageData = (historyData: OnlineCount[]): HourAverageDataP
 };
 
 export const useStats = (historyData: OnlineCount[]): Stats => {
+  // 单遍统计 max/min/avg，避免 map + 展开运算符多次全数组遍历
+  // （Math.max(...array) 在数据量很大时还有栈溢出风险）。
   return useMemo(() => {
-    if (historyData.length === 0) {
-      return { 
-        max: { cn: 0, com: 0, total: 0 }, 
-        min: { cn: 0, com: 0, total: 0 }, 
-        avg: { cn: 0, com: 0, total: 0 }, 
-        current: { cn: 0, com: 0, total: 0 } 
-      };
+    const empty: Stats = {
+      max: { cn: 0, com: 0, total: 0 },
+      min: { cn: 0, com: 0, total: 0 },
+      avg: { cn: 0, com: 0, total: 0 },
+      current: { cn: 0, com: 0, total: 0 },
+    };
+    if (historyData.length === 0) return empty;
+
+    let maxCN = 0, maxCOM = 0, maxTotal = 0;
+    let minCN = Infinity, minCOM = Infinity, minTotal = Infinity;
+    let sumCN = 0, sumCOM = 0, sumTotal = 0;
+
+    for (const h of historyData) {
+      const cn = h.count_cn || 0;
+      const com = h.count_com || 0;
+      const total = h.count_total || cn + com;
+      if (cn > maxCN) maxCN = cn;
+      if (com > maxCOM) maxCOM = com;
+      if (total > maxTotal) maxTotal = total;
+      if (cn < minCN) minCN = cn;
+      if (com < minCOM) minCOM = com;
+      if (total < minTotal) minTotal = total;
+      sumCN += cn;
+      sumCOM += com;
+      sumTotal += total;
     }
-    
-    const cnCounts = historyData.map(h => h.count_cn || 0);
-    const comCounts = historyData.map(h => h.count_com || 0);
-    const totalCounts = historyData.map(h => h.count_total || (h.count_cn || 0) + (h.count_com || 0));
-    
+
     const lastItem = historyData[historyData.length - 1];
-    
+    const n = historyData.length;
+
     return {
-      max: {
-        cn: Math.max(...cnCounts),
-        com: Math.max(...comCounts),
-        total: Math.max(...totalCounts),
-      },
-      min: {
-        cn: Math.min(...cnCounts),
-        com: Math.min(...comCounts),
-        total: Math.min(...totalCounts),
-      },
+      max: { cn: maxCN, com: maxCOM, total: maxTotal },
+      min: { cn: minCN === Infinity ? 0 : minCN, com: minCOM === Infinity ? 0 : minCOM, total: minTotal === Infinity ? 0 : minTotal },
       avg: {
-        cn: Math.round(cnCounts.reduce((s, c) => s + c, 0) / cnCounts.length),
-        com: Math.round(comCounts.reduce((s, c) => s + c, 0) / comCounts.length),
-        total: Math.round(totalCounts.reduce((s, c) => s + c, 0) / totalCounts.length),
+        cn: Math.round(sumCN / n),
+        com: Math.round(sumCOM / n),
+        total: Math.round(sumTotal / n),
       },
       current: {
         cn: lastItem?.count_cn || 0,

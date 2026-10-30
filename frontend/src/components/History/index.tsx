@@ -288,7 +288,8 @@ const History: React.FC = () => {
       <Card className="lc-card lc-table" title={<span style={{ color: '#fff' }}>详细数据</span>} style={{ marginTop: 16 }}>
         <Table
           dataSource={historyData.slice().reverse()}
-          rowKey="id"
+          // 后端聚合返回的桶无原始 id，用 timestamp 作行唯一键
+          rowKey={(record) => record.timestamp}
           pagination={{
             current: pagination.current,
             pageSize: pagination.pageSize,
@@ -305,7 +306,7 @@ const History: React.FC = () => {
             },
           }}
           columns={[
-            { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+            { title: '序号', key: 'idx', width: 80, render: (_: unknown, __: OnlineCount, index: number) => index + 1 },
             { 
               title: '在线人数', 
               key: 'counts',

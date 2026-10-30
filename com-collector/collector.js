@@ -300,15 +300,21 @@ function mergeSummary(acc, next) {
 }
 
 async function openBatch(batch) {
+  const browserArgs = [
+    '--no-sandbox',
+    '--disable-dev-shm-usage',
+    '--disable-gpu',
+    '--disable-background-timer-throttling',
+    '--disable-renderer-backgrounding',
+  ];
+  // 无 X11 但有 weston/wayland 时（headless 服务器常见组合），
+  // 显式指定 ozone 平台走 wayland，否则 chromium 会因找不到 $DISPLAY 直接退出。
+  if (process.env.WAYLAND_DISPLAY && !process.env.DISPLAY) {
+    browserArgs.push('--ozone-platform=wayland');
+  }
   const browser = await chromium.launch({
     headless: false,
-    args: [
-      '--no-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-gpu',
-      '--disable-background-timer-throttling',
-      '--disable-renderer-backgrounding',
-    ],
+    args: browserArgs,
   });
 
   const context = await browser.newContext({
@@ -331,7 +337,8 @@ async function openBatch(batch) {
       if (merged) {
         merged.attempts = attempts;
         summaries.push(merged);
-        log(`[cycle] ${problem.slug}: ${merged.ok ? 'OK' : 'FAIL'} attempts=${attempts} count=${merged.last || '-'}`);
+        log(`[cycle] ${problem.slug}: ${merged.ok ? 'OK' : 'FAIL'} attempts=${attempts} count=${merged.last || '-'}` +
+          (merged.ok ? '' : ` errs=[${merged.errors.slice(0, 4).join(' | ')}]`));
       }
       if (shuttingDown) break;
     }
@@ -414,8 +421,8 @@ async function runCycle(cycle) {
 }
 
 async function main() {
-  if (!process.env.DISPLAY) {
-    throw new Error('DISPLAY is not set; run through start-com-collector.sh (Xvfb) so headed Chromium can start');
+  if (!process.env.DISPLAY && !process.env.WAYLAND_DISPLAY) {
+    throw new Error('DISPLAY is not set; run through start-com-collector.sh (Xvfb) or set WAYLAND_DISPLAY so headed Chromium can start');
   }
   if (problems.length === 0) {
     throw new Error(`no problems loaded from ${CONFIG.dataFile}`);

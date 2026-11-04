@@ -1,50 +1,62 @@
 import { useMemo } from 'react';
+import type { KeyboardEvent } from 'react';
 import { Button } from 'antd';
 import { Link } from 'react-router-dom';
 import { EyeOutlined } from '@ant-design/icons';
 import { Problem } from '../../types';
-import { SortField, SortOrder, getDifficultyClass, getRankStyle } from './types';
+import { SortField, SortOrder, getDifficultyClass } from './types';
 import { OnlineCountBadge } from './OnlineCountBadge';
 
 interface UseColumnsProps {
   selectedTags: string[];
   sortField: SortField;
   sortOrder: SortOrder;
+  onSort: (field: SortField) => void;
   onTagClick: (tag: string) => void;
   onNavigate: (problemId: string) => void;
   flashIds?: Set<string>;
 }
 
-export const useColumns = ({ 
-  selectedTags, 
-  sortField, 
-  sortOrder, 
+export const useColumns = ({
+  selectedTags,
+  sortField,
+  sortOrder,
+  onSort,
   onTagClick,
   onNavigate,
   flashIds
 }: UseColumnsProps) => {
-  const renderSortableHeader = (title: string, field: SortField) => {
+  // 排序交互挂在表头单元格上，避免用 render 函数生成 title（Antd 会在隐藏的
+  // measure row 里重复调用，产生不可见的按钮）。
+  const sortableColumn = (title: string, field: SortField) => {
     const isActive = sortField === field;
-    const isAscend = isActive && sortOrder === 'ascend';
-    const isDescend = isActive && sortOrder === 'descend';
-    
-    return (
-      <div 
-        onClick={() => {}}
-        style={{ 
-          cursor: 'pointer', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          gap: '4px'
-        }}
-      >
-        <span>{title}</span>
-        <span style={{ fontSize: '10px', color: isActive ? '#1890ff' : '#bfbfbf' }}>
-          {isAscend ? '▲' : isDescend ? '▼' : '▲▼'}
+    const onKeyDown = (event: KeyboardEvent<HTMLTableCellElement>) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        onSort(field);
+      }
+    };
+
+    return {
+      title: (
+        <span className={`ranking-sort-title${isActive ? ' is-active' : ''}`}>
+          {title}
+          <span className="ranking-sort-arrow">
+            {isActive ? (sortOrder === 'ascend' ? '▲' : '▼') : '▲▼'}
+          </span>
         </span>
-      </div>
-    );
+      ),
+      onHeaderCell: () => ({
+        className: 'ranking-sort-col',
+        onClick: () => onSort(field),
+        onKeyDown,
+        tabIndex: 0,
+        role: 'button' as const,
+        'aria-sort': isActive
+          ? (sortOrder === 'ascend' ? 'ascending' as const : 'descending' as const)
+          : 'none' as const,
+      }),
+    };
   };
 
   return useMemo(() => [
@@ -52,84 +64,59 @@ export const useColumns = ({
       title: '排名',
       dataIndex: 'rank',
       key: 'rank',
-      width: 50,
-      fixed: 'left' as const,
+      width: 64,
+      align: 'center' as const,
       render: (_: any, _record: Problem, index: number) => (
-        <span style={getRankStyle(index + 1)}>#{index + 1}</span>
+        <span className={`ranking-rank${index < 3 ? ` ranking-rank--${index + 1}` : ''}`}>
+          {index + 1}
+        </span>
       ),
     },
     {
       title: '题目',
       dataIndex: 'title',
       key: 'title',
-      width: 280,
       ellipsis: true,
-      render: (text: string, record: Problem) => (
-        <Link 
-          to={`https://leetcode.cn/problems/${record.slug}`} 
-          target="_blank"
-          className="lc-problem-title"
-          style={{ fontSize: 15, fontWeight: 500 }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <span style={{ 
-            display: 'inline-block',
-            background: 'var(--lc-primary)',
-            color: '#fff',
-            padding: '2px 8px',
-            borderRadius: '4px',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            marginRight: '8px'
-          }}>
-            {record.id}
-          </span>
-          {text}
-          {record.topic_tags && record.topic_tags.length > 0 && (
-            <span style={{ marginLeft: '10px', display: 'inline-flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-              {record.topic_tags.map((tag, idx) => (
-                <span
-                  key={idx}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onTagClick(tag);
-                  }}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    background: selectedTags.includes(tag) ? '#FFD700' : 'linear-gradient(135deg, #f5f7fa 0%, #e4e7f1 100%)',
-                    color: selectedTags.includes(tag) ? '#333' : '#5a6c7d',
-                    padding: '2px 8px',
-                    borderRadius: '12px',
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    letterSpacing: '0.3px',
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: selectedTags.includes(tag) 
-                      ? '0 1px 3px rgba(0, 0, 0, 0.2)' 
-                      : '0 1px 2px rgba(0, 0, 0, 0.05)',
-                    border: selectedTags.includes(tag) 
-                      ? '1px solid #E6C200' 
-                      : '1px solid #d1d5db',
-                    lineHeight: '1.2',
-                  }}
-                >
-                  {tag}
-                </span>
-              ))}
-            </span>
-          )}
-        </Link>
-      ),
+      render: (text: string, record: Problem) => {
+        const tags = record.topic_tags || [];
+        return (
+          <div className="ranking-problem-cell">
+            <Link
+              to={`https://leetcode.cn/problems/${record.slug}`}
+              target="_blank"
+              className="ranking-problem-link"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <span className="ranking-problem-id">{record.id}</span>
+              <span className="ranking-problem-name">{text}</span>
+            </Link>
+            {tags.length > 0 && (
+              <span className="ranking-tags" title={tags.join(' · ')}>
+                {tags.slice(0, 3).map((tag) => (
+                  <span
+                    key={tag}
+                    className={`ranking-tag${selectedTags.includes(tag) ? ' is-selected' : ''}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onTagClick(tag);
+                    }}
+                  >
+                    {tag}
+                  </span>
+                ))}
+                {tags.length > 3 && <span className="ranking-tag-more">+{tags.length - 3}</span>}
+              </span>
+            )}
+          </div>
+        );
+      },
     },
     {
       title: '难度',
       dataIndex: 'difficulty',
       key: 'difficulty',
-      width: 70,
+      width: 86,
       align: 'center' as const,
       render: (diff: string) => (
         <span className={getDifficultyClass(diff)}>
@@ -139,78 +126,75 @@ export const useColumns = ({
       ),
     },
     {
-      title: () => renderSortableHeader('中文站（leetcode.cn）', 'cn'),
+      ...sortableColumn('中文站', 'cn'),
       dataIndex: 'online_count_cn',
       key: 'online_count_cn',
-      width: 115,
+      width: 104,
       align: 'center' as const,
       render: (count: number, record: Problem) => (
-        <div 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: 4,
-            cursor: 'pointer'
-          }}
+        <span
+          className="ranking-count-cell"
+          title="在 leetcode.cn 打开题目"
           onClick={(e) => {
             e.stopPropagation();
             window.open(`https://leetcode.cn/problems/${record.slug}`, '_blank');
           }}
         >
-          <span style={{ fontSize: '14px' }}>🇨🇳</span>
-          <OnlineCountBadge count={count || 0} flash={flashIds?.has(String(record.id))} />
-        </div>
+          <OnlineCountBadge count={count || 0} tone="cn" flash={flashIds?.has(String(record.id))} />
+        </span>
       ),
     },
     {
-      title: () => renderSortableHeader('国际站（leetcode.com）', 'com'),
+      ...sortableColumn('国际站', 'com'),
       dataIndex: 'online_count_com',
       key: 'online_count_com',
-      width: 115,
+      width: 104,
       align: 'center' as const,
       render: (count: number, record: Problem) => (
-        <div 
-          style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: 4,
-            cursor: 'pointer'
-          }}
+        <span
+          className="ranking-count-cell"
+          title="在 leetcode.com 打开题目"
           onClick={(e) => {
             e.stopPropagation();
             window.open(`https://leetcode.com/problems/${record.slug}`, '_blank');
           }}
         >
-          <span style={{ fontSize: '14px' }}>🇺🇸</span>
-          <OnlineCountBadge count={count || 0} flash={flashIds?.has(String(record.id))} />
-        </div>
+          <OnlineCountBadge count={count || 0} tone="com" flash={flashIds?.has(String(record.id))} />
+        </span>
       ),
     },
     {
-      title: () => renderSortableHeader('在线人数汇总（中文站、国际站）', 'total'),
+      ...sortableColumn('汇总', 'total'),
       dataIndex: 'online_count_total',
       key: 'online_count_total',
-      width: 120,
+      width: 110,
       align: 'center' as const,
-      render: (count: number, record: Problem) => <OnlineCountBadge count={count || record.online_count || 0} />,
+      render: (count: number, record: Problem) => (
+        <OnlineCountBadge
+          count={count || record.online_count || 0}
+          tone="total"
+          flash={flashIds?.has(String(record.id))}
+        />
+      ),
     },
     {
       title: '操作',
       key: 'action',
-      width: 80,
+      width: 92,
       align: 'center' as const,
       render: (_: any, record: Problem) => (
-        <Button 
-          type="link" 
+        <Button
+          type="link"
           size="small"
           icon={<EyeOutlined />}
-          onClick={() => onNavigate(String(record.id))}
+          onClick={(e) => {
+            e.stopPropagation();
+            onNavigate(String(record.id));
+          }}
         >
-          查看详情
+          历史
         </Button>
       ),
     },
-  ], [selectedTags, sortField, sortOrder, onTagClick, onNavigate, flashIds]);
+  ], [selectedTags, sortField, sortOrder, onSort, onTagClick, onNavigate, flashIds]);
 };

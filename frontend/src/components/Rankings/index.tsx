@@ -1,18 +1,31 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Card, Input, Select, Space, Skeleton, Button, Table, Tag } from 'antd';
+import { Input, Select, Skeleton, Button, Table } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { TrophyOutlined, FireOutlined, LineChartOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import {
+  ClockCircleOutlined,
+  DashboardOutlined,
+  FilterOutlined,
+  FireOutlined,
+  LineChartOutlined,
+  OrderedListOutlined,
+  ReloadOutlined,
+  SearchOutlined,
+  TrophyOutlined,
+} from '@ant-design/icons';
 import { useWebSocket } from '../../hooks/useWebSocket';
 import { Problem } from '../../types';
 import { fetchHot100 } from '../../api';
-import { getFromIndexedDB, STORAGE_KEYS } from '../../utils/indexedDB';
+import { getFromIndexedDB, setToIndexedDB, STORAGE_KEYS } from '../../utils/indexedDB';
 import { WSProblem, SortField, SortOrder, formatSlug } from './types';
 import { useColumns } from './useColumns';
 import LastUpdated from './LastUpdated';
+import { DocLayout } from '../docs/DocLayout';
+import { DocSection, DocNote } from '../docs/DocSection';
+import { StatRow, StatTile } from '../dataPage/ChartPanel';
+import '../dataPage/DataPage.css';
 import '../Rankings.css';
 
-const { Search } = Input;
-const { Option } = Select;
+const totalOf = (p: Problem) => p.online_count_total || p.online_count || 0;
 
 /** API 返回 ISO 时间串，WebSocket 返回秒级时间戳，这里统一成毫秒取最大值 */
 function newestTimestamp(items: Array<{ last_updated?: string | number }>): number {
@@ -37,7 +50,6 @@ const Rankings: React.FC = () => {
   const [flashIds, setFlashIds] = useState<Set<string>>(new Set());
 
   const navigate = useNavigate();
-  const tableWrapperRef = React.useRef<HTMLDivElement>(null);
 
   // HTTP API fallback
   useEffect(() => {
@@ -154,8 +166,8 @@ const Rankings: React.FC = () => {
           break;
         case 'total':
         default:
-          aVal = a.online_count_total || a.online_count || 0;
-          bVal = b.online_count_total || b.online_count || 0;
+          aVal = totalOf(a);
+          bVal = totalOf(b);
           break;
       }
       return sortOrder === 'ascend' ? aVal - bVal : bVal - aVal;
@@ -185,6 +197,13 @@ const Rankings: React.FC = () => {
     setFiltered(filteredProblems);
   }, [filteredProblems]);
 
+  // 排序偏好写入 IndexedDB，下次打开保持上次选择
+  useEffect(() => {
+    if (!initialLoaded) return;
+    setToIndexedDB(STORAGE_KEYS.RANKINGS_SORT_FIELD, sortField);
+    setToIndexedDB(STORAGE_KEYS.RANKINGS_SORT_ORDER, sortOrder);
+  }, [sortField, sortOrder, initialLoaded]);
+
   const handleTagClick = useCallback((tag: string) => {
     setSelectedTags(prev =>
       prev.includes(tag)
@@ -193,175 +212,232 @@ const Rankings: React.FC = () => {
     );
   }, []);
 
+  const handleSort = useCallback((field: SortField) => {
+    if (field === sortField) {
+      setSortOrder(prev => prev === 'descend' ? 'ascend' : 'descend');
+    } else {
+      setSortField(field);
+      setSortOrder('descend');
+    }
+  }, [sortField]);
+
   const handleNavigate = useCallback((problemId: string) => {
     navigate(`/history?problemId=${problemId}`);
   }, [navigate]);
+
+  const handleReset = useCallback(() => {
+    setSearchText('');
+    setDifficultyFilter('all');
+    setSelectedTags([]);
+    setSortField('total');
+    setSortOrder('descend');
+  }, []);
 
   const columns = useColumns({
     selectedTags,
     sortField,
     sortOrder,
+    onSort: handleSort,
     onTagClick: handleTagClick,
     onNavigate: handleNavigate,
     flashIds,
   });
 
-  const rowClassName = useCallback((record: Problem) => {
-    const base = `ranking-row ranking-row-${record.id}`;
-    return flashIds.has(String(record.id)) ? `${base} ranking-row--flash` : base;
+  const rowClassName = useCallback((record: Problem, index: number) => {
+    const top = index < 3 ? ` ranking-row--top${index + 1}` : '';
+    const flash = flashIds.has(String(record.id)) ? ' ranking-row--flash' : '';
+    return `ranking-row${top}${flash}`;
   }, [flashIds]);
 
-  const topProblem = filteredProblems[0];
-  const totalOnline = problems.reduce((s, p) => s + (p.online_count_total || p.online_count || 0), 0);
+  const cnOnline = problems.reduce((sum, p) => sum + (p.online_count_cn || 0), 0);
+  const comOnline = problems.reduce((sum, p) => sum + (p.online_count_com || 0), 0);
+  const totalOnline = problems.reduce((sum, p) => sum + totalOf(p), 0);
   const avgOnline = problems.length ? Math.round(totalOnline / problems.length) : 0;
-
-  if (loading && !initialLoaded) {
-    return (
-      <Card className="lc-card" title={<span><TrophyOutlined /> 题目排行榜</span>}>
-        <Skeleton active paragraph={{ rows: 10 }} />
-      </Card>
-    );
-  }
+  const hottest = useMemo(() => {
+    if (problems.length === 0) return null;
+    return problems.reduce((best, p) => (totalOf(p) > totalOf(best) ? p : best), problems[0]);
+  }, [problems]);
 
   return (
-    <div className="rankings-page">
-      {/* 顶部 KPI 卡片 */}
-      <div className="rankings-kpi">
-        <div className="rankings-kpi__item">
-          <div className="rankings-kpi__icon rankings-kpi__icon--trophy"><TrophyOutlined /></div>
-          <div className="rankings-kpi__body">
-            <div className="rankings-kpi__label">监控题目</div>
-            <div className="rankings-kpi__value">{problems.length}</div>
-          </div>
-        </div>
-        <div className="rankings-kpi__item">
-          <div className="rankings-kpi__icon rankings-kpi__icon--fire"><FireOutlined /></div>
-          <div className="rankings-kpi__body">
-            <div className="rankings-kpi__label">当前总在线</div>
-            <div className="rankings-kpi__value">{totalOnline.toLocaleString()}</div>
-          </div>
-        </div>
-        <div className="rankings-kpi__item">
-          <div className="rankings-kpi__icon rankings-kpi__icon--chart"><LineChartOutlined /></div>
-          <div className="rankings-kpi__body">
-            <div className="rankings-kpi__label">平均每题</div>
-            <div className="rankings-kpi__value">{avgOnline}</div>
-          </div>
-        </div>
-        <div className="rankings-kpi__item">
-          <div className="rankings-kpi__icon rankings-kpi__icon--clock"><ClockCircleOutlined /></div>
-          <div className="rankings-kpi__body">
-            <div className="rankings-kpi__label">数据更新</div>
-            <div className="rankings-kpi__value rankings-kpi__value--small">
-              <LastUpdated timestamp={lastUpdatedAt} />
-            </div>
-          </div>
-        </div>
-      </div>
+    <DocLayout
+      wide
+      showSidebar={false}
+      title="排行榜"
+      subtitle="LeetCode Hot 100 中文站 / 国际站实时在线人数排行"
+      icon={<TrophyOutlined />}
+    >
+      {loading && !initialLoaded ? (
+        <DocSection id="rankings-overview" title="实时概览" icon={<DashboardOutlined />}>
+          <Skeleton active paragraph={{ rows: 12 }} />
+        </DocSection>
+      ) : (
+        <>
+          <DocSection
+            id="rankings-overview"
+            title="实时概览"
+            icon={<DashboardOutlined />}
+            extra={
+              <div className="rankings-overview-extra">
+                <span className="rankings-overview-hint">WebSocket 实时推送，人数变化时对应行会短暂高亮</span>
+                <LastUpdated timestamp={lastUpdatedAt} />
+              </div>
+            }
+          >
+            <StatRow>
+              <StatTile
+                icon={<TrophyOutlined />}
+                label="监控题目"
+                value={problems.length}
+                hint="LeetCode Hot 100"
+              />
+              <StatTile
+                tone="cn"
+                icon={<LineChartOutlined />}
+                label="中文站在线"
+                value={cnOnline.toLocaleString()}
+                hint="leetcode.cn"
+              />
+              <StatTile
+                tone="com"
+                icon={<FireOutlined />}
+                label="国际站在线"
+                value={comOnline.toLocaleString()}
+                hint="leetcode.com"
+              />
+              <StatTile
+                tone="total"
+                icon={<ClockCircleOutlined />}
+                label="汇总在线"
+                value={totalOnline.toLocaleString()}
+                hint={`平均每题 ${avgOnline.toLocaleString()} 人`}
+              />
+            </StatRow>
 
-      <Card
-        className="lc-card rankings-card"
-        title={
-          <span className="rankings-title">
-            <span><TrophyOutlined /> 题目排行榜</span>
-            {topProblem && (
-              <Tag color="gold" style={{ marginLeft: 8 }}>
-                🔥 最热：{topProblem.title}（{topProblem.online_count_total || topProblem.online_count} 人）
-              </Tag>
+            {hottest && (
+              <DocNote type="info">
+                当前最热题目：
+                <button
+                  type="button"
+                  className="rankings-hot-link"
+                  onClick={() => handleNavigate(String(hottest.id))}
+                >
+                  {hottest.title}
+                </button>
+                （{totalOf(hottest).toLocaleString()} 人在线）。点击任意行可查看该题的历史趋势。
+              </DocNote>
             )}
-            <LastUpdated timestamp={lastUpdatedAt} />
-          </span>
-        }
-        extra={
-          <Space>
+          </DocSection>
+
+          <DocSection
+            id="rankings-filters"
+            title="筛选与排序"
+            icon={<FilterOutlined />}
+            desc={`显示 ${filtered.length} / ${problems.length} 题`}
+          >
+            <div className="rankings-toolbar">
+              <Input
+                className="rankings-search"
+                placeholder="搜索题目名称或 slug"
+                allowClear
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={e => setSearchText(e.target.value)}
+                style={{ width: 260 }}
+              />
+
+              <div className="rankings-toolbar-group">
+                <span className="rankings-toolbar-label">难度</span>
+                <Select
+                  value={difficultyFilter}
+                  onChange={setDifficultyFilter}
+                  style={{ width: 108 }}
+                  options={[
+                    { value: 'all', label: '全部' },
+                    { value: 'Easy', label: '简单' },
+                    { value: 'Medium', label: '中等' },
+                    { value: 'Hard', label: '困难' },
+                  ]}
+                />
+              </div>
+
+              <div className="rankings-toolbar-group">
+                <span className="rankings-toolbar-label">排序</span>
+                <Select
+                  value={sortField}
+                  onChange={(value) => setSortField(value)}
+                  style={{ width: 108 }}
+                  options={[
+                    { value: 'total', label: '汇总在线' },
+                    { value: 'cn', label: '中文站在线' },
+                    { value: 'com', label: '国际站在线' },
+                  ]}
+                />
+                <Select
+                  value={sortOrder}
+                  onChange={(value) => setSortOrder(value)}
+                  style={{ width: 84 }}
+                  options={[
+                    { value: 'descend', label: '降序' },
+                    { value: 'ascend', label: '升序' },
+                  ]}
+                />
+              </div>
+
+              <Button className="rankings-reset" icon={<ReloadOutlined />} onClick={handleReset}>
+                重置
+              </Button>
+            </div>
+
             {selectedTags.length > 0 && (
-              <span style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                flexWrap: 'wrap'
-              }}>
+              <div className="rankings-selected-tags">
+                <span className="rankings-toolbar-label">已选标签</span>
                 {selectedTags.map(tag => (
-                  <span
-                    key={tag}
-                    style={{
-                      padding: '2px 8px',
-                      background: '#FFD700',
-                      color: '#333',
-                      borderRadius: '4px',
-                      fontSize: '12px',
-                      fontWeight: 500,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                    }}
-                  >
+                  <span key={tag} className="ranking-tag is-selected rankings-selected-tag">
                     {tag}
-                    <span
-                      style={{
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        padding: '0 2px'
-                      }}
+                    <button
+                      type="button"
+                      className="rankings-selected-tag-remove"
+                      aria-label={`移除 ${tag}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedTags(prev => prev.filter(t => t !== tag));
                       }}
                     >
                       ×
-                    </span>
+                    </button>
                   </span>
                 ))}
-                <Button
-                  type="link"
-                  size="small"
-                  style={{ color: '#999', padding: '0 4px', fontSize: '12px' }}
-                  onClick={() => setSelectedTags([])}
-                >
+                <Button type="link" size="small" onClick={() => setSelectedTags([])}>
                   清除全部
                 </Button>
-              </span>
+              </div>
             )}
-            <Search
-              placeholder="搜索题目..."
-              allowClear
-              onSearch={setSearchText}
-              onChange={e => setSearchText(e.target.value)}
-              className="rankings-search"
-              style={{ width: 320 }}
+          </DocSection>
+
+          <DocSection
+            id="rankings-list"
+            title="完整榜单"
+            icon={<OrderedListOutlined />}
+            desc={`共 ${filtered.length} 题 · 点击表头排序 · 点击行查看历史`}
+          >
+            <Table
+              className="lc-rankings-table"
+              dataSource={filtered}
+              columns={columns}
+              rowKey="id"
+              scroll={{ x: 'max-content' }}
+              pagination={false}
+              size="small"
+              rowClassName={rowClassName}
+              onRow={(record: Problem) => ({
+                onClick: () => handleNavigate(String(record.id)),
+                style: { cursor: 'pointer' }
+              })}
             />
-            <Select
-              defaultValue="all"
-              style={{ width: 100, background: 'var(--lc-bg-hover)', border: '1px solid var(--lc-border)', borderRadius: '6px' }}
-              onChange={setDifficultyFilter}
-            >
-              <Option value="all">全部</Option>
-              <Option value="Easy">简单</Option>
-              <Option value="Medium">中等</Option>
-              <Option value="Hard">困难</Option>
-            </Select>
-          </Space>
-        }
-      >
-        <div ref={tableWrapperRef}>
-          <Table
-            className="lc-table lc-rankings-table"
-            dataSource={filtered}
-            columns={columns}
-            rowKey="id"
-            scroll={{ x: 'max-content' }}
-            pagination={false}
-            size="small"
-            rowClassName={rowClassName}
-            onRow={(record: Problem) => ({
-              onClick: () => handleNavigate(String(record.id)),
-              style: { cursor: 'pointer' }
-            })}
-          />
-        </div>
-      </Card>
-    </div>
+          </DocSection>
+        </>
+      )}
+    </DocLayout>
   );
 };
 

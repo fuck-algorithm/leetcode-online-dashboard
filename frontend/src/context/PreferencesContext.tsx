@@ -8,7 +8,8 @@ interface UserPreferences {
   defaultSort: string;
   pageSize: number;
   historyProblemId: string | null;
-  historyTimeRange: string | null; // ISO format date range
+  historyTimeRangePreset: '24h' | '7d' | '1m' | '6m' | '1y' | 'custom';
+  historyTimeRange: string | null; // 仅 custom 时保存的绝对时间范围
 }
 
 const defaultPreferences: UserPreferences = {
@@ -19,6 +20,9 @@ const defaultPreferences: UserPreferences = {
   defaultSort: 'online_count',
   pageSize: 20,
   historyProblemId: null,
+  // 默认用相对时间：每次打开页面按“当前时间”重新计算，避免把几天前的
+  // 绝对区间一直存下来（那会看到一段早已过期的数据，国际站全为 0）。
+  historyTimeRangePreset: '24h',
   historyTimeRange: null,
 };
 

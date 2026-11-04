@@ -8,7 +8,8 @@ export interface Stats {
 export interface ChartDataPoint {
   time: string;
   countCN: number;
-  countCOM: number;
+  // null 表示该时段没有国际站采集数据（不是 0 人），曲线会在此断开
+  countCOM: number | null;
   countTotal: number;
   fullTime: string;
 }

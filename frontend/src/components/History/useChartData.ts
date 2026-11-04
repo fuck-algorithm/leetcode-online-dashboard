@@ -18,7 +18,9 @@ export const useChartData = (
       return {
         time: dayjs(item.timestamp).format('MM-DD HH:mm'),
         countCN,
-        countCOM,
+        // 历史聚合里 0 表示“没有采集到国际站数据”，用 null 让曲线断开，
+        // 避免画成一条从有数据突然掉到 0 人的假趋势。
+        countCOM: countCOM > 0 ? countCOM : null,
         countTotal: item.count_total || countCN + countCOM,
         fullTime: item.timestamp,
       };
@@ -29,35 +31,41 @@ export const useChartData = (
 export const useHourAverageData = (historyData: OnlineCount[]): HourAverageDataPoint[] => {
   return useMemo(() => {
     if (historyData.length === 0) return [];
-    
-    const hourGroups: { [key: number]: { totalCN: number; totalCOM: number; count: number } } = {};
-    
+
+    // CN / COM 分别统计各自的样本数：国际站缺失的时段是 0，不能拉低国际站均值。
+    const hourGroups: {
+      [key: number]: { totalCN: number; countCN: number; totalCOM: number; countCOM: number };
+    } = {};
+
     for (let h = 0; h < 24; h++) {
-      hourGroups[h] = { totalCN: 0, totalCOM: 0, count: 0 };
+      hourGroups[h] = { totalCN: 0, countCN: 0, totalCOM: 0, countCOM: 0 };
     }
-    
+
     historyData.forEach(item => {
       const countCN = item.count_cn || 0;
       const countCOM = item.count_com || 0;
-      if (countCN > 0 || countCOM > 0) {
-        const hour = dayjs(item.timestamp).hour();
+      const hour = dayjs(item.timestamp).hour();
+      if (countCN > 0) {
         hourGroups[hour].totalCN += countCN;
+        hourGroups[hour].countCN += 1;
+      }
+      if (countCOM > 0) {
         hourGroups[hour].totalCOM += countCOM;
-        hourGroups[hour].count += 1;
+        hourGroups[hour].countCOM += 1;
       }
     });
-    
+
     const result = [];
     for (let h = 0; h < 24; h++) {
       const data = hourGroups[h];
       result.push({
         time: `${String(h).padStart(2, '0')}:00`,
-        avgCountCN: data.count > 0 ? Math.round(data.totalCN / data.count) : 0,
-        avgCountCOM: data.count > 0 ? Math.round(data.totalCOM / data.count) : 0,
-        sampleCount: data.count,
+        avgCountCN: data.countCN > 0 ? Math.round(data.totalCN / data.countCN) : 0,
+        avgCountCOM: data.countCOM > 0 ? Math.round(data.totalCOM / data.countCOM) : 0,
+        sampleCount: Math.max(data.countCN, data.countCOM),
       });
     }
-    
+
     return result;
   }, [historyData]);
 };
@@ -77,19 +85,27 @@ export const useStats = (historyData: OnlineCount[]): Stats => {
     let maxCN = 0, maxCOM = 0, maxTotal = 0;
     let minCN = Infinity, minCOM = Infinity, minTotal = Infinity;
     let sumCN = 0, sumCOM = 0, sumTotal = 0;
+    let cnSamples = 0, comSamples = 0;
 
     for (const h of historyData) {
       const cn = h.count_cn || 0;
       const com = h.count_com || 0;
       const total = h.count_total || cn + com;
-      if (cn > maxCN) maxCN = cn;
-      if (com > maxCOM) maxCOM = com;
+      // 国际站 0 表示缺失，不参与最高/最低/平均计算
+      if (cn > 0) {
+        if (cn > maxCN) maxCN = cn;
+        if (cn < minCN) minCN = cn;
+        sumCN += cn;
+        cnSamples += 1;
+      }
+      if (com > 0) {
+        if (com > maxCOM) maxCOM = com;
+        if (com < minCOM) minCOM = com;
+        sumCOM += com;
+        comSamples += 1;
+      }
       if (total > maxTotal) maxTotal = total;
-      if (cn < minCN) minCN = cn;
-      if (com < minCOM) minCOM = com;
       if (total < minTotal) minTotal = total;
-      sumCN += cn;
-      sumCOM += com;
       sumTotal += total;
     }
 
@@ -100,8 +116,8 @@ export const useStats = (historyData: OnlineCount[]): Stats => {
       max: { cn: maxCN, com: maxCOM, total: maxTotal },
       min: { cn: minCN === Infinity ? 0 : minCN, com: minCOM === Infinity ? 0 : minCOM, total: minTotal === Infinity ? 0 : minTotal },
       avg: {
-        cn: Math.round(sumCN / n),
-        com: Math.round(sumCOM / n),
+        cn: cnSamples > 0 ? Math.round(sumCN / cnSamples) : 0,
+        com: comSamples > 0 ? Math.round(sumCOM / comSamples) : 0,
         total: Math.round(sumTotal / n),
       },
       current: {

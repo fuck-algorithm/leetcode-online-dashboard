@@ -1,8 +1,9 @@
 # leetcode-001 单机 Docker 部署
 
-服务器：`103.236.93.62:26934`（root），Ubuntu 22.04，2 vCPU / 3.8 GiB / 30 GiB。
-主机名已改为 `leetcode-001`；本机 `/etc/hosts` 有 `103.236.93.62 leetcode-001`，
+服务器：`<SERVER_IP>:<SSH_PORT>`（root），Ubuntu 22.04，2 vCPU / 3.8 GiB / 30 GiB。
+主机名已改为 `leetcode-001`；本机 `/etc/hosts` 已把 `leetcode-001` 指向该公网 IP，
 `~/.ssh/config` 的 `HostName leetcode-001` 走主机名解析，免密钥登录。
+（真实地址只保留在本机 hosts / ssh config 中，不写进公开仓库。）
 
 **公网入口：<https://leetcode.zhaixingren.cn>**
 
@@ -23,21 +24,21 @@ deploy/leetcode-001/deploy-online.sh --skip-build   # 日常：用本地现有�
 deploy/leetcode-001/deploy-online.sh --with-base    # 首次/换机：连同 postgres/redis 基础镜像一起传
 ```
 
-> 这是 NAT 共享公网 IP 的机器：服务商只把 `26934` 转发到本机 22 端口，
+> 这是 NAT 共享公网 IP 的机器：服务商只把 `<SSH_PORT>` 转发到本机 22 端口，
 > 其余公网端口（80/8090…）属于同 IP 的其他租户。因此公网入口不在这台机器上，
-> 而是借 `aigchub-001`（8.130.35.126，k3s + traefik）做反向隧道。
+> 而是借 `aigchub-001`（`<EDGE_IP>`，k3s + traefik）做反向隧道。
 > 本机调试仍可用 `./leetcode-001.sh tunnel` → <http://127.0.0.1:18100>。
 
 ## 拓扑
 
 ```
 浏览器
-  │  https://leetcode.zhaixingren.cn   （*.zhaixingren.cn 泛解析 → 8.130.35.126）
+  │  https://leetcode.zhaixingren.cn   （*.zhaixingren.cn 泛解析 → <EDGE_IP>）
   ▼
 aigchub-001: traefik(80/443, TLS 通配证书 zhaixingren-cn-tls)
   │  ingress: leetcode-ingress → Service leetcode-web-edge(80)
   ▼
-aigchub-001: 172.22.246.76:18090   ← sshd 反向转发端口
+aigchub-001: <EDGE_TUNNEL_IP>:18090   ← sshd 反向转发端口
   ▲  ssh -R（leetcode-001 主动发起，systemd: leetcode-tunnel.service）
   │
 leetcode-001: 127.0.0.1:8080 frontend(nginx:80)
@@ -52,8 +53,8 @@ backend / crawler → postgres:5432、redis:6379（仅 compose 内网）
 
 | 位置 | 内容 |
 |---|---|
-| DNS | `*.zhaixingren.cn` A → `8.130.35.126`（已有泛解析，无需新增记录） |
-| aigchub-001 | `/root/k8s/leetcode.yaml`：Service + Endpoints(172.22.246.76:18090) + Ingress + 80→443 跳转 |
+| DNS | `*.zhaixingren.cn` A → `<EDGE_IP>`（已有泛解析，无需新增记录） |
+| aigchub-001 | `/root/k8s/leetcode.yaml`：Service + Endpoints(<EDGE_TUNNEL_IP>:18090) + Ingress + 80→443 跳转 |
 | aigchub-001 | TLS secret `zhaixingren-cn-tls`（`*.zhaixingren.cn`，acme.sh 续期） |
 | leetcode-001 | `systemctl status leetcode-tunnel`（ssh -R 18090→8080，Restart=always、开机自启） |
 
@@ -65,8 +66,12 @@ backend / crawler → postgres:5432、redis:6379（仅 compose 内网）
   - Redis AOF `/opt/leetcode-dashboard/data/redis`
   - 删除/重建容器不会丢数据；`docker compose down -v` 也不会动这两个目录。
 - 端口：`FRONTEND_PORT=8080`（宿主机）→ 容器 80。
-- 国际站采集器（`com-collector/`）未部署：本机访问不到 leetcode.com，且需要带 Chromium 的镜像；
-  `CRAWL_COM=false`，国际站计数为 0，国内站正常采集。
+- 国际站采集器（`com-collector/`）**不在这台服务器上**：Cloudflare 对
+  `collaboration-ws.leetcode.com` 的 WebSocket 升级做 managed challenge，云服务器
+  出口（尤其数据中心 IP）会被全拦，换海外 VPS 也一样。采集器跑在家宽/办公网的开发机
+  （有头 Chromium + 逐题重试），经 SSH 隧道 `127.0.0.1:16390` 写服务器 Redis；
+  服务器本身 `CRAWL_COM=false`。隧道/采集器由 `com-collector/watchdog.sh`
+  （用户 crontab 每分钟）保活，断线后 1 分钟内恢复。
 
 ## 镜像是怎么上去的（不建私服）
 

@@ -1,4 +1,4 @@
-# LeetCode Dashboard - 单机 Docker 部署（leetcode-001: 103.236.93.62）
+# LeetCode Dashboard - 单机 Docker 部署（leetcode-001）
 #
 # 拓扑：nginx(frontend) 暴露 80 → backend:8080，backend/crawler → postgres + redis。
 # 数据卷全部 bind mount 到宿主机物理磁盘 /opt/leetcode-dashboard/data，

@@ -1,0 +1,315 @@
+/* ==================== 数据页通用组件（历史数据 / 统计分析） ==================== */
+
+/* 数据页内容区比文档页更宽，图表三列也能放下 */
+.lc-doc-main-wide .lc-doc-body {
+  max-width: 1280px;
+  padding: 20px 32px 8px;
+}
+
+/* 无侧栏页面：内容与页头一起居中，避免宽屏下整体贴左 */
+.lc-doc-main-full .lc-doc-body {
+  margin: 0 auto;
+}
+
+.lc-doc-main-full .lc-doc-header {
+  padding-left: max(20px, calc((100vw - 1280px) / 2 + 32px));
+  padding-right: max(20px, calc((100vw - 1280px) / 2 + 32px));
+}
+
+/* ---------- 图表容器 ---------- */
+
+.lc-chart-panel {
+  min-width: 0;
+  background: var(--lc-bg-card);
+  border: 1px solid var(--lc-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.lc-chart-panel-head {
+  min-height: 40px;
+  padding: 7px 14px;
+  background: #faf8f2;
+  border-bottom: 1px solid var(--lc-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lc-chart-panel-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--lc-text-primary);
+  line-height: 20px;
+}
+
+.lc-chart-panel-help {
+  font-size: 12px;
+  color: var(--lc-text-muted);
+  cursor: help;
+}
+
+.lc-chart-panel-extra {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lc-chart-panel-body {
+  padding: 10px 12px 4px;
+  min-width: 0;
+}
+
+.lc-chart-grid {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.lc-chart-grid:last-child {
+  margin-bottom: 0;
+}
+
+.lc-chart-grid-1 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.lc-chart-grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.lc-chart-grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.lc-chart-grid-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* ---------- 数字块 ---------- */
+
+.lc-stat-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.lc-stat-row:last-child {
+  margin-bottom: 0;
+}
+
+.lc-stat-tile {
+  min-width: 0;
+  padding: 12px 16px 13px;
+  background: #faf8f2;
+  border: 1px solid var(--lc-border);
+  border-left: 3px solid var(--lc-border-light);
+  border-radius: 4px;
+}
+
+.lc-stat-tile-cn {
+  border-left-color: var(--lc-primary);
+}
+
+.lc-stat-tile-com {
+  border-left-color: var(--lc-link);
+}
+
+.lc-stat-tile-total {
+  border-left-color: var(--lc-online);
+}
+
+.lc-stat-tile-head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 4px;
+}
+
+.lc-stat-tile-icon {
+  display: inline-flex;
+  color: var(--lc-text-muted);
+  font-size: 14px;
+}
+
+.lc-stat-tile-cn .lc-stat-tile-icon {
+  color: var(--lc-primary);
+}
+
+.lc-stat-tile-com .lc-stat-tile-icon {
+  color: var(--lc-link);
+}
+
+.lc-stat-tile-total .lc-stat-tile-icon {
+  color: var(--lc-online);
+}
+
+.lc-stat-tile-label {
+  font-size: 12px;
+  color: var(--lc-text-secondary);
+}
+
+.lc-stat-tile-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--lc-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-stat-tile-hint {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--lc-text-muted);
+}
+
+/* ---------- 基尼系数条 ---------- */
+
+.lc-gini-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  padding: 0 6px;
+}
+
+.lc-gini-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.lc-gini-name {
+  font-size: 12.5px;
+  color: var(--lc-text-secondary);
+}
+
+.lc-gini-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--lc-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-gini-track {
+  height: 6px;
+  background: var(--lc-bg-elevated);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.lc-gini-fill {
+  height: 100%;
+  border-radius: 3px;
+}
+
+.lc-gini-note {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--lc-text-muted);
+}
+
+/* ---------- 指标数值块 ---------- */
+
+.lc-metric-list {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 8px;
+}
+
+.lc-metric-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e8e4d8;
+}
+
+.lc-metric-item:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.lc-metric-label {
+  font-size: 12.5px;
+  color: var(--lc-text-secondary);
+}
+
+.lc-metric-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--lc-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.lc-metric-value em {
+  margin-left: 3px;
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 500;
+  color: var(--lc-text-muted);
+}
+
+/* ---------- 数据页里的表格 ---------- */
+
+.lc-data-table.ant-table-wrapper .ant-table {
+  background: transparent;
+  font-size: 13px;
+}
+
+.lc-data-table .ant-table-thead > tr > th {
+  background: #faf8f2 !important;
+  color: var(--lc-text-secondary) !important;
+  font-weight: 600;
+  font-size: 12px;
+  border-bottom: 1px solid var(--lc-border) !important;
+  padding: 10px 14px !important;
+}
+
+.lc-data-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #e8e4d8 !important;
+  padding: 10px 14px !important;
+  color: var(--lc-text-secondary);
+}
+
+.lc-data-table .ant-table-tbody > tr:hover > td {
+  background: var(--lc-bg-hover) !important;
+}
+
+.lc-data-table .ant-pagination {
+  margin: 14px 0 2px;
+}
+
+/* ---------- 响应式 ---------- */
+
+@media (max-width: 1200px) {
+  .lc-chart-grid-3,
+  .lc-chart-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .lc-doc-main-wide .lc-doc-body {
+    padding: 16px 16px 8px;
+  }
+
+  .lc-chart-grid-2,
+  .lc-chart-grid-3,
+  .lc-chart-grid-4 {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

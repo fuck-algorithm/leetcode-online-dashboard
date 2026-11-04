@@ -29,10 +29,10 @@ const Navigation: React.FC = () => {
   ];
 
   return (
-    <Header className="lc-header" style={{ display: 'flex', alignItems: 'center', padding: 0, backgroundColor: '#001529', color: '#fff' }}>
-      <div className="lc-logo" style={{ padding: '0 24px', minWidth: '200px' }}>
+    <Header className="lc-header">
+      <div className="lc-logo">
         <div className="lc-logo-icon">LC</div>
-        <span style={{ color: '#fff' }}>Hot 100</span>
+        <span>Hot 100</span>
       </div>
       <Menu
         className="lc-menu"
@@ -40,9 +40,8 @@ const Navigation: React.FC = () => {
         mode="horizontal"
         selectedKeys={[currentPath]}
         items={menuItems}
-        style={{ flex: 1, minWidth: 0, background: 'transparent', borderBottom: 'none' }}
       />
-      <div style={{ padding: '0 24px', display: 'flex', alignItems: 'center' }}>
+      <div className="lc-header-actions">
         <GitHubStarButton owner="fuck-algorithm" repo="leetcode-online-dashboard" />
       </div>
     </Header>

@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Card, DatePicker, Radio, Button, Spin, Empty, message } from 'antd';
+import { DatePicker, Radio, Button, Spin, Empty, message } from 'antd';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { SITE_COLORS, CHART_CONFIG } from './statistics/chartTheme';
+import { ChartPanel } from './dataPage/ChartPanel';
 
 const { RangePicker } = DatePicker;
 
@@ -145,11 +146,12 @@ const TotalOnlineAggregateChart: React.FC = () => {
   };
 
   return (
-    <Card
-      title={
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 16, fontWeight: 600 }}>总在线人数趋势</span>
-          
+    <ChartPanel
+      title="总在线人数趋势"
+      desc="三个站点在线人数随时间的变化趋势，可切换分钟 / 小时 / 天粒度"
+      height={340}
+      extra={
+        <>
           <Radio.Group
             value={granularity}
             onChange={(e) => setGranularity(e.target.value)}
@@ -160,7 +162,6 @@ const TotalOnlineAggregateChart: React.FC = () => {
               { label: '天', value: 'day' },
             ]}
           />
-          
           <RangePicker
             showTime={granularity === 'minute'}
             value={dateRange}
@@ -169,99 +170,91 @@ const TotalOnlineAggregateChart: React.FC = () => {
             maxDate={getMaxDate()}
             minDate={getMinDate()}
             presets={Object.entries(ranges).map(([label, range]) => ({ label, value: range as [dayjs.Dayjs, dayjs.Dayjs] }))}
-            style={{ width: 320 }}
+            style={{ width: 300 }}
             size="small"
           />
-          
           <Button icon={<ReloadOutlined />} onClick={fetchData} size="small" loading={loading}>
             刷新
           </Button>
-        </div>
+        </>
       }
     >
       {loading ? (
-        <Spin size="large" style={{ display: 'block', margin: '40px auto' }} />
+        <Spin size="large" style={{ display: 'block', margin: '124px auto' }} />
       ) : data.length === 0 ? (
-        <Empty description="暂无数据" style={{ margin: '40px 0' }} />
+        <Empty description="暂无数据" style={{ margin: '96px 0' }} />
       ) : (
-        <div style={{ height: 400 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorCN" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={SITE_COLORS.cn} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={SITE_COLORS.cn} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorCOM" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={SITE_COLORS.com} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={SITE_COLORS.com} stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={SITE_COLORS.total} stopOpacity={0.3} />
-                  <stop offset="95%" stopColor={SITE_COLORS.total} stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid strokeDasharray={CHART_CONFIG.gridStrokeDasharray} stroke={CHART_CONFIG.gridStroke} />
-              <XAxis
-                dataKey="timestamp"
-                tick={{ fontSize: 12 }}
-                tickMargin={10}
-                minTickGap={30}
-                stroke={CHART_CONFIG.axisStroke}
-              />
-              <YAxis
-                tick={{ fontSize: 12 }}
-                tickFormatter={(value) => value.toLocaleString()}
-                stroke={CHART_CONFIG.axisStroke}
-              />
-              <Tooltip
-                contentStyle={{
-                  background: CHART_CONFIG.tooltipBg,
-                  border: `1px solid ${CHART_CONFIG.tooltipBorder}`,
-                  borderRadius: 8,
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-                formatter={(value: number, name: string) => {
-                  const labels: Record<string, string> = { cn: '中文站', com: '国际站', total: '全球总在线' };
-                  return [value.toLocaleString() + ' 人', labels[name] || name];
-                }}
-              />
-              <Legend />
-              <Area
-                type="monotone"
-                dataKey="cn"
-                name="中文站"
-                stroke={SITE_COLORS.cn}
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorCN)"
-                animationDuration={500}
-              />
-              <Area
-                type="monotone"
-                dataKey="com"
-                name="国际站"
-                stroke={SITE_COLORS.com}
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorCOM)"
-                animationDuration={500}
-              />
-              <Area
-                type="monotone"
-                dataKey="total"
-                name="全球总在线"
-                stroke={SITE_COLORS.total}
-                strokeWidth={2}
-                fillOpacity={1}
-                fill="url(#colorTotal)"
-                animationDuration={500}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        <ResponsiveContainer width="100%" height="100%">
+          <AreaChart data={data} margin={{ top: 8, right: 24, left: -6, bottom: 0 }}>
+            <defs>
+              <linearGradient id="colorCN" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={SITE_COLORS.cn} stopOpacity={0.22} />
+                <stop offset="95%" stopColor={SITE_COLORS.cn} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorCOM" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={SITE_COLORS.com} stopOpacity={0.22} />
+                <stop offset="95%" stopColor={SITE_COLORS.com} stopOpacity={0} />
+              </linearGradient>
+              <linearGradient id="colorTotal" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor={SITE_COLORS.total} stopOpacity={0.22} />
+                <stop offset="95%" stopColor={SITE_COLORS.total} stopOpacity={0} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray={CHART_CONFIG.gridStrokeDasharray} stroke={CHART_CONFIG.gridStroke} vertical={false} />
+            <XAxis
+              dataKey="timestamp"
+              tick={CHART_CONFIG.axisTick}
+              tickMargin={10}
+              minTickGap={30}
+              stroke={CHART_CONFIG.axisStroke}
+            />
+            <YAxis
+              tick={CHART_CONFIG.axisTick}
+              tickFormatter={(value) => value.toLocaleString()}
+              stroke={CHART_CONFIG.axisStroke}
+            />
+            <Tooltip
+              contentStyle={CHART_CONFIG.tooltipStyle}
+              formatter={(value: number, name: string) => {
+                const labels: Record<string, string> = { cn: '中文站', com: '国际站', total: '全球总在线' };
+                return [value.toLocaleString() + ' 人', labels[name] || name];
+              }}
+            />
+            <Legend wrapperStyle={CHART_CONFIG.legendStyle} />
+            <Area
+              type="monotone"
+              dataKey="cn"
+              name="中文站"
+              stroke={SITE_COLORS.cn}
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorCN)"
+              animationDuration={500}
+            />
+            <Area
+              type="monotone"
+              dataKey="com"
+              name="国际站"
+              stroke={SITE_COLORS.com}
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorCOM)"
+              animationDuration={500}
+            />
+            <Area
+              type="monotone"
+              dataKey="total"
+              name="全球总在线"
+              stroke={SITE_COLORS.total}
+              strokeWidth={2}
+              fillOpacity={1}
+              fill="url(#colorTotal)"
+              animationDuration={500}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
       )}
-    </Card>
+    </ChartPanel>
   );
 };
 

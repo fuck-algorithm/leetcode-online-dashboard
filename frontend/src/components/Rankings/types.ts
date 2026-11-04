@@ -1,5 +1,3 @@
-import React from 'react';
-
 export interface WSProblem {
   id?: string;
   frontend_id: string;
@@ -34,11 +32,4 @@ export const getDifficultyClass = (difficulty: string): string => {
     case 'hard': return 'lc-difficulty lc-difficulty-hard';
     default: return 'lc-difficulty lc-difficulty-medium';
   }
-};
-
-export const getRankStyle = (rank: number): React.CSSProperties => {
-  if (rank === 1) return { color: '#d4a017', fontSize: 20, fontWeight: 'bold' };
-  if (rank === 2) return { color: '#8c8c8c', fontSize: 18, fontWeight: 'bold' };
-  if (rank === 3) return { color: '#b87333', fontSize: 16, fontWeight: 'bold' };
-  return { color: '#4a4a4a', fontSize: 14 };
 };

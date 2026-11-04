@@ -69,14 +69,24 @@ export const CHART_CONFIG = {
   barRadius: [4, 4, 0, 0] as [number, number, number, number],
   areaOpacity: 0.3,
   
-  // 网格线颜色
-  gridStroke: '#d0ccc0',
+  // 网格线颜色（浅米色，不抢曲线）
+  gridStroke: '#e6e2d6',
   gridStrokeDasharray: '3 3',
-  
+
   // 坐标轴颜色
-  axisStroke: '#6b6b6b',
-  
-  // Tooltip背景
+  axisStroke: '#8a867a',
+
+  // Tooltip 轻量白底
   tooltipBg: '#ffffff',
   tooltipBorder: '#d0ccc0',
+  tooltipStyle: {
+    background: '#ffffff',
+    border: '1px solid #d0ccc0',
+    borderRadius: 4,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+    fontSize: 12,
+    color: '#2c2c2c',
+  },
+  axisTick: { fontSize: 11.5, fill: '#6b6b6b' },
+  legendStyle: { fontSize: 12, color: '#4a4a4a' },
 };

@@ -11,11 +11,14 @@ import API from './components/API'
 import MCP from './components/MCP'
 import Skills from './components/Skills'
 import { PreferencesProvider } from './context/PreferencesContext'
+import { useVersionCheck } from './hooks/useVersionCheck'
 import './App.css'
 
 const { Content } = Layout
 
 function App() {
+  useVersionCheck()
+
   return (
     <PreferencesProvider>
       <Router>

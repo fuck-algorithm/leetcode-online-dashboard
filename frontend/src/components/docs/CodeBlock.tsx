@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 const copyText = async (text: string): Promise<boolean> => {
   try {
@@ -55,15 +57,69 @@ interface DocCodeBlockProps {
   maxHeight?: number;
 }
 
-/** 深色代码块：右上角语言标签 + 复制按钮。 */
+/** 语言映射：统一到 Prism 支持的语言名 */
+const languageMap: Record<string, string> = {
+  bash: 'bash',
+  sh: 'bash',
+  shell: 'bash',
+  javascript: 'javascript',
+  js: 'javascript',
+  typescript: 'typescript',
+  ts: 'typescript',
+  tsx: 'typescript',
+  jsx: 'javascript',
+  python: 'python',
+  py: 'python',
+  json: 'json',
+  yaml: 'yaml',
+  yml: 'yaml',
+  xml: 'xml',
+  html: 'html',
+  css: 'css',
+  sql: 'sql',
+  java: 'java',
+  go: 'go',
+  rust: 'rust',
+  c: 'c',
+  cpp: 'cpp',
+  'c++': 'cpp',
+  csharp: 'csharp',
+  'c#': 'csharp',
+  php: 'php',
+  ruby: 'ruby',
+  swift: 'swift',
+  kotlin: 'kotlin',
+  scala: 'scala',
+  dart: 'dart',
+  r: 'r',
+  markdown: 'markdown',
+  md: 'markdown',
+};
+
+/** 深色代码块：右上角语言标签 + 复制按钮 + 语法高亮。 */
 export const DocCodeBlock: React.FC<DocCodeBlockProps> = ({ code, language = 'bash', maxHeight = 420 }) => {
   const { copied, copy } = useCopyState(code);
+  const mappedLanguage = languageMap[language.toLowerCase()] || language;
 
   return (
     <div className="lc-code">
-      <pre style={{ maxHeight }}>
-        <code>{code}</code>
-      </pre>
+      <SyntaxHighlighter
+        language={mappedLanguage}
+        style={vscDarkPlus}
+        customStyle={{
+          margin: 0,
+          padding: '14px 84px 14px 16px',
+          borderRadius: '4px',
+          fontSize: '12.5px',
+          lineHeight: '1.6',
+          maxHeight,
+          overflow: 'auto',
+        }}
+        wrapLines={true}
+        wrapLongLines={true}
+      >
+        {code}
+      </SyntaxHighlighter>
       <div className="lc-code-actions">
         <button type="button" className={`lc-code-btn${copied ? ' copied' : ''}`} onClick={copy}>
           {copied ? '已复制' : '复制'}
@@ -80,16 +136,6 @@ interface DocJsonBlockProps {
   maxHeight?: number;
 }
 
-const highlightJsonLine = (line: string): string =>
-  line
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"([^"]+)":/g, '<span style="color:#9cdcfe">"$1"</span>:')
-    .replace(/: "([^"]*)"/g, ': <span style="color:#ce9178">"$1"</span>')
-    .replace(/: (\d+)/g, ': <span style="color:#b5cea8">$1</span>')
-    .replace(/: (true|false|null)/g, ': <span style="color:#569cd6">$1</span>');
-
 /** 带行号、JSON 高亮与复制按钮的预览块。 */
 export const DocJsonBlock: React.FC<DocJsonBlockProps> = ({ data, label = 'json', maxHeight = 360 }) => {
   const jsonStr = JSON.stringify(data, null, 2);
@@ -97,16 +143,31 @@ export const DocJsonBlock: React.FC<DocJsonBlockProps> = ({ data, label = 'json'
 
   return (
     <div className="lc-code">
-      <pre style={{ maxHeight }}>
-        <code>
-          {jsonStr.split('\n').map((line, index) => (
-            <div key={index} className="lc-json-line">
-              <span className="lc-json-lineno">{index + 1}</span>
-              <span dangerouslySetInnerHTML={{ __html: highlightJsonLine(line) }} />
-            </div>
-          ))}
-        </code>
-      </pre>
+      <SyntaxHighlighter
+        language="json"
+        style={vscDarkPlus}
+        customStyle={{
+          margin: 0,
+          padding: '14px 84px 14px 16px',
+          borderRadius: '4px',
+          fontSize: '12.5px',
+          lineHeight: '1.6',
+          maxHeight,
+          overflow: 'auto',
+        }}
+        wrapLines={true}
+        wrapLongLines={true}
+        showLineNumbers={true}
+        lineNumberStyle={{
+          color: '#858585',
+          minWidth: '26px',
+          marginRight: '12px',
+          userSelect: 'none',
+          textAlign: 'right',
+        }}
+      >
+        {jsonStr}
+      </SyntaxHighlighter>
       <div className="lc-code-actions">
         <button type="button" className={`lc-code-btn${copied ? ' copied' : ''}`} onClick={copy}>
           {copied ? '已复制' : '复制'}

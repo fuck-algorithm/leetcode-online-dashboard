@@ -938,12 +938,11 @@
   margin-bottom: 12px;
 }
 
+/* SyntaxHighlighter 容器自动处理样式，这里只保留覆盖规则 */
 .lc-code pre {
   margin: 0;
   /* 右侧留出复制/语言按钮的位置，避免首行文字被遮挡 */
   padding: 14px 84px 14px 16px;
-  background: #1e1e1e;
-  color: #d4d4d4;
   border-radius: 4px;
   font-family: Consolas, Monaco, "Courier New", monospace;
   font-size: 12.5px;
@@ -1004,18 +1003,6 @@
 .lc-code-lang {
   color: #6a9955;
   pointer-events: none;
-}
-
-.lc-json-line {
-  display: flex;
-}
-
-.lc-json-lineno {
-  color: #858585;
-  min-width: 26px;
-  text-align: right;
-  margin-right: 12px;
-  user-select: none;
 }
 
 /* ---------- 语言切换（Skills 页面） ---------- */

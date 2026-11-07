@@ -1,10 +1,13 @@
+const path = require('path');
+const PROJECT_ROOT = path.resolve(__dirname, '..');
+
 module.exports = {
   apps: [
     {
       name: 'leetcode-dashboard-frontend',
       script: 'npm',
       args: ['run', 'dev'],
-      cwd: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend',
+      cwd: path.join(PROJECT_ROOT, 'frontend'),
       instances: 1,
       exec_mode: 'fork',
       watch: false,
@@ -14,9 +17,9 @@ module.exports = {
         NODE_ENV: 'development',
         PORT: 52107
       },
-      log_file: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/pm2.log',
-      out_file: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/pm2.out.log',
-      error_file: '/Users/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/frontend/pm2.error.log',
+      log_file: path.join(PROJECT_ROOT, 'frontend', 'pm2.log'),
+      out_file: path.join(PROJECT_ROOT, 'frontend', 'pm2.out.log'),
+      error_file: path.join(PROJECT_ROOT, 'frontend', 'pm2.error.log'),
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
       merge_logs: true,
       autorestart: true,

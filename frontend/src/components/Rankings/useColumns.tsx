@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import type { KeyboardEvent } from 'react';
 import { Button } from 'antd';
 import { Link } from 'react-router-dom';
-import { EyeOutlined } from '@ant-design/icons';
+import { EyeOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { Problem } from '../../types';
 import { SortField, SortOrder, getDifficultyClass } from './types';
 import { OnlineCountBadge } from './OnlineCountBadge';
@@ -26,6 +26,11 @@ export const useColumns = ({
   onNavigate,
   flashIds
 }: UseColumnsProps) => {
+  // 生成算法演示URL
+  const getDemoUrl = (frontendId: string, slug: string) => {
+    return `https://fuck-algorithm.github.io/leetcode-${frontendId}-${slug}/`;
+  };
+
   // 排序交互挂在表头单元格上，避免用 render 函数生成 title（Antd 会在隐藏的
   // measure row 里重复调用，产生不可见的按钮）。
   const sortableColumn = (title: string, field: SortField) => {
@@ -175,6 +180,25 @@ export const useColumns = ({
           tone="total"
           flash={flashIds?.has(String(record.id))}
         />
+      ),
+    },
+    {
+      title: '演示',
+      key: 'demo',
+      width: 92,
+      align: 'center' as const,
+      render: (_: any, record: Problem) => (
+        <Button
+          type="link"
+          size="small"
+          icon={<PlayCircleOutlined />}
+          href={getDemoUrl(record.frontend_id, record.slug)}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+        >
+          演示
+        </Button>
       ),
     },
     {

@@ -1,5 +1,5 @@
-import { Table, Card, Row, Col, Statistic, Tag, Spin, Input } from 'antd';
-import { FireOutlined, UserOutlined, TrophyOutlined, BarChartOutlined } from '@ant-design/icons';
+import { Table, Card, Row, Col, Statistic, Tag, Spin, Input, Button } from 'antd';
+import { FireOutlined, UserOutlined, TrophyOutlined, BarChartOutlined, PlayCircleOutlined } from '@ant-design/icons';
 import { Problem } from '../types';
 import { useMemo, useState } from 'react';
 
@@ -11,9 +11,14 @@ interface DashboardProps {
 const Dashboard = ({ problems, loading }: DashboardProps) => {
   const [searchTerm, setSearchTerm] = useState('');
 
+  // 生成算法演示URL
+  const getDemoUrl = (frontendId: string, slug: string) => {
+    return `https://fuck-algorithm.github.io/leetcode-${frontendId}-${slug}/`;
+  };
+
   const stats = useMemo(() => {
     const totalOnline = problems.reduce((sum, p) => sum + (p.online_count || 0), 0);
-    const topProblem = problems.length > 0 
+    const topProblem = problems.length > 0
       ? problems.reduce((max, p) => (p.online_count || 0) > (max.online_count || 0) ? p : max, problems[0])
       : null;
     const averageOnline = problems.length > 0 ? Math.round(totalOnline / problems.length) : 0;
@@ -56,7 +61,7 @@ const Dashboard = ({ problems, loading }: DashboardProps) => {
       dataIndex: 'title',
       key: 'title',
       render: (title: string, record: Problem) => (
-        <a 
+        <a
           href={`https://leetcode.cn/problems/${record.slug}`}
           target="_blank"
           rel="noopener noreferrer"
@@ -93,6 +98,23 @@ const Dashboard = ({ problems, loading }: DashboardProps) => {
         <span className="online-count">
           <UserOutlined /> {count || 0}
         </span>
+      ),
+    },
+    {
+      title: 'Demo',
+      key: 'demo',
+      width: 100,
+      render: (_: any, record: Problem) => (
+        <Button
+          type="link"
+          icon={<PlayCircleOutlined />}
+          href={getDemoUrl(record.frontend_id, record.slug)}
+          target="_blank"
+          rel="noopener noreferrer"
+          size="small"
+        >
+          演示
+        </Button>
       ),
     },
     {

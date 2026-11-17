@@ -270,6 +270,10 @@ async function collectOne(context, problem, attempt) {
     await done;
   } catch (err) {
     state.errors.push('open:' + err.message);
+    // 浏览器上下文/浏览器本身已关闭时，后续重试一定也失败，标记出去让上层重建。
+    if (/context or browser has been closed|Target closed|browser has been disconnected/i.test(err.message)) {
+      state.contextDead = true;
+    }
     finish(false);
   } finally {
     clearTimeout(timer);
@@ -291,6 +295,7 @@ function mergeSummary(acc, next) {
   return {
     ...next,
     ok: acc.ok || next.ok,
+    contextDead: acc.contextDead || next.contextDead,
     frames: acc.frames + next.frames,
     handshakes: acc.handshakes.concat(next.handshakes),
     errors: acc.errors.concat(next.errors),
@@ -355,12 +360,18 @@ async function openBatch(batch) {
         const result = await collectOne(context, problem, attempts);
         merged = mergeSummary(merged, result);
         if (result.ok) break;
+        // 浏览器/上下文已经没了（例如显示服务被重建、进程被杀），
+        // 再用剩下的重试次数只会连续失败，交给上层换新浏览器重跑。
+        if (result.contextDead) break;
       }
       if (merged) {
         merged.attempts = attempts;
         summaries.push(merged);
         log(`[cycle] ${problem.slug}: ${merged.ok ? 'OK' : 'FAIL'} attempts=${attempts} count=${merged.last || '-'}` +
           (merged.ok ? '' : ` errs=[${merged.errors.slice(0, 4).join(' | ')}]`));
+      }
+      if (merged && merged.contextDead && !merged.ok) {
+        throw new Error('browser context died mid-batch');
       }
       if (shuttingDown) break;
     }
@@ -415,9 +426,23 @@ async function runCycle(cycle) {
     try {
       summary = await openBatch(batch);
     } catch (err) {
-      log(`[cycle ${cycle}] batch ${batchNo}/${batches} browser failed:`, err.message);
-      await sleep(CONFIG.retryPauseMs);
-      continue;
+      // 浏览器中途死掉：本批剩余题目一条都没采到，换一个新浏览器重跑一次，
+      // 只有整批连浏览器都起不来时才跳过（那种情况下一批同样会失败）。
+      if (/context died mid-batch/i.test(err.message)) {
+        log(`[cycle ${cycle}] batch ${batchNo}/${batches} context died, retrying with a fresh browser`);
+        await sleep(CONFIG.retryPauseMs);
+        try {
+          summary = await openBatch(batch);
+        } catch (err2) {
+          log(`[cycle ${cycle}] batch ${batchNo}/${batches} retry failed:`, err2.message);
+          await sleep(CONFIG.retryPauseMs);
+          continue;
+        }
+      } else {
+        log(`[cycle ${cycle}] batch ${batchNo}/${batches} browser failed:`, err.message);
+        await sleep(CONFIG.retryPauseMs);
+        continue;
+      }
     }
 
     const ok = summary.filter((item) => item.ok).length;

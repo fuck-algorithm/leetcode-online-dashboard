@@ -12,6 +12,14 @@ LOG=/tmp/com-collector-watchdog.log
 TUNNEL_PORT=16390
 TUNNEL_REMOTE=127.0.0.1:6379
 TUNNEL_HOST=leetcode-001
+# weston 的 socket 必须放在不会被系统清理的目录。
+# 2026-11-13 /tmp/xdg/wayland-99 被删（进程仍在、socket 已消失），
+# 旧检查只 pgrep 进程号，于是看门狗一直判定"正常"，
+# 而采集器每次启动 Chromium 都报 Failed to connect to Wayland display，
+# 国际站数据从 2026-11-14 00:46 起静默中断。因此改用 $XDG_RUNTIME_DIR
+# 并把存活判据改成 socket 文件本身。
+WK_RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+WK_SOCKET="$WK_RUNTIME/wayland-99"
 
 log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
 
@@ -20,13 +28,24 @@ exec 9>/tmp/com-collector-watchdog.lock
 flock -n 9 || exit 0
 
 # 1. wayland 显示环境（有头 Chromium 需要）
-if ! pgrep -f 'weston .*--socket=wayland-99' >/dev/null 2>&1; then
-  mkdir -p /tmp/xdg && chmod 700 /tmp/xdg
+# 判据是 socket 文件是否存在：进程活着但 socket 被删时依旧不可用。
+if [ ! -S "$WK_SOCKET" ]; then
+  if pgrep -f 'weston .*--socket=wayland-99' >/dev/null 2>&1; then
+    # socket 丢失但进程残留，先清掉再起，否则新实例会抢不到 socket 名。
+    pkill -f 'weston .*--socket=wayland-99' 2>/dev/null || true
+    sleep 1
+    log "killed stale weston (socket $WK_SOCKET missing)"
+  fi
+  mkdir -p "$WK_RUNTIME" && chmod 700 "$WK_RUNTIME"
   # 9>&-：不要把 watchdog 的 flock 文件描述符继承给常驻子进程，
   # 否则 autossh/weston 会一直持有锁，后续 cron 全部被 flock 挡住。
-  XDG_RUNTIME_DIR=/tmp/xdg setsid nohup weston --backend=headless-backend.so --socket=wayland-99 >>/tmp/weston.log 2>&1 9>&- &
+  XDG_RUNTIME_DIR="$WK_RUNTIME" setsid nohup weston --backend=headless-backend.so --socket=wayland-99 >>/tmp/weston.log 2>&1 9>&- &
   sleep 2
-  log "restarted weston (wayland-99)"
+  if [ -S "$WK_SOCKET" ]; then
+    log "restarted weston (socket $WK_SOCKET)"
+  else
+    log "ERROR: weston failed to create $WK_SOCKET (see /tmp/weston.log)"
+  fi
 fi
 
 # 2. SSH 隧道：collector 通过 127.0.0.1:16390 写线上 Redis

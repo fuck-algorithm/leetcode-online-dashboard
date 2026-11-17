@@ -20,7 +20,14 @@ if ! redis-cli -p 16390 ping >/dev/null 2>&1; then
 fi
 
 cd "$(dirname "$0")" || exit 1
-XDG_RUNTIME_DIR=/tmp/xdg WAYLAND_DISPLAY=wayland-99 DISPLAY= \
+# XDG_RUNTIME_DIR 不要用 /tmp/xdg：该目录下的 wayland-99 socket 曾被系统清掉，
+# 进程还活着但 Chromium 再也连不上显示屏。$XDG_RUNTIME_DIR 与 watchdog.sh 保持一致。
+WK_RUNTIME="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+if [ ! -S "$WK_RUNTIME/wayland-99" ]; then
+  echo "wayland socket $WK_RUNTIME/wayland-99 missing; run watchdog.sh to start weston"
+  exit 1
+fi
+XDG_RUNTIME_DIR="$WK_RUNTIME" WAYLAND_DISPLAY=wayland-99 DISPLAY= \
   REDIS_HOST=127.0.0.1 REDIS_PORT=16390 \
   COM_ATTEMPT_MS=12000 COM_ATTEMPTS_PER_SLUG=6 COM_BATCH_SIZE=10 \
   COM_CYCLE_PAUSE_MS=5000 COM_RETRY_PAUSE_MS=10000 \

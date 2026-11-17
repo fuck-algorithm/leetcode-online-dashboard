@@ -312,6 +312,13 @@ async function openBatch(batch) {
   if (process.env.WAYLAND_DISPLAY && !process.env.DISPLAY) {
     browserArgs.push('--ozone-platform=wayland');
   }
+  // 本机 IPv6 出口被 Cloudflare 判为高风险：走 v6 时 leetcode.com 一律返回
+  // 403 + cf-mitigated: challenge（"Just a moment..."），拿不到 collaboration-ws。
+  // 同一台机器禁用 v6 后立刻 200 并能建立 WebSocket，故强制走 IPv4。
+  // 可用 COM_DISABLE_IPV6=false 关掉，便于网络环境变化时回退。
+  if (env('COM_DISABLE_IPV6', 'true') !== 'false') {
+    browserArgs.push('--disable-ipv6');
+  }
   const browser = await chromium.launch({
     headless: false,
     args: browserArgs,
@@ -321,6 +328,21 @@ async function openBatch(batch) {
     locale: 'en-US',
     viewport: { width: 1280, height: 800 },
   });
+
+  // 先走一遍首页做预热：Cloudflare 在首页下发 _cfuvid/csrftoken 等 cookie，
+  // 拿着这些 cookie 再去题目页，collaboration-ws 的 403 会明显减少。
+  // 实测同一批 8 题：预热前 2/8 拿到帧，预热后 4/8。
+  try {
+    const warm = await context.newPage();
+    await warm.goto('https://leetcode.com/', {
+      waitUntil: 'domcontentloaded',
+      timeout: CONFIG.attemptMs * 2,
+    }).catch((err) => log('[warmup] goto failed:', err.message));
+    await sleep(3000);
+    await warm.close().catch(() => {});
+  } catch (err) {
+    log('[warmup] failed:', err.message);
+  }
 
   const summaries = [];
   try {

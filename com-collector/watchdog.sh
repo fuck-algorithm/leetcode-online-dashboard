@@ -45,23 +45,52 @@ rotate_log /tmp/com-collector-local.log
 rotate_log /tmp/weston.log
 
 # 1. wayland 显示环境（有头 Chromium 需要）
-# 判据是 socket 文件是否存在：进程活着但 socket 被删时依旧不可用。
-if [ ! -S "$WK_SOCKET" ]; then
-  if pgrep -f 'weston .*--socket=wayland-99' >/dev/null 2>&1; then
-    # socket 丢失但进程残留，先清掉再起，否则新实例会抢不到 socket 名。
+#
+# 判据不能只是"socket 文件存在"。2026-11-18 混沌测试实测踩到：
+# weston 被 kill -9 后，socket 文件残留在磁盘上（stale inode），
+# 新 weston 因 socket 名被占而启动失败，但 [ -S ] 看到旧文件仍判"正常"，
+# 结果 Chromium 永远报 Failed to connect to Wayland display —— 这正是
+# 2026-11-13 断流的形态。所以必须同时满足：
+#   a) socket 文件存在，且 b) 有活着的 weston 进程持有它。
+# 两者不满足时，清进程 + 删残留 socket，再重建。
+
+weston_pid() { pgrep -f 'weston --backend=headless-backend.so --socket=wayland-99' | head -1; }
+
+ready_weston() {
+  [ -S "$WK_SOCKET" ] || return 1
+  local pid; pid=$(weston_pid)
+  [ -n "$pid" ] || return 1
+  # 进程活着还不够，还要确认 socket 仍被这个进程持有（防 stale inode）。
+  [ -e "/proc/$pid/fd" ] || return 1
+  ls -l /proc/$pid/fd 2>/dev/null | grep -q "wayland-99" || return 1
+  return 0
+}
+
+if ! ready_weston; then
+  local_pid=$(pgrep -f 'weston .*--socket=wayland-99' | head -1)
+  if [ -n "${local_pid:-}" ]; then
     pkill -f 'weston .*--socket=wayland-99' 2>/dev/null || true
     sleep 1
-    log "killed stale weston (socket $WK_SOCKET missing)"
+    log "killed stale weston pid=$local_pid"
+  fi
+  # 关键：务必删掉残留的 socket 与 lock 文件，否则新 weston 起不来。
+  if [ -e "$WK_SOCKET" ] || [ -e "$WK_SOCKET.lock" ]; then
+    rm -f "$WK_SOCKET" "$WK_SOCKET.lock" 2>/dev/null
+    log "removed stale wayland socket files"
   fi
   mkdir -p "$WK_RUNTIME" && chmod 700 "$WK_RUNTIME"
   # 9>&-：不要把 watchdog 的 flock 文件描述符继承给常驻子进程，
   # 否则 autossh/weston 会一直持有锁，后续 cron 全部被 flock 挡住。
   XDG_RUNTIME_DIR="$WK_RUNTIME" setsid nohup weston --backend=headless-backend.so --socket=wayland-99 >>/tmp/weston.log 2>&1 9>&- &
-  sleep 2
-  if [ -S "$WK_SOCKET" ]; then
-    log "restarted weston (socket $WK_SOCKET)"
+  # weston 起 headless 后端 + 加载 desktop-shell 需要一点时间，等 socket 真就绪。
+  for _ in 1 2 3 4 5 6 7 8 9 10; do
+    sleep 1
+    ready_weston && break
+  done
+  if ready_weston; then
+    log "restarted weston (socket $WK_SOCKET healthy)"
   else
-    log "ERROR: weston failed to create $WK_SOCKET (see /tmp/weston.log)"
+    log "ERROR: weston did not become ready (socket=$WK_SOCKET, see /tmp/weston.log)"
   fi
 fi
 

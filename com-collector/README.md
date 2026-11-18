@@ -101,3 +101,31 @@ systemctl --user list-timers com-collector-watchdog.timer
 - PID 文件 `/tmp/com-collector-local.pid`
 - 启动时刻 `/tmp/com-collector-started-at`（宽限期用）
 - 采集日志 `/tmp/com-collector-local.log`
+
+### 单实例保护
+
+`start-com-collector-local.sh` 有两层保护，避免重复拉起导致两套浏览器互相干扰：
+
+1. PID 文件在且进程活着 -> 直接退出
+2. PID 文件丢失或进程换过 cwd -> 按工作目录兜底识别
+
+外面再套 `flock`，兜住定时器与手动执行撞在同一秒的情况。
+
+### 故障排查速查
+
+| 现象 | 先查什么 |
+|---|---|
+| 数据不更新（`STALE`） | `tail /tmp/com-collector-local.log` 看是否大量 `403` |
+| `UNKNOWN` | 隧道：`redis-cli -p 16390 ping`；断了就 `./watchdog.sh` |
+| 采集器反复重启 | `grep "grace" /tmp/com-collector-watchdog.log`，确认是否宽限期太短 |
+| 内存持续上涨 | `pgrep -f ms-playwright/chromium`，清理孤儿浏览器 |
+| 浏览器起不来 | `ls -l /run/user/1000/wayland-99`，socket 不在就 `./watchdog.sh` |
+
+### 已知限制
+
+- CF 的挑战是**概率性**的，单轮不可能 100% 覆盖；靠轮末补采与下一轮追平，
+  长期看覆盖率会稳定在高位，但不会恒等于 100%。
+- 采集器依赖本机家宽 IP 的信誉。**换到机房/云服务器 IP 会被 CF 全拦**
+  （实测 0/10），所以它不能搬到线上服务器。
+- 换了网络环境（比如换了宽带、开了 VPN）后先去 `./health-check.sh` 看是否
+  还在 `OK`，必要时用 `COM_DISABLE_IPV6=false` 回退 IPv4 禁用策略。

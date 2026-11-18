@@ -392,15 +392,20 @@ class BrowserSession {
 }
 
 // 一批题目在同一个常驻浏览器里依次采集。上下文中途死掉时抛错，由上层重跑。
-async function runBatch(session, batch) {
+//
+// finishOnShutdown：收到 SIGTERM 后仍把这一批跑完。补采阶段用它——
+// 那时整轮已经接近尾声，被打断会让本轮失败的题白等一整轮才重试；
+// 而下一轮通常几分钟后才到，中间这段时间数据就停留在低位。
+async function runBatch(session, batch, { finishOnShutdown = false } = {}) {
+  const stopping = () => shuttingDown && !finishOnShutdown;
   const context = await session.ensure();
   const summaries = [];
   for (const problem of batch) {
-    if (shuttingDown) break;
+    if (stopping()) break;
     let merged = null;
     let attempts = 0;
     for (let i = 0; i < CONFIG.attemptsPerSlug; i++) {
-      if (shuttingDown) break;
+      if (stopping()) break;
       attempts++;
       const result = await collectOne(context, problem, attempts);
       merged = mergeSummary(merged, result);
@@ -521,12 +526,14 @@ async function runCycle(cycle) {
     // 轮末补采：本轮失败的题再用同一个常驻浏览器过一遍。
     // Cloudflare 的挑战是概率性的，同一题隔一小段时间往往就能拿到；
     // 早先的实现要等下一整轮才重来，导致个别题覆盖率长期偏低。
-    if (failedProblems.length && !shuttingDown) {
+    if (failedProblems.length) {
       log(`[cycle ${cycle}] retrying ${failedProblems.length} failed problem(s)`);
       await sleep(CONFIG.retryPauseMs);
       let retrySummary = [];
       try {
-        retrySummary = await runBatch(session, failedProblems);
+        // 即使中途收到 SIGTERM 也把补采跑完：这批题目本来就已经失败过一次，
+        // 半途放弃等于白白浪费一整轮的等待。
+        retrySummary = await runBatch(session, failedProblems, { finishOnShutdown: true });
       } catch (err) {
         log(`[cycle ${cycle}] retry pass failed:`, err.message);
       }

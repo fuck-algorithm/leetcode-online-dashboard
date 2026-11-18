@@ -94,6 +94,14 @@ collector_pid() {
 }
 
 if ! collector_pid >/dev/null; then
+  # collector 已经不在，但它之前常驻的 Chromium 可能还挂着（父进程变成 systemd
+  # 的僵尸）。不清掉的话下次启动会叠加，几个小时后把内存吃穿。
+  # 只清 playwright 专用缓存目录下的进程，不碰用户自己开的浏览器。
+  if pgrep -f "ms-playwright/chromium" >/dev/null 2>&1; then
+    pkill -f "ms-playwright/chromium" 2>/dev/null || true
+    sleep 1
+    log "cleaned orphan playwright chromium"
+  fi
   bash "$SCRIPT_DIR/start-com-collector-local.sh" >> "$LOG" 2>&1 9>&-
   if collector_pid >/dev/null; then
     log "collector started pid=$(cat "$PIDFILE" 2>/dev/null)"

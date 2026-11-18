@@ -1,0 +1,103 @@
+# COM 采集器（leetcode.com 在线人数）
+
+采集 leetcode.com 各题在线人数，写入线上 Redis（经 SSH 隧道 16390），
+再由 Go 后端落库。
+
+## 为什么必须用真实浏览器
+
+任何"轻量"方案都被 Cloudflare 拦掉了。2026-11-18 实测：
+
+| 方式 | 结果 |
+|---|---|
+| 裸 WebSocket 握手（Origin/Referer/UA 齐全） | 403 `cf-mitigated: challenge` |
+| curl_cffi 模拟 Chrome / Safari TLS 指纹 | 403 |
+| 拿浏览器真 cookie 去握手 WS | 403 |
+| 手工实现 h2 RFC 8441 WS CONNECT | 400 |
+| 浏览器自己握手 | **101，正常收到数字帧** |
+| 同一 Chromium 改 `headless: true` | **全 403（0/8）** |
+
+最后一行是决定性的：同一个浏览器只把无头打开就全挂，说明 CF 判的不只是
+UA/TLS，还有有头渲染环境暴露的信号。
+
+**不需要境外 IP，甚至更差**（同机同浏览器只换出口）：
+
+- 北京家宽：4/10 拿到帧
+- 美国机房（机场 hysteria2 落地）：0/10，页面直接被挑战
+
+条件是「信誉尚可的住宅/家宽 IP + 有头浏览器」，与地理位置无关。这也解释了
+为什么采集器跑在用户本机、而不是 `leetcode-001`（西安机房 IP，会被全拦）。
+
+## 可靠性设计
+
+历史教训：2026-11-13 断流埋了一周没人发现，因为所有监控都只查"进程活着吗"。
+**进程存活 != 数据在流动**。
+
+### 1. 数据新鲜度判据（`health-check.sh`）
+
+只认一个指标：Redis 里 COM 数据的最大 `last_updated` 与当前时间的差。
+
+```
+./health-check.sh
+# OK age=1m keys=100 ...
+# STALE age=42m threshold=15m keys=100 ...   （退出码 1）
+# UNKNOWN redis tunnel 16390 unreachable      （退出码 2，不误报断流）
+```
+
+隧道不通时判 UNKNOWN 而不是 STALE，避免把网络问题误当成采集故障。
+
+### 2. 自愈（`watchdog.sh`，由 systemd timer 每分钟触发）
+
+按顺序检查并修复：
+
+1. **wayland socket**：判据是 `$XDG_RUNTIME_DIR/wayland-99` 这个 socket 文件存不存在，
+   不是 weston 进程号。进程活着但 socket 被删时依旧不可用（这就是 11-13 的故障）。
+2. **SSH 隧道 16390**：不通则重建 autossh/ssh。
+3. **采集器进程**：不在则拉起；拉起前先清孤儿 Chromium（常驻模式被强杀后，
+   Chromium 会挂到 systemd 下不退出，堆积几轮会吃穿内存）。
+4. **数据新鲜度**：陈旧则整条链路重建（先停旧进程再起新的）。
+   刚启动 5 分钟内不判陈旧（`STARTUP_GRACE`），否则会误杀正在预热的进程。
+
+### 3. systemd 托管（替代 cron）
+
+- `~/.config/systemd/user/com-collector-watchdog.{service,timer}`
+- timer 每分钟触发，`Persistent=true` 让关机错过的调度在开机后补跑
+- **`KillMode=none` 必须保留**：默认的 `control-group` 会在 oneshot 结束时
+  把 watchdog 拉起的 collector 一并杀掉，导致采集器刚起就被 SIGTERM
+- 用户已设 `Linger=yes`，登出后服务仍存活
+
+### 4. 日志轮转
+
+`watchdog.sh` 开头把 `/tmp/com-collector-local.log`、`/tmp/weston.log`
+超过 20MB 的截到 5MB。/tmp 写满会连带挤掉 weston 的 socket，等于自己制造断流。
+
+## 采集器内部策略（`collector.js`）
+
+- **浏览器整轮常驻**：一轮只 launch 一次 Chromium，仅在上下文真死时重建
+  （`isConnected()` + 开页面探测双重判据）
+- **预热**：每次新建上下文先访问首页拿 CF 的 cookie（实测 403 显著减少）
+- **轮末补采**：本轮失败的题在周期末尾再跑一遍。CF 挑战是概率性的，
+  同一题隔一会儿往往就过（实测某题首轮 3 次全 403，补采 2 次就拿到）
+- **重试退避**：失败后间隔 2s/4s/5s 递增再试，背靠背连打会持续触发挑战
+
+## 运维
+
+```bash
+# 健康状态
+./health-check.sh
+
+# 手动跑一次看门狗
+./watchdog.sh
+
+# 看门狗日志（含 health 心跳与自愈记录）
+tail -f /tmp/com-collector-watchdog.log
+
+# systemd
+systemctl --user status com-collector-watchdog.timer
+systemctl --user list-timers com-collector-watchdog.timer
+```
+
+关键文件：
+
+- PID 文件 `/tmp/com-collector-local.pid`
+- 启动时刻 `/tmp/com-collector-started-at`（宽限期用）
+- 采集日志 `/tmp/com-collector-local.log`

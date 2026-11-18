@@ -23,9 +23,26 @@ WK_SOCKET="$WK_RUNTIME/wayland-99"
 
 log() { echo "$(date '+%F %T') $*" >> "$LOG"; }
 
+# 采集日志轮转。/tmp 曾堆到 240M+，而 /tmp 写满会连带把 weston 的 socket
+# 及其它临时文件挤掉，等于自己制造断流。超过 20MB 就保留尾部 5MB。
+rotate_log() {
+  local f="$1" max=$((20 * 1024 * 1024)) keep=$((5 * 1024 * 1024))
+  [ -f "$f" ] || return 0
+  local sz
+  sz=$(stat -c%s "$f" 2>/dev/null || echo 0)
+  if [ "$sz" -gt "$max" ]; then
+    tail -c "$keep" "$f" > "$f.tmp" 2>/dev/null && mv "$f.tmp" "$f" 2>/dev/null
+    log "rotated $(basename "$f") from $((sz / 1024 / 1024))MB"
+  fi
+}
+
 # 防止 cron 重叠执行
 exec 9>/tmp/com-collector-watchdog.lock
 flock -n 9 || exit 0
+
+# 采集日志轮转（放在最前面，任何分支都不会因为日志过大而写爆 /tmp）
+rotate_log /tmp/com-collector-local.log
+rotate_log /tmp/weston.log
 
 # 1. wayland 显示环境（有头 Chromium 需要）
 # 判据是 socket 文件是否存在：进程活着但 socket 被删时依旧不可用。
@@ -93,19 +110,93 @@ collector_pid() {
   return 1
 }
 
-if ! collector_pid >/dev/null; then
-  # collector 已经不在，但它之前常驻的 Chromium 可能还挂着（父进程变成 systemd
-  # 的僵尸）。不清掉的话下次启动会叠加，几个小时后把内存吃穿。
-  # 只清 playwright 专用缓存目录下的进程，不碰用户自己开的浏览器。
+# 清掉常驻模式留下的 Chromium 残留。collector 被强杀后，它起的 Chromium
+# 父子进程会挂到 systemd 下不退出；下次拉起新 collector 时就会再起一整套，
+# 堆积几轮就把内存吃穿。只匹配 playwright 专用缓存目录，不碰用户自己的浏览器。
+clean_chromium() {
   if pgrep -f "ms-playwright/chromium" >/dev/null 2>&1; then
     pkill -f "ms-playwright/chromium" 2>/dev/null || true
     sleep 1
     log "cleaned orphan playwright chromium"
   fi
+}
+
+# 采集器启动时刻（unix 秒）。用于给刚启动的进程一个宽限期：
+# 冷启动 + 预热首页要十几秒到半分钟，这段时间数据还没更新是正常的，
+# 不设宽限期的话健康检查会把"正在启动"误判成"断流"，反复重启，
+# 反而永远起不来（2026-11-18 实测踩到过）。
+STARTED_AT_FILE=/tmp/com-collector-started-at
+
+start_collector() {
+  clean_chromium
   bash "$SCRIPT_DIR/start-com-collector-local.sh" >> "$LOG" 2>&1 9>&-
   if collector_pid >/dev/null; then
+    date +%s > "$STARTED_AT_FILE"
     log "collector started pid=$(cat "$PIDFILE" 2>/dev/null)"
-  else
-    log "ERROR: collector failed to start (see /tmp/com-collector-local.log)"
+    return 0
+  fi
+  log "ERROR: collector failed to start (see /tmp/com-collector-local.log)"
+  return 1
+}
+
+# 采集器进程已存在但启动时间未知（比如重启机器后），补记一次当前时间，
+# 让宽限期从此刻算起，避免刚接手就误杀。
+collector_pid >/dev/null && [ ! -f "$STARTED_AT_FILE" ] && date +%s > "$STARTED_AT_FILE"
+
+if ! collector_pid >/dev/null; then
+  start_collector
+fi
+
+# 启动宽限期（默认 5 分钟）：覆盖冷启动 + 一整圈采集的启动阶段。
+STARTUP_GRACE="${STARTUP_GRACE:-300}"
+
+# 4. 数据新鲜度：进程在 != 数据在流动。
+# 2026-11-13 那次断流埋了一个星期，就是因为只查了进程。
+# 这里按 Redis 里 COM 数据的最后更新时间判断，陈旧就整条链路重建：
+# 显示环境没了浏览器起不来、隧道没了写不进去，都会表现为"数据不更新"，
+# 但进程本身可能活得好好的，所以不能只靠进程判据。
+FRESH="$SCRIPT_DIR/health-check.sh"
+STALE_MINUTES="${STALE_MINUTES:-15}"
+
+if [ -x "$FRESH" ]; then
+  status=$(STALE_MINUTES="$STALE_MINUTES" "$FRESH" 2>&1)
+  rc=$?
+
+  # 刚启动的采集器还在预热，此时"数据陈旧"是正常的，跳过重建。
+  started_at=$(cat "$STARTED_AT_FILE" 2>/dev/null || echo 0)
+  uptime=$(( $(date +%s) - started_at ))
+  if [ "$rc" -ne 0 ] && [ "$uptime" -lt "$STARTUP_GRACE" ]; then
+    log "health $status (grace ${uptime}s/${STARTUP_GRACE}s, skip rebuild)"
+    rc=0
+    status="GRACE $status"
+  fi
+
+  if [ "$rc" -ne 0 ]; then
+    case "$status" in
+      UNKNOWN*)
+        # 隧道不通已经在上一步处理过，这里只记日志，避免重复重启。
+        log "health UNKNOWN: $status"
+        ;;
+      *)
+        log "health $status -> rebuilding collector"
+        # 先停再起，确保新进程拿到干净的浏览器与连接。
+        pid=$(collector_pid 2>/dev/null || true)
+        if [ -n "${pid:-}" ]; then
+          kill "$pid" 2>/dev/null || true
+          for _ in 1 2 3 4 5 6 7 8 9 10; do
+            kill -0 "$pid" 2>/dev/null || break
+            sleep 1
+          done
+          kill -9 "$pid" 2>/dev/null || true
+          log "stopped stale collector pid=$pid"
+        fi
+        start_collector
+        ;;
+    esac
+  fi
+
+  # 每 30 分钟记一次正常心跳，便于回看"到底什么时候是好的"。
+  if [ "$rc" -eq 0 ] && [ $(( $(date '+%M') % 30 )) -eq 0 ]; then
+    log "health $status"
   fi
 fi

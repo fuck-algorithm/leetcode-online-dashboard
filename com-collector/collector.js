@@ -304,8 +304,14 @@ function mergeSummary(acc, next) {
   };
 }
 
-async function openBatch(batch) {
-  const browserArgs = [
+// 浏览器会话：整轮采集复用同一个浏览器，只有在上下文真的死掉时才重建。
+//
+// 为什么常驻：Cloudflare 只放行真实有头浏览器发出的 WebSocket 升级
+// （实测同一 Chromium 改 headless 后 403；裸 WS、curl_cffi 指纹模拟、
+// cookie 复用全部 403，只有有头浏览器能拿到 101）。既然浏览器绕不开，
+// 就让冷启动只发生一次，而不是每 10 题重启一次。
+function browserArgs() {
+  const args = [
     '--no-sandbox',
     '--disable-dev-shm-usage',
     '--disable-gpu',
@@ -315,69 +321,109 @@ async function openBatch(batch) {
   // 无 X11 但有 weston/wayland 时（headless 服务器常见组合），
   // 显式指定 ozone 平台走 wayland，否则 chromium 会因找不到 $DISPLAY 直接退出。
   if (process.env.WAYLAND_DISPLAY && !process.env.DISPLAY) {
-    browserArgs.push('--ozone-platform=wayland');
+    args.push('--ozone-platform=wayland');
   }
-  // 本机 IPv6 出口被 Cloudflare 判为高风险：走 v6 时 leetcode.com 一律返回
-  // 403 + cf-mitigated: challenge（"Just a moment..."），拿不到 collaboration-ws。
-  // 同一台机器禁用 v6 后立刻 200 并能建立 WebSocket，故强制走 IPv4。
+  // 本机 IPv6 出口被 Cloudflare 挑战：走 v6 时 leetcode.com 一律 403
+  // + cf-mitigated: challenge，拿不到 collaboration-ws。禁用 v6 后立刻正常。
   // 可用 COM_DISABLE_IPV6=false 关掉，便于网络环境变化时回退。
   if (env('COM_DISABLE_IPV6', 'true') !== 'false') {
-    browserArgs.push('--disable-ipv6');
+    args.push('--disable-ipv6');
   }
-  const browser = await chromium.launch({
-    headless: false,
-    args: browserArgs,
-  });
+  return args;
+}
 
-  const context = await browser.newContext({
-    locale: 'en-US',
-    viewport: { width: 1280, height: 800 },
-  });
-
-  // 先走一遍首页做预热：Cloudflare 在首页下发 _cfuvid/csrftoken 等 cookie，
-  // 拿着这些 cookie 再去题目页，collaboration-ws 的 403 会明显减少。
-  // 实测同一批 8 题：预热前 2/8 拿到帧，预热后 4/8。
-  try {
-    const warm = await context.newPage();
-    await warm.goto('https://leetcode.com/', {
-      waitUntil: 'domcontentloaded',
-      timeout: CONFIG.attemptMs * 2,
-    }).catch((err) => log('[warmup] goto failed:', err.message));
-    await sleep(3000);
-    await warm.close().catch(() => {});
-  } catch (err) {
-    log('[warmup] failed:', err.message);
+class BrowserSession {
+  constructor() {
+    this.browser = null;
+    this.context = null;
   }
 
-  const summaries = [];
-  try {
-    for (const problem of batch) {
-      let merged = null;
-      let attempts = 0;
-      for (let i = 0; i < CONFIG.attemptsPerSlug; i++) {
-        if (shuttingDown) break;
-        attempts++;
-        const result = await collectOne(context, problem, attempts);
-        merged = mergeSummary(merged, result);
-        if (result.ok) break;
-        // 浏览器/上下文已经没了（例如显示服务被重建、进程被杀），
-        // 再用剩下的重试次数只会连续失败，交给上层换新浏览器重跑。
-        if (result.contextDead) break;
-      }
-      if (merged) {
-        merged.attempts = attempts;
-        summaries.push(merged);
-        log(`[cycle] ${problem.slug}: ${merged.ok ? 'OK' : 'FAIL'} attempts=${attempts} count=${merged.last || '-'}` +
-          (merged.ok ? '' : ` errs=[${merged.errors.slice(0, 4).join(' | ')}]`));
-      }
-      if (merged && merged.contextDead && !merged.ok) {
-        throw new Error('browser context died mid-batch');
-      }
-      if (shuttingDown) break;
+  alive() {
+    return !!(this.context && this.browser && this.browser.isConnected());
+  }
+
+  // 真正的可用性探测：进程连着不代表上下文还能开页面。
+  // 批次之间浏览器被外部杀掉（weston 重建、被 SIGKILL）时，
+  // isConnected() 可能滞后，开一个页面探一下最稳。
+  async usable() {
+    if (!this.alive()) return false;
+    try {
+      const probe = await this.context.newPage();
+      await probe.close().catch(() => {});
+      return true;
+    } catch (_) {
+      return false;
     }
-  } finally {
-    try { await context.close(); } catch (_) {}
-    try { await browser.close(); } catch (_) {}
+  }
+
+  async ensure() {
+    if (await this.usable()) return this.context;
+    await this.close();
+    this.browser = await chromium.launch({ headless: false, args: browserArgs() });
+    this.context = await this.browser.newContext({
+      locale: 'en-US',
+      viewport: { width: 1280, height: 800 },
+    });
+    // 先走一遍首页做预热：Cloudflare 在首页下发 _cfuvid/csrftoken 等 cookie，
+    // 拿着这些 cookie 再去题目页，collaboration-ws 的 403 会明显减少。
+    // 实测同一批 8 题：预热前 2/8 拿到帧，预热后 4/8。
+    try {
+      const warm = await this.context.newPage();
+      await warm.goto('https://leetcode.com/', {
+        waitUntil: 'domcontentloaded',
+        timeout: CONFIG.attemptMs * 2,
+      }).catch((err) => log('[warmup] goto failed:', err.message));
+      await sleep(3000);
+      await warm.close().catch(() => {});
+    } catch (err) {
+      log('[warmup] failed:', err.message);
+    }
+    return this.context;
+  }
+
+  async close() {
+    const browser = this.browser;
+    const context = this.context;
+    this.browser = null;
+    this.context = null;
+    try { if (context) await context.close(); } catch (_) {}
+    try { if (browser) await browser.close(); } catch (_) {}
+  }
+}
+
+// 一批题目在同一个常驻浏览器里依次采集。上下文中途死掉时抛错，由上层重跑。
+async function runBatch(session, batch) {
+  const context = await session.ensure();
+  const summaries = [];
+  for (const problem of batch) {
+    if (shuttingDown) break;
+    let merged = null;
+    let attempts = 0;
+    for (let i = 0; i < CONFIG.attemptsPerSlug; i++) {
+      if (shuttingDown) break;
+      attempts++;
+      const result = await collectOne(context, problem, attempts);
+      merged = mergeSummary(merged, result);
+      if (result.ok) break;
+      // 上下文已经没了（显示服务被重建、进程被杀），再重试只会连续失败。
+      if (result.contextDead) break;
+      // 失败后在重试之间喘口气：背靠背连打会让 Cloudflare 挑战持续生效，
+      // 隔一小段时间再来往往就能过。退避递增，最多到 retryPauseMs 的一半。
+      if (i < CONFIG.attemptsPerSlug - 1) {
+        const backoff = Math.min(CONFIG.retryPauseMs / 2, 2000 + i * 2000);
+        if (backoff > 0) await sleep(backoff);
+      }
+    }
+    if (merged) {
+      merged.attempts = attempts;
+      summaries.push(merged);
+      log(`[cycle] ${problem.slug}: ${merged.ok ? 'OK' : 'FAIL'} attempts=${attempts} count=${merged.last || '-'}` +
+        (merged.ok ? '' : ` errs=[${merged.errors.slice(0, 4).join(' | ')}]`));
+    }
+    if (merged && merged.contextDead && !merged.ok) {
+      await session.close();
+      throw new Error('browser context died mid-batch');
+    }
   }
   return summaries;
 }
@@ -415,53 +461,87 @@ async function runCycle(cycle) {
   const ordered = await orderProblems();
   const list = ordered.list;
   const batches = Math.ceil(list.length / CONFIG.batchSize);
+  const session = new BrowserSession();
+  const failedProblems = [];
   log(`[cycle ${cycle}] starting, ${ordered.missing}/${list.length} COM keys missing`);
 
-  for (let index = 0; index < list.length; index += CONFIG.batchSize) {
-    if (shuttingDown) break;
-    const batch = list.slice(index, index + CONFIG.batchSize);
-    const batchNo = Math.floor(index / CONFIG.batchSize) + 1;
+  try {
+    for (let index = 0; index < list.length; index += CONFIG.batchSize) {
+      if (shuttingDown) break;
+      const batch = list.slice(index, index + CONFIG.batchSize);
+      const batchNo = Math.floor(index / CONFIG.batchSize) + 1;
 
-    let summary;
-    try {
-      summary = await openBatch(batch);
-    } catch (err) {
-      // 浏览器中途死掉：本批剩余题目一条都没采到，换一个新浏览器重跑一次，
-      // 只有整批连浏览器都起不来时才跳过（那种情况下一批同样会失败）。
-      if (/context died mid-batch/i.test(err.message)) {
-        log(`[cycle ${cycle}] batch ${batchNo}/${batches} context died, retrying with a fresh browser`);
-        await sleep(CONFIG.retryPauseMs);
-        try {
-          summary = await openBatch(batch);
-        } catch (err2) {
-          log(`[cycle ${cycle}] batch ${batchNo}/${batches} retry failed:`, err2.message);
+      let summary;
+      try {
+        summary = await runBatch(session, batch);
+      } catch (err) {
+        // 上下文中途死掉：本批剩余题目一条都没采到，换一个新浏览器重跑一次。
+        if (/context died mid-batch/i.test(err.message)) {
+          log(`[cycle ${cycle}] batch ${batchNo}/${batches} context died, retrying with a fresh browser`);
+          await sleep(CONFIG.retryPauseMs);
+          try {
+            summary = await runBatch(session, batch);
+          } catch (err2) {
+            log(`[cycle ${cycle}] batch ${batchNo}/${batches} retry failed:`, err2.message);
+            await sleep(CONFIG.retryPauseMs);
+            continue;
+          }
+        } else {
+          log(`[cycle ${cycle}] batch ${batchNo}/${batches} browser failed:`, err.message);
+          await session.close();
           await sleep(CONFIG.retryPauseMs);
           continue;
         }
-      } else {
-        log(`[cycle ${cycle}] batch ${batchNo}/${batches} browser failed:`, err.message);
-        await sleep(CONFIG.retryPauseMs);
-        continue;
+      }
+
+      const ok = summary.filter((item) => item.ok).length;
+      const frames = summary.reduce((sum, item) => sum + item.frames, 0);
+      const attempts = summary.reduce((sum, item) => sum + (item.attempts || 0), 0);
+      totalOK += ok;
+      totalFrames += frames;
+      totalAttempts += attempts;
+      for (const item of summary) {
+        if (item.ok) continue;
+        const problem = bySlug.get(item.slug);
+        if (problem) failedProblems.push(problem);
+      }
+      const failed = summary.filter((item) => !item.ok)
+        .map((item) => `${item.slug}(hs=${item.handshakes.length},f=${item.frames},e=${item.errors.length})`);
+      log(`[cycle ${cycle}] batch ${batchNo}/${batches}: ${ok}/${batch.length} pages, ${frames} frames, ${attempts} attempts` +
+        (failed.length ? `, failed=${failed.join(' | ')}` : ''));
+
+      const totals = await refreshTotals();
+      if (totals) {
+        log(`[cycle ${cycle}] totals CN=${totals.cnTotal} COM=${totals.comTotal} unified=${totals.unified}`);
+      }
+
+      await sleep(CONFIG.cyclePauseMs);
+    }
+
+    // 轮末补采：本轮失败的题再用同一个常驻浏览器过一遍。
+    // Cloudflare 的挑战是概率性的，同一题隔一小段时间往往就能拿到；
+    // 早先的实现要等下一整轮才重来，导致个别题覆盖率长期偏低。
+    if (failedProblems.length && !shuttingDown) {
+      log(`[cycle ${cycle}] retrying ${failedProblems.length} failed problem(s)`);
+      await sleep(CONFIG.retryPauseMs);
+      let retrySummary = [];
+      try {
+        retrySummary = await runBatch(session, failedProblems);
+      } catch (err) {
+        log(`[cycle ${cycle}] retry pass failed:`, err.message);
+      }
+      const ok = retrySummary.filter((item) => item.ok).length;
+      totalOK += ok;
+      totalFrames += retrySummary.reduce((sum, item) => sum + item.frames, 0);
+      totalAttempts += retrySummary.reduce((sum, item) => sum + (item.attempts || 0), 0);
+      log(`[cycle ${cycle}] retry pass: ${ok}/${failedProblems.length} recovered`);
+      const totals = await refreshTotals();
+      if (totals) {
+        log(`[cycle ${cycle}] totals CN=${totals.cnTotal} COM=${totals.comTotal} unified=${totals.unified}`);
       }
     }
-
-    const ok = summary.filter((item) => item.ok).length;
-    const frames = summary.reduce((sum, item) => sum + item.frames, 0);
-    const attempts = summary.reduce((sum, item) => sum + (item.attempts || 0), 0);
-    totalOK += ok;
-    totalFrames += frames;
-    totalAttempts += attempts;
-    const failed = summary.filter((item) => !item.ok)
-      .map((item) => `${item.slug}(hs=${item.handshakes.length},f=${item.frames},e=${item.errors.length})`);
-    log(`[cycle ${cycle}] batch ${batchNo}/${batches}: ${ok}/${batch.length} pages, ${frames} frames, ${attempts} attempts` +
-      (failed.length ? `, failed=${failed.join(' | ')}` : ''));
-
-    const totals = await refreshTotals();
-    if (totals) {
-      log(`[cycle ${cycle}] totals CN=${totals.cnTotal} COM=${totals.comTotal} unified=${totals.unified}`);
-    }
-
-    await sleep(CONFIG.cyclePauseMs);
+  } finally {
+    await session.close();
   }
 
   log(`[cycle ${cycle}] complete: ${totalOK}/${list.length} pages OK, ${totalFrames} frames, ${totalAttempts} attempts`);

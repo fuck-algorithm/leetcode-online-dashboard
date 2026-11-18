@@ -66,31 +66,36 @@ ready_weston() {
   return 0
 }
 
+# weston 现在由 systemd 用户服务 wayland-headless.service 托管（Restart=always
+# + ExecStopPost 清 socket），这里不再自己 launch——两套拉起机制会互相抢 socket。
+# watchdog 只做兜底：当 systemd 服务本身卡死/没起来时，把服务踢醒一次。
+WESTON_UNIT=wayland-headless.service
+
+weston_systemd_active() {
+  systemctl --user is-active "$WESTON_UNIT" >/dev/null 2>&1
+}
+
 if ! ready_weston; then
-  local_pid=$(pgrep -f 'weston .*--socket=wayland-99' | head -1)
-  if [ -n "${local_pid:-}" ]; then
-    pkill -f 'weston .*--socket=wayland-99' 2>/dev/null || true
-    sleep 1
-    log "killed stale weston pid=$local_pid"
+  if weston_systemd_active; then
+    # 服务"是 active"但 socket 不可用：典型是 stale inode 卡住，
+    # 只有重启服务才能清干净（systemd 的 Restart 不会因为这种情况触发）。
+    log "weston unit active but socket unusable -> restarting unit"
+    systemctl --user restart "$WESTON_UNIT" 2>/dev/null || true
+  else
+    log "weston unit not active -> starting unit"
+    systemctl --user start "$WESTON_UNIT" 2>/dev/null || true
   fi
-  # 关键：务必删掉残留的 socket 与 lock 文件，否则新 weston 起不来。
-  if [ -e "$WK_SOCKET" ] || [ -e "$WK_SOCKET.lock" ]; then
-    rm -f "$WK_SOCKET" "$WK_SOCKET.lock" 2>/dev/null
-    log "removed stale wayland socket files"
-  fi
-  mkdir -p "$WK_RUNTIME" && chmod 700 "$WK_RUNTIME"
-  # 9>&-：不要把 watchdog 的 flock 文件描述符继承给常驻子进程，
-  # 否则 autossh/weston 会一直持有锁，后续 cron 全部被 flock 挡住。
-  XDG_RUNTIME_DIR="$WK_RUNTIME" setsid nohup weston --backend=headless-backend.so --socket=wayland-99 >>/tmp/weston.log 2>&1 9>&- &
-  # weston 起 headless 后端 + 加载 desktop-shell 需要一点时间，等 socket 真就绪。
   for _ in 1 2 3 4 5 6 7 8 9 10; do
     sleep 1
     ready_weston && break
   done
   if ready_weston; then
-    log "restarted weston (socket $WK_SOCKET healthy)"
+    log "weston ready (socket $WK_SOCKET healthy, managed by $WESTON_UNIT)"
   else
-    log "ERROR: weston did not become ready (socket=$WK_SOCKET, see /tmp/weston.log)"
+    log "ERROR: weston still not ready after restart (unit=$WESTON_UNIT, socket=$WK_SOCKET)"
+    # 最后手段：直接清残留 socket，让 systemd 的 Restart=always 重新拉起
+    rm -f "$WK_SOCKET" "$WK_SOCKET.lock" 2>/dev/null
+    systemctl --user restart "$WESTON_UNIT" 2>/dev/null || true
   fi
 fi
 

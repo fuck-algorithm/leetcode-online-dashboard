@@ -79,6 +79,31 @@ UA/TLS，还有有头渲染环境暴露的信号。
   同一题隔一会儿往往就过（实测某题首轮 3 次全 403，补采 2 次就拿到）
 - **重试退避**：失败后间隔 2s/4s/5s 递增再试，背靠背连打会持续触发挑战
 
+## 混沌测试（验证自愈真的兜得住）
+
+`chaos-test.sh` 注入故障后**完全不干预**，只等 systemd timer 自己救活。
+恢复判据严格：要求数据时间戳晚于注入时刻（不是只看 health OK）。
+
+```bash
+./chaos-test.sh collector_dead   # 只杀采集器
+./chaos-test.sh socket_gone      # weston 保留但删掉 socket（11-13 故障形态）
+./chaos-test.sh frozen           # SIGSTOP 冻结，进程活着但数据停流
+./chaos-test.sh total_wipe       # 全杀：采集器+weston+chromium+隧道（等效重启）
+```
+
+2026-11-18 实测结果：
+
+| 场景 | 结果 |
+|---|---|
+| collector_dead | PASS，145s 恢复 |
+| frozen | PASS，判定 STALE 后自动重建 |
+| total_wipe（修复前） | **FAIL —— 10+ 分钟 0/100 且 health 一直报 OK** |
+| total_wipe（修复后） | PASS，4 分钟内恢复 |
+
+`total_wipe` 那次 FAIL 抓到一个真实漏洞：weston 被 kill -9 后 socket 文件
+以 stale inode 残留，`[ -S ]` 判据误判"正常"，新 weston 起不来 —— 正是
+11-13 的故障形态。修法是判据改为「socket 存在 **且** 被活着的 weston 持有」。
+
 ## 运维
 
 ```bash

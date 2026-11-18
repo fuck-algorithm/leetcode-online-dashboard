@@ -6,9 +6,33 @@ set -u
 PIDFILE=/tmp/com-collector-local.pid
 LOG=/tmp/com-collector-local.log
 
-# 已运行则退出
-if [ -f "$PIDFILE" ] && kill -0 "$(cat "$PIDFILE" 2>/dev/null)" 2>/dev/null; then
-  echo "collector already running pid=$(cat "$PIDFILE")"
+# 单实例保护。两层：
+# 1) PID 文件还在且进程活着，直接退出；
+# 2) PID 文件丢失/进程换过 cwd 时，按工作目录兜底识别。
+# 再加 flock 兜住并发调用（定时器和手动执行可能撞在同一秒）。
+exec 8>/tmp/com-collector-start.lock
+flock -n 8 || { echo "another start is in progress"; exit 1; }
+
+running_pid() {
+  local pid here
+  here="$(cd "$(dirname "$0")" && pwd -P)"
+  pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+  if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
+    echo "$pid"
+    return 0
+  fi
+  for pid in $(pgrep -f 'node collector.js' 2>/dev/null); do
+    if [ "$(readlink -f "/proc/$pid/cwd" 2>/dev/null)" = "$here" ]; then
+      echo "$pid"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if existing=$(running_pid); then
+  echo "$existing" > "$PIDFILE"
+  echo "collector already running pid=$existing"
   exit 1
 fi
 

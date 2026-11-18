@@ -49,20 +49,32 @@ UA/TLS，还有有头渲染环境暴露的信号。
 
 按顺序检查并修复：
 
-1. **wayland socket**：判据是 `$XDG_RUNTIME_DIR/wayland-99` 这个 socket 文件存不存在，
-   不是 weston 进程号。进程活着但 socket 被删时依旧不可用（这就是 11-13 的故障）。
+1. **wayland socket**：判据是「socket 文件存在 **且** 被活着的 weston 持有」
+   （查 `/proc/<pid>/fd`）。只看文件存在不够——进程死后 socket 会以 stale
+   inode 残留，看起来正常但实际不可用。weston 本身由 systemd 托管，watchdog
+   只在 unit 卡住时踢醒它。
 2. **SSH 隧道 16390**：不通则重建 autossh/ssh。
 3. **采集器进程**：不在则拉起；拉起前先清孤儿 Chromium（常驻模式被强杀后，
    Chromium 会挂到 systemd 下不退出，堆积几轮会吃穿内存）。
 4. **数据新鲜度**：陈旧则整条链路重建（先停旧进程再起新的）。
    刚启动 5 分钟内不判陈旧（`STARTUP_GRACE`），否则会误杀正在预热的进程。
 
-### 3. systemd 托管（替代 cron）
+### 3. systemd 托管
 
-- `~/.config/systemd/user/com-collector-watchdog.{service,timer}`
-- timer 每分钟触发，`Persistent=true` 让关机错过的调度在开机后补跑
-- **`KillMode=none` 必须保留**：默认的 `control-group` 会在 oneshot 结束时
-  把 watchdog 拉起的 collector 一并杀掉，导致采集器刚起就被 SIGTERM
+三个用户单元（源文件在 `systemd/`，`bash systemd/install.sh` 安装）：
+
+**`wayland-headless.service`** —— 显示环境的基础
+- `Restart=always`，`RestartSec=2`：weston 死了 2 秒后自动拉起
+- **`ExecStopPost` 强制删除 `/run/user/1000/wayland-99{,.lock}`**
+  systemd 不清理 unix socket 文件，残留的 stale inode 会让新 weston 因
+  名字被占而起不来 —— 这就是 2026-11-13 断流的根因，也是混沌测试
+  `total_wipe` 抓到的那个 FAIL。这一行是根治点，**不要删**
+- 开机自启（`WantedBy=default.target`）
+
+**`com-collector-watchdog.{service,timer}`** —— 每分钟巡检并自愈
+- `Persistent=true`，关机错过的调度在开机后补跑
+- `KillMode=mixed`：默认的 `control-group` 会在 oneshot 结束时把 watchdog
+  拉起的 collector 一并杀掉；`none` 已被 systemd 标记废弃
 - 用户已设 `Linger=yes`，登出后服务仍存活
 
 ### 4. 日志轮转

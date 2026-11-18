@@ -1,0 +1,12 @@
+[Unit]
+Description=Run LeetCode.COM collector watchdog every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+# 机器休眠/关机错过的调度，开机后补跑一次
+Persistent=true
+AccuracySec=5s
+
+[Install]
+WantedBy=timers.target

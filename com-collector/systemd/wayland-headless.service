@@ -1,0 +1,28 @@
+[Unit]
+Description=Headless weston compositor for the LeetCode.COM collector
+# 这是 Chromium 有头模式所需的显示环境。交给 systemd 直接托管，而不是靠
+# watchdog 用 setsid 临时拉起——原来那样做 weston 是"孤儿进程"，没有重启
+# 策略，死了只剩一个 stale socket 文件，看起来还在、实际早不能用了。
+After=network-online.target
+# 不限速：后备服务宁可频繁重试，也不要进入 failed 状态后彻底停摆
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/weston --backend=headless-backend.so --socket=wayland-99
+Environment=XDG_RUNTIME_DIR=/run/user/1000
+Environment=WAYLAND_DISPLAY=wayland-99
+Restart=always
+RestartSec=2
+# 退出时把残留 socket 删掉。systemd 不会替我们清理 unix socket 文件，
+# stale inode 会让下一个 weston 起不来（本次踩到的坑）。
+ExecStopPost=/bin/sh -c 'rm -f /run/user/1000/wayland-99 /run/user/1000/wayland-99.lock'
+# KillMode=mixed：先给主进程 SIGTERM 留出退出时间，再由 systemd 清理子进程。
+# 不用 none（已废弃、且会让 weston 的子进程泄漏），也不用 control-group
+# （它是默认值，对 simple 服务没问题，但 mixed 对带子进程的组件更稳妥）。
+KillMode=mixed
+# 轻量，给它一点优先级
+Nice=5
+
+[Install]
+WantedBy=default.target

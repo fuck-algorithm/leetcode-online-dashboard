@@ -1,0 +1,16 @@
+[Unit]
+Description=LeetCode.COM collector watchdog (weston + tunnel + fresh-data check)
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/cc11001100/github/fuck-algorithm/leetcode-online-dashboard/com-collector/watchdog.sh
+# watchdog 自己内部会拉起常驻进程，这里不要把它当长期服务管理
+TimeoutStartSec=300
+Nice=5
+# 关键：service 退出时不要连带清理 cgroup。
+# 默认的 KillMode=control-group 会在 oneshot 结束时把 watchdog 拉起的
+# collector 一并杀掉，导致采集器刚起就被 SIGTERM（2026-11-18 实测踩到）。
+# 用 mixed 而不是 none：mixed 只对主进程发信号、不扫子进程，既不连带杀
+# 采集器，也不会像 none（已废弃）那样让 systemd 完全失去生命周期管理。
+KillMode=mixed

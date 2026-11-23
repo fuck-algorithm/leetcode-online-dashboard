@@ -29,7 +29,9 @@ deploy-pkg/dist/assets/*.css
 # 数据目录
 data/
 redis-data/
-redis/
+# 只忽略仓库根目录的本地 Redis 数据/工作目录；
+# 不能写成 `redis/`，那会把 backend/internal/redis 这个源码包一起误伤。
+/redis/
 
 # IDE
 .vscode/

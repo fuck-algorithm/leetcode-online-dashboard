@@ -13,9 +13,10 @@ jobs:
       - uses: actions/checkout@v4
       
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          # 与 backend/go.mod 和 Dockerfile 保持一致；1.21 缺少 covdata 工具
+          go-version-file: backend/go.mod
       
       - name: Cache Go modules
         uses: actions/cache@v3
@@ -29,15 +30,13 @@ jobs:
         working-directory: ./backend
         run: go mod download
       
+      - name: Vet
+        working-directory: ./backend
+        run: go vet ./...
+
       - name: Run tests
         working-directory: ./backend
-        run: go test -v -race -coverprofile=coverage.out ./...
-      
-      - name: Upload coverage
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./backend/coverage.out
-          flags: backend
+        run: go test -race -coverprofile=coverage.out ./...
 
   frontend-test:
     runs-on: ubuntu-latest
@@ -61,29 +60,48 @@ jobs:
       
       - name: Run tests
         working-directory: ./frontend
-        run: npm test -- --coverage --watchAll=false
+        # 项目用 vitest，上面那套 --watchAll 是 Jest 语法，在 CI 里会直接失败
+        run: npm run test:ci
       
       - name: Build
         working-directory: ./frontend
         run: npm run build
 
+  # 镜像推送依赖 DOCKER_USERNAME / DOCKER_PASSWORD 两个 secrets。
+  # secrets 只能在 step 级 if 里引用（job 级 if 不支持），所以这里先用一个
+  # step 判断凭据是否存在，缺凭据时后续步骤全部跳过，不会整条流水线报红。
   build-and-push:
     needs: [backend-test, frontend-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      
+
+      - name: Check Docker credentials
+        id: creds
+        env:
+          DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          if [ -n "$DOCKER_USERNAME" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::未配置 DOCKER_USERNAME，跳过镜像推送"
+          fi
+
       - name: Set up Docker Buildx
+        if: steps.creds.outputs.available == 'true'
         uses: docker/setup-buildx-action@v3
-      
+
       - name: Login to Docker Hub
+        if: steps.creds.outputs.available == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-      
+
       - name: Build and push backend
+        if: steps.creds.outputs.available == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./backend
@@ -93,8 +111,9 @@ jobs:
             ${{ secrets.DOCKER_USERNAME }}/leetcode-dashboard-backend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-      
+
       - name: Build and push frontend
+        if: steps.creds.outputs.available == 'true'
         uses: docker/build-push-action@v5
         with:
           context: ./frontend

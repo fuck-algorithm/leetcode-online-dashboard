@@ -1,9 +1,0 @@
- INFO  Accepting connections at http://localhost:52107
- HTTP  2/21/2026 9:27:45 PM ::1 GET /rankings
- HTTP  2/21/2026 9:27:45 PM ::1 Returned 200 in 10 ms
- HTTP  2/21/2026 9:28:00 PM ::1 GET /vite.svg
- HTTP  2/21/2026 9:28:00 PM ::1 Returned 200 in 19 ms
- HTTP  2/21/2026 9:28:02 PM ::1 GET /vite.svg
- HTTP  2/21/2026 9:28:02 PM ::1 GET /api/hot100
- HTTP  2/21/2026 9:28:02 PM ::1 Returned 304 in 3 ms
- HTTP  2/21/2026 9:28:02 PM ::1 Returned 200 in 4 ms

@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -134,6 +135,18 @@ func GetClient() *redis.Client {
 	return client
 }
 
+// ErrNotInitialized 表示 Redis 尚未初始化（Init 失败或从未调用）。
+var ErrNotInitialized = errors.New("redis: client not initialized")
+
+// ready 返回可用的客户端。Redis 是可选的：Init 失败时 main 会继续以内存缓存运行，
+// 因此所有导出函数必须先判空，否则 nil client 会直接 panic。
+func ready() (*redis.Client, error) {
+	if client == nil {
+		return nil, ErrNotInitialized
+	}
+	return client, nil
+}
+
 // Close 关闭 Redis 连接
 func Close() error {
 	if client != nil {
@@ -144,6 +157,10 @@ func Close() error {
 
 // UpdateOnlineCount 更新题目在线人数
 func UpdateOnlineCount(slug string, status *ProblemOnlineStatus) error {
+	c, err := ready()
+	if err != nil {
+		return err
+	}
 	key := keyNS.ProblemOnline + slug
 	data, err := json.Marshal(status)
 	if err != nil {
@@ -151,7 +168,7 @@ func UpdateOnlineCount(slug string, status *ProblemOnlineStatus) error {
 	}
 
 	// 使用管道批量操作
-	pipe := client.Pipeline()
+	pipe := c.Pipeline()
 	pipe.Set(ctx, key, data, 24*time.Hour) // 24小时过期
 	pipe.ZAdd(ctx, keyNS.Hot100List, redis.Z{
 		Score:  float64(status.LastUpdated.Unix()),
@@ -164,8 +181,12 @@ func UpdateOnlineCount(slug string, status *ProblemOnlineStatus) error {
 
 // GetOnlineCount 获取题目在线人数
 func GetOnlineCount(slug string) (*ProblemOnlineStatus, error) {
+	c, err := ready()
+	if err != nil {
+		return nil, err
+	}
 	key := keyNS.ProblemOnline + slug
-	data, err := client.Get(ctx, key).Bytes()
+	data, err := c.Get(ctx, key).Bytes()
 	if err == redis.Nil {
 		return nil, nil
 	}
@@ -182,18 +203,23 @@ func GetOnlineCount(slug string) (*ProblemOnlineStatus, error) {
 
 // GetAllOnlineCounts 获取所有题目在线人数
 func GetAllOnlineCounts() ([]*ProblemOnlineStatus, error) {
+	c, err := ready()
+	if err != nil {
+		return nil, err
+	}
+
 	// 使用 SCAN 获取所有在线人数键
 	var cursor uint64
 	var results []*ProblemOnlineStatus
 
 	for {
-		keys, nextCursor, err := client.Scan(ctx, cursor, keyNS.ProblemOnline+"*", 100).Result()
+		keys, nextCursor, err := c.Scan(ctx, cursor, keyNS.ProblemOnline+"*", 100).Result()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, key := range keys {
-			data, err := client.Get(ctx, key).Bytes()
+			data, err := c.Get(ctx, key).Bytes()
 			if err != nil {
 				continue
 			}
@@ -232,12 +258,20 @@ func GetHot100OnlineCounts(slugs []string) ([]*ProblemOnlineStatus, error) {
 
 // UpdateTotalOnline 更新总在线人数
 func UpdateTotalOnline(total int) error {
-	return client.Set(ctx, keyNS.TotalOnline, total, 24*time.Hour).Err()
+	c, err := ready()
+	if err != nil {
+		return err
+	}
+	return c.Set(ctx, keyNS.TotalOnline, total, 24*time.Hour).Err()
 }
 
 // GetTotalOnline 获取总在线人数
 func GetTotalOnline() (int, error) {
-	val, err := client.Get(ctx, keyNS.TotalOnline).Int()
+	c, err := ready()
+	if err != nil {
+		return 0, err
+	}
+	val, err := c.Get(ctx, keyNS.TotalOnline).Int()
 	if err == redis.Nil {
 		return 0, nil
 	}
@@ -249,18 +283,27 @@ func GetTotalOnline() (int, error) {
 
 // PublishOnlineUpdate 发布在线人数更新（用于实时通知）
 func PublishOnlineUpdate(slug string, count int) error {
+	c, err := ready()
+	if err != nil {
+		return err
+	}
 	msg := map[string]interface{}{
 		"slug":  slug,
 		"count": count,
 		"time":  time.Now().Unix(),
 	}
 	data, _ := json.Marshal(msg)
-	return client.Publish(ctx, keyNS.UpdateChannel, data).Err()
+	return c.Publish(ctx, keyNS.UpdateChannel, data).Err()
 }
 
 // SubscribeOnlineUpdates 订阅在线人数更新
 func SubscribeOnlineUpdates(handler func(slug string, count int)) {
-	sub := client.Subscribe(ctx, keyNS.UpdateChannel)
+	c, err := ready()
+	if err != nil {
+		log.Printf("Warning: cannot subscribe to online updates: %v", err)
+		return
+	}
+	sub := c.Subscribe(ctx, keyNS.UpdateChannel)
 	ch := sub.Channel()
 
 	go func() {
@@ -282,6 +325,11 @@ func SubscribeOnlineUpdates(handler func(slug string, count int)) {
 
 // UpdateOnlineCountWithSite 更新指定站点的题目在线人数
 func UpdateOnlineCountWithSite(slug string, site interface{}, status *ProblemOnlineStatus) error {
+	c, err := ready()
+	if err != nil {
+		return err
+	}
+
 	siteStr := ""
 	switch s := site.(type) {
 	case string:
@@ -309,7 +357,7 @@ func UpdateOnlineCountWithSite(slug string, site interface{}, status *ProblemOnl
 	}
 
 	// 使用管道批量操作
-	pipe := client.Pipeline()
+	pipe := c.Pipeline()
 	pipe.Set(ctx, key, data, 24*time.Hour) // 24小时过期
 	pipe.ZAdd(ctx, keyNS.Hot100List, redis.Z{
 		Score:  float64(status.LastUpdated.Unix()),
@@ -322,6 +370,11 @@ func UpdateOnlineCountWithSite(slug string, site interface{}, status *ProblemOnl
 
 // GetOnlineCountBySite 获取指定站点的题目在线人数
 func GetOnlineCountBySite(slug string, site string) (*ProblemOnlineStatus, error) {
+	c, err := ready()
+	if err != nil {
+		return nil, err
+	}
+
 	var key string
 	switch site {
 	case "cn", "CN":
@@ -334,7 +387,7 @@ func GetOnlineCountBySite(slug string, site string) (*ProblemOnlineStatus, error
 
 	log.Printf("[GetOnlineCountBySite] Trying to get key: %s", key)
 
-	data, err := client.Get(ctx, key).Bytes()
+	data, err := c.Get(ctx, key).Bytes()
 	if err == redis.Nil {
 		log.Printf("[GetOnlineCountBySite] Key not found: %s", key)
 		return nil, nil
@@ -356,6 +409,11 @@ func GetOnlineCountBySite(slug string, site string) (*ProblemOnlineStatus, error
 
 // GetAllOnlineCountsBySite 获取指定站点的所有题目在线人数
 func GetAllOnlineCountsBySite(site string) ([]*ProblemOnlineStatus, error) {
+	c, err := ready()
+	if err != nil {
+		return nil, err
+	}
+
 	var pattern string
 	switch site {
 	case "cn", "CN":
@@ -370,13 +428,13 @@ func GetAllOnlineCountsBySite(site string) ([]*ProblemOnlineStatus, error) {
 	var results []*ProblemOnlineStatus
 
 	for {
-		keys, nextCursor, err := client.Scan(ctx, cursor, pattern, 100).Result()
+		keys, nextCursor, err := c.Scan(ctx, cursor, pattern, 100).Result()
 		if err != nil {
 			return nil, err
 		}
 
 		for _, key := range keys {
-			data, err := client.Get(ctx, key).Bytes()
+			data, err := c.Get(ctx, key).Bytes()
 			if err != nil {
 				continue
 			}
@@ -415,15 +473,20 @@ func GetTotalOnlineBySite() (int, int, int, error) {
 // sumOnlineKeys 统计某一站点所有 online:{site}:{slug} key 的在线人数之和。
 // 只有 100 个 key，每 5 秒一轮可以接受。
 func sumOnlineKeys(prefix string) (int, error) {
+	c, err := ready()
+	if err != nil {
+		return 0, err
+	}
+
 	var cursor uint64
 	total := 0
 	for {
-		keys, next, err := client.Scan(ctx, cursor, prefix+"*", 500).Result()
+		keys, next, err := c.Scan(ctx, cursor, prefix+"*", 500).Result()
 		if err != nil {
 			return 0, err
 		}
 		if len(keys) > 0 {
-			pipe := client.Pipeline()
+			pipe := c.Pipeline()
 			cmds := make([]*redis.StringCmd, len(keys))
 			for i, key := range keys {
 				cmds[i] = pipe.Get(ctx, key)
@@ -453,16 +516,25 @@ func sumOnlineKeys(prefix string) (int, error) {
 
 // UpdateTotalOnlineBySite 更新双站点的总在线人数
 func UpdateTotalOnlineBySite(cnTotal, comTotal, unifiedTotal int) error {
-	pipe := client.Pipeline()
+	c, err := ready()
+	if err != nil {
+		return err
+	}
+	pipe := c.Pipeline()
 	pipe.Set(ctx, keyNS.TotalOnlineCN, cnTotal, 24*time.Hour)
 	pipe.Set(ctx, keyNS.TotalOnlineCOM, comTotal, 24*time.Hour)
 	pipe.Set(ctx, keyNS.TotalOnlineUnified, unifiedTotal, 24*time.Hour)
-	_, err := pipe.Exec(ctx)
+	_, err = pipe.Exec(ctx)
 	return err
 }
 
 // PublishOnlineUpdateWithSite 发布带站点信息的在线人数更新
 func PublishOnlineUpdateWithSite(slug string, site interface{}, count int) error {
+	c, err := ready()
+	if err != nil {
+		return err
+	}
+
 	siteStr := ""
 	switch s := site.(type) {
 	case string:
@@ -480,12 +552,17 @@ func PublishOnlineUpdateWithSite(slug string, site interface{}, count int) error
 		"time":  time.Now().Unix(),
 	}
 	data, _ := json.Marshal(msg)
-	return client.Publish(ctx, keyNS.UpdateChannel, data).Err()
+	return c.Publish(ctx, keyNS.UpdateChannel, data).Err()
 }
 
 // SubscribeOnlineUpdatesWithSite 订阅带站点信息的在线人数更新
 func SubscribeOnlineUpdatesWithSite(handler func(slug string, site string, count int)) {
-	sub := client.Subscribe(ctx, keyNS.UpdateChannel)
+	c, err := ready()
+	if err != nil {
+		log.Printf("Warning: cannot subscribe to online updates: %v", err)
+		return
+	}
+	sub := c.Subscribe(ctx, keyNS.UpdateChannel)
 	ch := sub.Channel()
 
 	go func() {
@@ -510,6 +587,10 @@ func BatchGetOnlineCountsBySite(slugs []string, site string) (map[string]*Proble
 	if len(slugs) == 0 {
 		return make(map[string]*ProblemOnlineStatus), nil
 	}
+	c, err := ready()
+	if err != nil {
+		return nil, err
+	}
 
 	// 构建所有 key
 	keys := make([]string, len(slugs))
@@ -528,14 +609,14 @@ func BatchGetOnlineCountsBySite(slugs []string, site string) (map[string]*Proble
 	}
 
 	// 使用 Pipeline 批量获取
-	pipe := client.Pipeline()
+	pipe := c.Pipeline()
 	cmds := make([]*redis.StringCmd, len(slugs))
 	for i, key := range keys {
 		cmds[i] = pipe.Get(ctx, key)
 	}
 
 	// 执行 Pipeline
-	_, err := pipe.Exec(ctx)
+	_, err = pipe.Exec(ctx)
 	if err != nil && err != redis.Nil {
 		return nil, err
 	}

@@ -10,7 +10,7 @@ describe('LastUpdated', () => {
 
   it('marks recent data as fresh and shows a relative time', () => {
     render(<LastUpdated timestamp={Date.now() - 5000} />)
-    expect(screen.getByText(/最后更新：/)).toBeInTheDocument()
+    expect(screen.getByText('LIVE')).toBeInTheDocument()
     expect(screen.getByText(/刚刚/)).toBeInTheDocument()
     expect(document.querySelector('.rankings-updated--fresh')).toBeTruthy()
   })

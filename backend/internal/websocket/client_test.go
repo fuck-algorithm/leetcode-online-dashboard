@@ -13,25 +13,26 @@ func TestLeetCodeWSClientCreation(t *testing.T) {
 	messageHandler := func(data []byte) {}
 	errorHandler := func(err error) {}
 
-	client := NewLeetCodeWSClient(slug, messageHandler, errorHandler)
+	client := NewLeetCodeWSClient(slug, SiteCN, messageHandler, errorHandler)
 
 	assert.NotNil(t, client)
 	assert.Equal(t, slug, client.slug)
+	assert.Equal(t, SiteCN, client.GetSite())
 	assert.NotNil(t, client.onMessage)
 	assert.NotNil(t, client.onError)
 	assert.False(t, client.IsConnected())
 }
 
 func TestGenerateWSURL(t *testing.T) {
-	slug := "two-sum"
-	client := NewLeetCodeWSClient(slug, nil, nil)
+	cnClient := NewLeetCodeWSClient("two-sum", SiteCN, nil, nil)
+	assert.Equal(t, "wss://collaboration-ws.leetcode.cn/problems/two-sum", cnClient.generateWSURL())
 
-	url := client.generateWSURL()
-	assert.Equal(t, "wss://collaboration-ws.leetcode.cn/problems/two-sum", url)
+	comClient := NewLeetCodeWSClient("two-sum", SiteCOM, nil, nil)
+	assert.Equal(t, "wss://collaboration-ws.leetcode.com/problems/two-sum", comClient.generateWSURL())
 }
 
 func TestClientConnectionState(t *testing.T) {
-	client := NewLeetCodeWSClient("test", nil, nil)
+	client := NewLeetCodeWSClient("test", SiteCN, nil, nil)
 
 	// 初始状态应该是未连接
 	assert.False(t, client.IsConnected())

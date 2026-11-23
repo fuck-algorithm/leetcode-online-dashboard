@@ -78,11 +78,13 @@ const Home: React.FC = () => {
               } : null,
             });
             setLastUpdateTime(new Date().toLocaleTimeString());
-            setLoading(false);
           }
         }
       } catch (err) {
         console.error('Failed to fetch problems:', err);
+      } finally {
+        // 无论成功、空列表还是失败都要退出骨架屏，
+        // 否则一旦接口返回空数组，首页会永远卡在 skeleton 上。
         setLoading(false);
       }
     };
